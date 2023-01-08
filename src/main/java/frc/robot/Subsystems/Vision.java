@@ -4,14 +4,12 @@
 
 package frc.robot.Subsystems;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import org.photonvision.PhotonCamera;
 import org.photonvision.RobotPoseEstimator;
 import org.photonvision.RobotPoseEstimator.PoseStrategy;
-import org.photonvision.targeting.PhotonPipelineResult;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
