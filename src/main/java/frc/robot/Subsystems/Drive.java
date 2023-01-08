@@ -4,8 +4,16 @@
 
 package frc.robot.Subsystems;
 
+import java.util.function.Supplier;
+
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
+import edu.wpi.first.math.Pair;
+import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -23,12 +31,15 @@ public class Drive extends SubsystemBase {
   MotorControllerGroup RightMCG = new MotorControllerGroup(Right_Front, Right_Back);
 
   DifferentialDrive diffDrive = new DifferentialDrive(LeftMCG, RightMCG);
-  
-  public Drive() {
+  DifferentialDrivePoseEstimator poseEstimator = new DifferentialDrivePoseEstimator(new DifferentialDriveKinematics(DriveConstants.trackwidthMeters), new Rotation2d(), getLeftDistanceMeters(), getRightDistanceMeters(), new Pose2d());
+  Supplier<Pair<Pose2d,Double>> visionPose;
+
+  public Drive(Supplier<Pair<Pose2d, Double>> visionPoseSupplier) {
     Left_Front.configFactoryDefault();
     Right_Front.configFactoryDefault();
     Left_Back.configFactoryDefault();
     Right_Back.configFactoryDefault();
+    visionPose = visionPoseSupplier;
   }
   /**
    * Controls the drive motors on the robot 
@@ -41,8 +52,24 @@ public class Drive extends SubsystemBase {
     diffDrive.arcadeDrive(throttle, turn, true);
   }
 
+  private double getLeftDistanceMeters() {
+    return Left_Front.getSelectedSensorPosition() * DriveConstants.distancePerTickMeters;
+  }
+
+  private double getRightDistanceMeters() {
+    return Right_Front.getSelectedSensorPosition() * DriveConstants.distancePerTickMeters;
+  }
+
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+    poseEstimator.update(null, getRightDistanceMeters(), getLeftDistanceMeters());
+    // if we see targets
+    if (visionPose.get().getFirst() != null) {
+      // if the pose is reasonably close
+      if (visionPose.get().getFirst().getTranslation().getDistance(poseEstimator.getEstimatedPosition().getTranslation()) < 1.5) {
+        poseEstimator.addVisionMeasurement(visionPose.get().getFirst(), visionPose.get().getSecond());
+      }
+    }
   }
 }
