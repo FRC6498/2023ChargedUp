@@ -62,7 +62,4 @@ public class Constants {
             new Rotation3d(0, 0, 0)
         );
     }
-    public static final class VisionConstants {
-        public static final String Camera_Name = "camera1";
-    }
 }
