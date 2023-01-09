@@ -17,14 +17,20 @@ public class Constants {
         public static final int Right_Front_ID = 2;
         public static final int Left_Back_ID = 3;
         public static final int Right_Back_ID = 4;
+
         // 1 motor rev = 2048 ticks
         // gearRatio motor revs = 1 wheel rev
         // 1 wheel rev = 1 wheel circumference travelled
         // 1 wheel circumference = pi*wheel diameter
+        
         private static final double gearRatio = 26.0;
         private static final double wheelDiameterMeters = Units.inchesToMeters(6);
         public static final double distancePerTickMeters = 2048.0 * gearRatio * Math.PI * wheelDiameterMeters;
         public static final double trackwidthMeters = 1.0;
+       
+        public static final int Shifter_Forward_Channel = 0;
+        public static final int Shifter_Reverse_Channel = 1;
+
     }
 
     public static final class OperatorConstants {
@@ -55,5 +61,8 @@ public class Constants {
             new Translation3d(0, null), 
             new Rotation3d(0, 0, 0)
         );
+    }
+    public static final class VisionConstants {
+        public static final String Camera_Name = "camera1";
     }
 }
