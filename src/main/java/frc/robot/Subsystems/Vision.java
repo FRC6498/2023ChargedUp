@@ -4,11 +4,17 @@
 
 package frc.robot.Subsystems;
 
+import org.photonvision.PhotonCamera;
+
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.VisionConstants;
 
 public class Vision extends SubsystemBase {
   /** Creates a new Vision. */
-  public Vision() {}
+  PhotonCamera camera = new PhotonCamera(null, VisionConstants.Camera_Name );
+  public Vision() {
+    camera.getLatestResult();
+  }
 
   @Override
   public void periodic() {

@@ -16,12 +16,12 @@ public class RobotContainer {
   Drive driveSub = new Drive();
 
   public RobotContainer() {
-    driveSub.setDefaultCommand(Commands.run(() -> driveSub.ArcadeDrive(controller.getRightTriggerAxis(), controller.getLeftX()), driveSub));
+    driveSub.setDefaultCommand(Commands.run(() -> driveSub.ArcadeDrive(controller.getRightTriggerAxis() - controller.getLeftTriggerAxis(), controller.getLeftX()), driveSub));
     configureBindings();
   }
 
   private void configureBindings() {
-    
+    controller.a().onTrue(Commands.runOnce(driveSub::ShiftC, driveSub));
   }
 
   public Command getAutonomousCommand() {

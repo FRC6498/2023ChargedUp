@@ -6,8 +6,14 @@ package frc.robot.Subsystems;
 
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
+
+import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DriveConstants;
 
@@ -23,12 +29,14 @@ public class Drive extends SubsystemBase {
   MotorControllerGroup RightMCG = new MotorControllerGroup(Right_Front, Right_Back);
 
   DifferentialDrive diffDrive = new DifferentialDrive(LeftMCG, RightMCG);
-  
+  DoubleSolenoid shifter = new DoubleSolenoid(PneumaticsModuleType.REVPH, DriveConstants.Shifter_Forward_Channel, DriveConstants.Shifter_Reverse_Channel);
+
   public Drive() {
     Left_Front.configFactoryDefault();
     Right_Front.configFactoryDefault();
     Left_Back.configFactoryDefault();
     Right_Back.configFactoryDefault();
+    
   }
   /**
    * Controls the drive motors on the robot 
@@ -40,9 +48,32 @@ public class Drive extends SubsystemBase {
   public void ArcadeDrive(double throttle, double turn) {
     diffDrive.arcadeDrive(throttle, turn, true);
   }
+  public void Shift() {
+     switch (shifter.get()) {
+      case kForward:
+          shifter.set(Value.kReverse);
+        break;
+
+      case kReverse:
+        shifter.set(Value.kForward);
+        break;
+
+      default:
+      shifter.set(Value.kForward);
+        break;
+    }
+  }
+
+
+  public Command ArcadeDriveC(double throttle, double turn) {
+    return Commands.run(()-> this.ArcadeDrive(throttle, turn), this);
+  }
+  public Command ShiftC() {
+    return Commands.runOnce(() -> this.Shift(), this);
+  }
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
+
   }
 }
