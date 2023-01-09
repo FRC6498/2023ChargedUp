@@ -7,6 +7,7 @@ package frc.robot.Subsystems;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
+import com.kauailabs.navx.frc.AHRS;
 
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
@@ -29,6 +30,7 @@ public class Drive extends SubsystemBase {
   MotorControllerGroup LeftMCG = new MotorControllerGroup(Left_Front, Left_Back);
   MotorControllerGroup RightMCG = new MotorControllerGroup(Right_Front, Right_Back);
 
+  AHRS gyro = new AHRS();
   DifferentialDrive diffDrive = new DifferentialDrive(LeftMCG, RightMCG);
   DifferentialDrivePoseEstimator poseEstimator = new DifferentialDrivePoseEstimator(new DifferentialDriveKinematics(DriveConstants.trackwidthMeters), new Rotation2d(), getLeftDistanceMeters(), getRightDistanceMeters(), new Pose2d());
   Supplier<Pair<Pose2d,Double>> visionPose;
@@ -39,6 +41,7 @@ public class Drive extends SubsystemBase {
     Left_Back.configFactoryDefault();
     Right_Back.configFactoryDefault();
     visionPose = visionPoseSupplier;
+    gyro.calibrate();
   }
   /**
    * Controls the drive motors on the robot 
@@ -62,7 +65,7 @@ public class Drive extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    poseEstimator.update(null, getRightDistanceMeters(), getLeftDistanceMeters());
+    poseEstimator.update(gyro.getRotation2d(), getRightDistanceMeters(), getLeftDistanceMeters());
     // if we see targets
     if (visionPose.get().getFirst() != null) {
       // if the pose is reasonably close
