@@ -44,10 +44,9 @@ public class Drive extends SubsystemBase {
 
   DifferentialDrivePoseEstimator poseEstimator = new DifferentialDrivePoseEstimator(new DifferentialDriveKinematics(DriveConstants.trackwidthMeters), new Rotation2d(), getLeftDistanceMeters(), getRightDistanceMeters(), new Pose2d());
   Supplier<Pair<Pose2d,Double>> visionPose;
-  public Drive(Supplier<Pair<Pose2d, Double>> visionPoseSupplier) {
   DoubleSolenoid shifter = new DoubleSolenoid(PneumaticsModuleType.REVPH, DriveConstants.Shifter_Forward_Channel, DriveConstants.Shifter_Reverse_Channel);
 
-  public Drive() {
+  public Drive(Supplier<Pair<Pose2d, Double>> visionPoseSupplier) {
 
     Left_Front.configFactoryDefault();
     Right_Front.configFactoryDefault();
@@ -67,6 +66,7 @@ public class Drive extends SubsystemBase {
   public void ArcadeDrive(double throttle, double turn) {
     diffDrive.arcadeDrive(throttle, turn, true);
   }
+
   public void Shift() {
      switch (shifter.get()) {
       case kForward:
