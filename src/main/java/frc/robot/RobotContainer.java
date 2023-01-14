@@ -9,11 +9,13 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Subsystems.Drive;
+import frc.robot.Subsystems.Vision;
 
 public class RobotContainer {
 
   public CommandXboxController controller = new CommandXboxController(OperatorConstants.Driver_Controller_ID);
-  Drive driveSub = new Drive();
+  Vision visionSub = new Vision();
+  Drive driveSub = new Drive(visionSub::getCurrentPoseEstimate);
 
   public RobotContainer() {
     driveSub.setDefaultCommand(Commands.run(() -> driveSub.ArcadeDrive(controller.getRightTriggerAxis() - controller.getLeftTriggerAxis(), controller.getLeftX()), driveSub));
