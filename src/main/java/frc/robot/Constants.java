@@ -42,18 +42,17 @@ public class Constants {
         public static final String cameraName = "visionCam";
         private static final double fieldLength = Units.feetToMeters(54);
         private static final double fieldWidth = Units.feetToMeters(26);
-        // TODO: fill out field layout with what we set up in the practice area
+        // TODO: find a way to reduce hypotenuse to x and y coords
         public static final AprilTagFieldLayout tagLayout = new AprilTagFieldLayout(
             List.of(
-              new AprilTag(0, new Pose3d(0, 0, 0, new Rotation3d(VecBuilder.fill(0, 0, 0), 0))),
-              new AprilTag(1, new Pose3d(0, 0, 0, new Rotation3d(VecBuilder.fill(0, 0, 0), 0))),
-              new AprilTag(2, new Pose3d(0, 0, 0, new Rotation3d(VecBuilder.fill(0, 0, 0), 0))),
-              new AprilTag(3, new Pose3d(0, 0, 0, new Rotation3d(VecBuilder.fill(0, 0, 0), 0))),
-              new AprilTag(4, new Pose3d(0, 0, 0, new Rotation3d(VecBuilder.fill(0, 0, 0), 0))),
-              new AprilTag(5, new Pose3d(0, 0, 0, new Rotation3d(VecBuilder.fill(0, 0, 0), 0))),
-              new AprilTag(6, new Pose3d(0, 0, 0, new Rotation3d(VecBuilder.fill(0, 0, 0), 0))),
-              new AprilTag(7, new Pose3d(0, 0, 0, new Rotation3d(VecBuilder.fill(0, 0, 0), 0))),
-              new AprilTag(8, new Pose3d(0, 0, 0, new Rotation3d(VecBuilder.fill(0, 0, 0), 0)))
+              new AprilTag(1, new Pose3d(0, 0, Units.inchesToMeters(23.75), new Rotation3d(VecBuilder.fill(0, 0, 1), 0))),
+              new AprilTag(2, new Pose3d(0, 0, Units.inchesToMeters(51.5), new Rotation3d(VecBuilder.fill(0, 0, 1), 0))),
+              new AprilTag(3, new Pose3d(0, 0, Units.inchesToMeters(26.25), new Rotation3d(VecBuilder.fill(0, 0, 1), 0))),
+              new AprilTag(4, new Pose3d(0, 0, Units.inchesToMeters(52.75), new Rotation3d(VecBuilder.fill(0, 0, 1), 0))),
+              new AprilTag(5, new Pose3d(0, 0, Units.inchesToMeters(44), new Rotation3d(VecBuilder.fill(0, 0, 1), 0))),
+              new AprilTag(6, new Pose3d(0, 0, Units.inchesToMeters(57.0625), new Rotation3d(VecBuilder.fill(0, 0, 1), 0))),
+              new AprilTag(7, new Pose3d(0, 0, Units.inchesToMeters(43), new Rotation3d(VecBuilder.fill(0, 0, 1), 0))),
+              new AprilTag(8, new Pose3d(0, 0, Units.inchesToMeters(58.875), new Rotation3d(VecBuilder.fill(0, 0, 1), 0)))
             ), VisionConstants.fieldLength, VisionConstants.fieldWidth
         );
         // TODO: fill out robotToCamera transform once robot is designed
