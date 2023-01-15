@@ -23,6 +23,7 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
+    //shifts gears
     controller.a().onTrue(Commands.runOnce(driveSub::ShiftC, driveSub));
   }
 

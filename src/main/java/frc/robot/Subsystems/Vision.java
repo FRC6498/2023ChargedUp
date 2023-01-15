@@ -32,7 +32,11 @@ public class Vision extends SubsystemBase {
       new Pair<PhotonCamera, Transform3d>(camera, VisionConstants.robotToCamera)
       ));
   }
-
+  /**
+   * gives you the current estimate of your field pose
+   * @return
+   * your current pose estimate
+   */
   public Pair<Pose2d,Double> getCurrentPoseEstimate() {
     return currentFieldPose;
   }
