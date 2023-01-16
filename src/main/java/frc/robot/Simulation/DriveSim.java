@@ -37,9 +37,9 @@ public class DriveSim {
 
     private AHRS gyro;
     private AHRSSim gyroSim;
-
+Conversions conversions;
     //drivetrain sim object
-    Conversions conversions;
+    
     private DifferentialDrivetrainSim drivetrainSim  = new DifferentialDrivetrainSim(
         DCMotor.getFalcon500(2),//2 Falcon 500s on each side of the robot
         DriveConstants.gearRatio,//gear ratio between the wheels and the encoder on the robot
@@ -61,16 +61,16 @@ public class DriveSim {
          */
     public DriveSim(WPI_TalonFX Front_left_Motor, WPI_TalonFX Front_Right_Motor, AHRS gyro){
 
-        leftMotor = Front_left_Motor;
-        rightMotor = Front_Right_Motor;
+        this.leftMotor = Front_left_Motor;
+        this.rightMotor = Front_Right_Motor;
         
-        rightSim = rightMotor.getSimCollection();
-        leftSim = leftMotor.getSimCollection();
+        this.rightSim = rightMotor.getSimCollection();
+        this.leftSim = leftMotor.getSimCollection();
 
         this.gyro = gyro;
-        gyroSim = new AHRSSim();
+        this.gyroSim = new AHRSSim();
 
-        SimOdometry = new DifferentialDriveOdometry(gyro.getRotation2d(), 0, 0, startPose2d);
+        this.SimOdometry = new DifferentialDriveOdometry(gyro.getRotation2d(), 0, 0, startPose2d);
         
         field2d.setRobotPose(startPose2d);
     }
@@ -86,6 +86,7 @@ public class DriveSim {
      * runs the DrivetrainSimulation
      */
     public void run() {
+        conversions = new Conversions();
         drivetrainSim.setInputs(-leftSim.getMotorOutputLeadVoltage(), rightSim.getMotorOutputLeadVoltage());
 
         drivetrainSim.update(0.02);
