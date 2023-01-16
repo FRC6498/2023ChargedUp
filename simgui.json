@@ -1,22 +1,5 @@
 {
   "HALProvider": {
-    "Other Devices": {
-      "Talon FX[1]": {
-        "header": {
-          "open": true
-        }
-      },
-      "Talon FX[1]/Integrated Sensor": {
-        "header": {
-          "open": true
-        }
-      },
-      "Talon FX[3]": {
-        "header": {
-          "open": true
-        }
-      }
-    },
     "RoboRIO": {
       "3.3V Rail": {
         "open": true
@@ -29,6 +12,9 @@
       },
       "RoboRIO Input": {
         "open": true
+      },
+      "window": {
+        "visible": true
       }
     }
   },
@@ -41,6 +27,7 @@
       "/SmartDashboard/Field": {
         "units": "meters",
         "window": {
+          "name": "field",
           "visible": true
         }
       }
@@ -68,9 +55,14 @@
   "NetworkTables Info": {
     "Clients": {
       "open": true
+    },
+    "Connections": {
+      "open": true
+    },
+    "Server": {
+      "Subscribers": {
+        "open": true
+      }
     }
-  },
-  "NetworkTables View": {
-    "visible": false
   }
 }

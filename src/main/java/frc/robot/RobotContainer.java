@@ -18,7 +18,7 @@ public class RobotContainer {
   Drive driveSub = new Drive(visionSub::getCurrentPoseEstimate);
 
   public RobotContainer() {
-    driveSub.setDefaultCommand(Commands.run(() -> driveSub.ArcadeDrive(controller.getLeftX(), controller.getRightTriggerAxis() - controller.getLeftTriggerAxis()), driveSub));
+    driveSub.setDefaultCommand(Commands.run(() -> driveSub.ArcadeDrive(-controller.getLeftX(), controller.getRightTriggerAxis() - controller.getLeftTriggerAxis()), driveSub));
     configureBindings();
   }
 
