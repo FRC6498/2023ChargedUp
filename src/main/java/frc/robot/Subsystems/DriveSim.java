@@ -5,10 +5,9 @@
 package frc.robot.Subsystems;
 
 import com.ctre.phoenix.motorcontrol.TalonFXSimCollection;
-import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
-import com.ctre.phoenix.sensors.BasePigeonSimCollection;
-import com.ctre.phoenix.sensors.WPI_Pigeon2;
+import com.kauailabs.navx.frc.AHRS;
+import com.kauailabs.navx.frc.AHRSSim;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -23,15 +22,15 @@ import frc.robot.Constants.DriveConstants;
 /** Add your docs here. */
 public class DriveSim {
     private WPI_TalonFX rightMotor, leftMotor;
-    private WPI_Pigeon2 pigeon;
 
     private TalonFXSimCollection leftSim, rightSim;
-
-    private BasePigeonSimCollection pigeonSim;
 
     private Field2d field2d = new Field2d();
     private DifferentialDriveOdometry SimOdometry;
     private Pose2d startPose2d = new Pose2d(5.0, 5.0, new Rotation2d(45.0));
+
+    private AHRS gyro;
+    private AHRSSim gyroSim;
 
     private DifferentialDrivetrainSim drivetrainSim  = new DifferentialDrivetrainSim(
         DCMotor.getFalcon500(
@@ -43,16 +42,17 @@ public class DriveSim {
         0.546, 
         null);
         //TODO:change Simulation gyro from pidgeon to Navx to match actuall robot
-    public DriveSim(WPI_TalonFX Front_left_Motor, WPI_TalonFX Front_Right_Motor, WPI_Pigeon2 pigeon2){
+    public DriveSim(WPI_TalonFX Front_left_Motor, WPI_TalonFX Front_Right_Motor, AHRS gyro){
         leftMotor = Front_left_Motor;
         rightMotor = Front_Right_Motor;
-        pigeon = pigeon2;
         
         rightSim = rightMotor.getSimCollection();
         leftSim = leftMotor.getSimCollection();
-        pigeonSim = pigeon.getSimCollection();
 
-        SimOdometry = new DifferentialDriveOdometry(pigeon.getRotation2d(), 0, 0, startPose2d);
+        this.gyro = gyro;
+        gyroSim = new AHRSSim();
+
+        SimOdometry = new DifferentialDriveOdometry(gyro.getRotation2d(), 0, 0, startPose2d);
         
         field2d.setRobotPose(startPose2d);
     }
@@ -77,10 +77,10 @@ public class DriveSim {
         rightSim.setIntegratedSensorVelocity(
             velocityToNativeUnits(drivetrainSim.getRightVelocityMetersPerSecond())
         );
-        pigeonSim.setRawHeading(drivetrainSim.getHeading().getDegrees());
+        gyroSim.setYaw(drivetrainSim.getHeading().getDegrees());
 
         SimOdometry.update(
-        pigeon.getRotation2d(), 
+        gyro.getRotation2d(), 
         nativeUnitsToDistanceMeters(leftMotor.getSelectedSensorPosition()),
         nativeUnitsToDistanceMeters(rightMotor.getSelectedSensorPosition())
         );
@@ -89,7 +89,7 @@ public class DriveSim {
         SmartDashboard.putData("Field", field2d);
         SmartDashboard.putNumber("Odometry X", SimOdometry.getPoseMeters().getX());
         SmartDashboard.putNumber("Odometry Y", SimOdometry.getPoseMeters().getY());
-        SmartDashboard.putNumber("Rotation", pigeon.getRotation2d().getDegrees());
+        SmartDashboard.putNumber("Rotation", gyro.getRotation2d().getDegrees());
     }
 
     public int distanceToNativeUnits(double positionMeters){

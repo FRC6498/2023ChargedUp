@@ -6,10 +6,8 @@ package frc.robot.Subsystems;
 //#region imports
 import java.util.function.Supplier;
 
-import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.InvertType;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
-import com.ctre.phoenix.sensors.WPI_Pigeon2;
 import com.kauailabs.navx.frc.AHRS;
 
 import edu.wpi.first.math.Pair;
@@ -51,8 +49,7 @@ public class Drive extends SubsystemBase {
   DoubleSolenoid shifter = new DoubleSolenoid(PneumaticsModuleType.REVPH, DriveConstants.Shifter_Forward_Channel, DriveConstants.Shifter_Reverse_Channel);
   public int ShifterPosition;
   //Simulation Stuff
-  WPI_Pigeon2 pidgeon = new WPI_Pigeon2(6);
-  DriveSim driveSim = new DriveSim(Left_Front, Right_Front, pidgeon);
+  DriveSim driveSim = new DriveSim(Left_Front, Right_Front, gyro);
   //#endregion
   
   public Drive(Supplier<Pair<Pose2d, Double>> visionPoseSupplier) {

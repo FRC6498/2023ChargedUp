@@ -2,8 +2,6 @@ package frc.robot;
 
 import java.util.List;
 
-import com.kauailabs.navx.frc.AHRS;
-
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.VecBuilder;
