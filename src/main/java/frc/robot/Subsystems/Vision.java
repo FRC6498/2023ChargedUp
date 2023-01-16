@@ -17,20 +17,22 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj.Timer;
 
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.VisionConstants;
+import frc.robot.Simulation.VisionSim;
 
-public class Vision extends SubsystemBase {
+public class Vision {
   PhotonCamera camera;
   RobotPoseEstimator poseEstimator;
   Pair<Pose2d, Double> currentFieldPose;
-  /** Creates a new Vision. */
+  VisionSim visionSim;
 
   public Vision() {
     camera = new PhotonCamera(VisionConstants.cameraName);
     poseEstimator = new RobotPoseEstimator(VisionConstants.tagLayout, PoseStrategy.AVERAGE_BEST_TARGETS, List.of(
       new Pair<PhotonCamera, Transform3d>(camera, VisionConstants.robotToCamera)
-      ));
+      )
+    );
+    visionSim = new VisionSim();
   }
   /**
    * gives you the current estimate of your field pose
@@ -41,7 +43,6 @@ public class Vision extends SubsystemBase {
     return currentFieldPose;
   }
   
-  @Override
   public void periodic() {
     // This method will be called once per scheduler run
     Optional<Pair<Pose3d,Double>> poseResult = poseEstimator.update();

@@ -70,5 +70,12 @@ public class Constants {
             new Rotation3d(0, 0, 0)
         );
         
+        public static final double camDiagFOV = 95.0;
+        public static final double camPitch = robotToCamera.getRotation().getX();
+        public static final double camHeight = robotToCamera.getTranslation().getZ();
+        public static final double maxLEDRange = 0;
+        public static final int camResolutionWidth = 1280;
+        public static final int camResolutionHeight = 720;
+        public static final double minTargetArea = 10;
     }
 }

@@ -15,7 +15,7 @@ public class RobotContainer {
 
   public CommandXboxController controller = new CommandXboxController(OperatorConstants.Driver_Controller_ID);
   Vision visionSub = new Vision();
-  Drive driveSub = new Drive(visionSub::getCurrentPoseEstimate);
+  Drive driveSub = new Drive(visionSub);
 
   public RobotContainer() {
     driveSub.setDefaultCommand(Commands.run(() -> driveSub.ArcadeDrive(-controller.getLeftX(), controller.getRightTriggerAxis() - controller.getLeftTriggerAxis()), driveSub));

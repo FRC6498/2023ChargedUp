@@ -4,13 +4,10 @@
 
 package frc.robot.Subsystems;
 //#region imports
-import java.util.function.Supplier;
-
 import com.ctre.phoenix.motorcontrol.InvertType;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.kauailabs.navx.frc.AHRS;
 
-import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -34,25 +31,22 @@ public class Drive extends SubsystemBase {
   WPI_TalonFX Right_Front = new WPI_TalonFX(DriveConstants.Right_Front_ID);
   WPI_TalonFX Left_Back = new WPI_TalonFX(DriveConstants.Left_Back_ID);
   WPI_TalonFX Right_Back = new WPI_TalonFX(DriveConstants.Right_Back_ID);
-
   MotorControllerGroup LeftMCG = new MotorControllerGroup(Left_Front, Left_Back);
   MotorControllerGroup RightMCG = new MotorControllerGroup(Right_Front, Right_Back);
-
   DifferentialDrive diffDrive = new DifferentialDrive(LeftMCG, RightMCG);
 
   AHRS gyro = new AHRS();
-  
-  
+
+  Vision vision;
 
   DifferentialDrivePoseEstimator poseEstimator = new DifferentialDrivePoseEstimator(new DifferentialDriveKinematics(DriveConstants.trackwidthMeters), new Rotation2d(), getLeftDistanceMeters(), getRightDistanceMeters(), new Pose2d());
-  Supplier<Pair<Pose2d,Double>> visionPose;
   DoubleSolenoid shifter = new DoubleSolenoid(PneumaticsModuleType.REVPH, DriveConstants.Shifter_Forward_Channel, DriveConstants.Shifter_Reverse_Channel);
   public int ShifterPosition;
   //Simulation Stuff
   DriveSim driveSim = new DriveSim(Left_Front, Right_Front, gyro);
   //#endregion
   
-  public Drive(Supplier<Pair<Pose2d, Double>> visionPoseSupplier) {
+  public Drive(Vision vision) {
 
     ShifterPosition = 1;
 
@@ -68,7 +62,7 @@ public class Drive extends SubsystemBase {
    Right_Back.setInverted(InvertType.FollowMaster);
     
 
-    visionPose = visionPoseSupplier;
+    this.vision = vision;
     gyro.calibrate();
   }
   /**
@@ -146,16 +140,20 @@ public class Drive extends SubsystemBase {
   public void periodic() {
     poseEstimator.update(gyro.getRotation2d(), getRightDistanceMeters(), getLeftDistanceMeters());
     // if we see targets
-    if (visionPose.get().getFirst() != null) {
+    if (vision.currentFieldPose.getFirst() != null) {
       // if the pose is reasonably close
-      if (visionPose.get().getFirst().getTranslation().getDistance(poseEstimator.getEstimatedPosition().getTranslation()) < 1.5) {
-        poseEstimator.addVisionMeasurement(visionPose.get().getFirst(), visionPose.get().getSecond());
+      if (vision.currentFieldPose.getFirst().getTranslation().getDistance(poseEstimator.getEstimatedPosition().getTranslation()) < 1.5) {
+        poseEstimator.addVisionMeasurement(vision.currentFieldPose.getFirst(), vision.currentFieldPose.getSecond());
       }
     }
+
+    vision.periodic();
   }
+
   public void simulationPeriodic() {
     driveSim.run();
+    vision.visionSim.setRobotPose(poseEstimator.getEstimatedPosition());
+    vision.visionSim.run();
   }
- 
   
 }
