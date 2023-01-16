@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Subsystems.Drive;
 import frc.robot.Subsystems.Vision;
+import io.github.oblarg.oblog.Logger;
 
 public class RobotContainer {
 
@@ -18,6 +19,7 @@ public class RobotContainer {
   Drive driveSub = new Drive(visionSub);
 
   public RobotContainer() {
+    Logger.configureLoggingAndConfig(this, false);
     driveSub.setDefaultCommand(Commands.run(() -> driveSub.ArcadeDrive(-controller.getLeftX(), controller.getRightTriggerAxis() - controller.getLeftTriggerAxis()), driveSub));
     configureBindings();
   }
