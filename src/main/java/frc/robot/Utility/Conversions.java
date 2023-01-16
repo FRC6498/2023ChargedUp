@@ -16,6 +16,9 @@ public class Conversions {
     * @return
     * meters -> ticks
     */
+    public Conversions() {
+      
+    }
     public int distanceToNativeUnits(double positionMeters){
 		double wheelRotations = positionMeters/(2 * Math.PI * Units.inchesToMeters(3));
 		double motorRotations = wheelRotations * DriveConstants.gearRatio;
