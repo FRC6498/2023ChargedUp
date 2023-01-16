@@ -140,20 +140,17 @@ public class Drive extends SubsystemBase {
   public void periodic() {
     poseEstimator.update(gyro.getRotation2d(), getRightDistanceMeters(), getLeftDistanceMeters());
     // if we see targets
-    if (vision.currentFieldPose.getFirst() != null) {
+    if (vision.getCurrentPoseEstimate().isPresent()) {
       // if the pose is reasonably close
-      if (vision.currentFieldPose.getFirst().getTranslation().getDistance(poseEstimator.getEstimatedPosition().getTranslation()) < 1.5) {
-        poseEstimator.addVisionMeasurement(vision.currentFieldPose.getFirst(), vision.currentFieldPose.getSecond());
+      if (vision.getCurrentPoseEstimate().get().getFirst().getTranslation().getDistance(poseEstimator.getEstimatedPosition().getTranslation()) < 1.5) {
+        poseEstimator.addVisionMeasurement(vision.getCurrentPoseEstimate().get().getFirst(), vision.getCurrentPoseEstimate().get().getSecond());
       }
     }
-
-    vision.periodic();
   }
 
   public void simulationPeriodic() {
     driveSim.run();
-    vision.visionSim.setRobotPose(poseEstimator.getEstimatedPosition());
-    vision.visionSim.run();
+    vision.setSimPose(poseEstimator.getEstimatedPosition());
   }
   
 }

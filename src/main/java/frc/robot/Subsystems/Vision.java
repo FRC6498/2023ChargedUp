@@ -16,15 +16,14 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj.Timer;
-
 import frc.robot.Constants.VisionConstants;
 import frc.robot.Simulation.VisionSim;
 
 public class Vision {
-  PhotonCamera camera;
-  RobotPoseEstimator poseEstimator;
-  Pair<Pose2d, Double> currentFieldPose;
-  VisionSim visionSim;
+  private PhotonCamera camera;
+  private RobotPoseEstimator poseEstimator;
+  private Optional<Pair<Pose2d, Double>> currentFieldPose;
+  private VisionSim visionSim;
 
   public Vision() {
     camera = new PhotonCamera(VisionConstants.cameraName);
@@ -33,23 +32,29 @@ public class Vision {
       )
     );
     visionSim = new VisionSim();
+    currentFieldPose = Optional.empty();
   }
   /**
    * gives you the current estimate of your field pose
    * @return
    * your current pose estimate
    */
-  public Pair<Pose2d,Double> getCurrentPoseEstimate() {
+  public Optional<Pair<Pose2d,Double>> getCurrentPoseEstimate() {
     return currentFieldPose;
+  }
+
+  public void setSimPose(Pose2d pose) {
+    visionSim.setRobotPose(pose);
   }
   
   public void periodic() {
     // This method will be called once per scheduler run
     Optional<Pair<Pose3d,Double>> poseResult = poseEstimator.update();
     if (poseResult.isPresent()) {
-      currentFieldPose = new Pair<Pose2d, Double>(poseResult.get().getFirst().toPose2d(), Timer.getFPGATimestamp() - poseResult.get().getSecond());
+      currentFieldPose = Optional.of(new Pair<Pose2d, Double>(poseResult.get().getFirst().toPose2d(), Timer.getFPGATimestamp() - poseResult.get().getSecond()));
     } else {
-      currentFieldPose = new Pair<Pose2d,Double>(null, 0.0);
+      currentFieldPose = Optional.empty();
     }
+    visionSim.run();
   }
 }

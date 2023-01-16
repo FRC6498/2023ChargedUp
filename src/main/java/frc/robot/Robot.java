@@ -17,6 +17,7 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     m_robotContainer = new RobotContainer();
+    addPeriodic(m_robotContainer.visionSub::periodic, kDefaultPeriod);
   }
 
   @Override
