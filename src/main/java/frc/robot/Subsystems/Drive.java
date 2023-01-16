@@ -3,35 +3,36 @@
 // the WPILib BSD license file in the root directory of this project.
 
 package frc.robot.Subsystems;
-
+//#region imports
 import java.util.function.Supplier;
 
+import com.ctre.phoenix.motorcontrol.FeedbackDevice;
+import com.ctre.phoenix.motorcontrol.InvertType;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
+import com.ctre.phoenix.sensors.WPI_Pigeon2;
 import com.kauailabs.navx.frc.AHRS;
-
 
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
-
-
 import edu.wpi.first.wpilibj.DoubleSolenoid;
-import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
-
+import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DriveConstants;
+//#endregion
 
 public class Drive extends SubsystemBase {
   /** Creates a new Drive. */
 
-  WPI_TalonFX Left_Front = new WPI_TalonFX(DriveConstants.Left_Front_ID);
+  //#region declarations
+ public  WPI_TalonFX Left_Front = new WPI_TalonFX(DriveConstants.Left_Front_ID);
   WPI_TalonFX Right_Front = new WPI_TalonFX(DriveConstants.Right_Front_ID);
   WPI_TalonFX Left_Back = new WPI_TalonFX(DriveConstants.Left_Back_ID);
   WPI_TalonFX Right_Back = new WPI_TalonFX(DriveConstants.Right_Back_ID);
@@ -39,21 +40,36 @@ public class Drive extends SubsystemBase {
   MotorControllerGroup LeftMCG = new MotorControllerGroup(Left_Front, Left_Back);
   MotorControllerGroup RightMCG = new MotorControllerGroup(Right_Front, Right_Back);
 
-  AHRS gyro = new AHRS();
   DifferentialDrive diffDrive = new DifferentialDrive(LeftMCG, RightMCG);
+
+  AHRS gyro = new AHRS();
+  
+  
 
   DifferentialDrivePoseEstimator poseEstimator = new DifferentialDrivePoseEstimator(new DifferentialDriveKinematics(DriveConstants.trackwidthMeters), new Rotation2d(), getLeftDistanceMeters(), getRightDistanceMeters(), new Pose2d());
   Supplier<Pair<Pose2d,Double>> visionPose;
   DoubleSolenoid shifter = new DoubleSolenoid(PneumaticsModuleType.REVPH, DriveConstants.Shifter_Forward_Channel, DriveConstants.Shifter_Reverse_Channel);
   public int ShifterPosition;
-
+  //Simulation Stuff
+  WPI_Pigeon2 pidgeon = new WPI_Pigeon2(6);
+  DriveSim driveSim = new DriveSim(Left_Front, Right_Front, pidgeon);
+  //#endregion
+  
   public Drive(Supplier<Pair<Pose2d, Double>> visionPoseSupplier) {
+
     ShifterPosition = 1;
 
     Left_Front.configFactoryDefault();
     Right_Front.configFactoryDefault();
     Left_Back.configFactoryDefault();
     Right_Back.configFactoryDefault();
+
+    Left_Back.follow(Left_Front);
+    Right_Back.follow(Right_Front);
+
+   Left_Back.setInverted(InvertType.FollowMaster);
+   Right_Back.setInverted(InvertType.FollowMaster);
+    
 
     visionPose = visionPoseSupplier;
     gyro.calibrate();
@@ -125,6 +141,9 @@ public class Drive extends SubsystemBase {
   private double getRightDistanceMeters() {
     return Right_Front.getSelectedSensorPosition() * DriveConstants.distancePerTickMeters;
   }
+  public Rotation2d getGyroAngle() {
+    return gyro.getRotation2d();
+  }
 
   @Override
   public void periodic() {
@@ -136,6 +155,10 @@ public class Drive extends SubsystemBase {
         poseEstimator.addVisionMeasurement(visionPose.get().getFirst(), visionPose.get().getSecond());
       }
     }
-
   }
+  public void simulationPeriodic() {
+    driveSim.run();
+  }
+ 
+  
 }
