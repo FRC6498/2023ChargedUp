@@ -14,6 +14,7 @@ import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.VisionConstants;
+import frc.robot.Utility.NTHelper;
 
 public class Vision extends SubsystemBase {
   PhotonCamera camera;
@@ -24,6 +25,7 @@ public class Vision extends SubsystemBase {
   public Vision() {
     camera = new PhotonCamera(VisionConstants.cameraName);
     poseEstimator = new PhotonPoseEstimator(VisionConstants.tagLayout, PoseStrategy.CLOSEST_TO_REFERENCE_POSE, camera, VisionConstants.robotToCamera);
+    NTHelper.sendTagLayout(VisionConstants.tagLayout);
   }
 
   /**
