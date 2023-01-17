@@ -4,9 +4,6 @@ import java.util.List;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.geometry.CoordinateAxis;
-import edu.wpi.first.math.geometry.CoordinateSystem;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -14,7 +11,6 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 
 public class Constants {
@@ -46,10 +42,11 @@ public class Constants {
     public static final class VisionConstants {
         // TODO: set camera name based on the actual camera name
         public static final String cameraName = "visionCam";
-        private static final double fieldLength = Units.feetToMeters(54);
-        private static final double fieldWidth = Units.feetToMeters(26);
+        private static final double fieldLength = Units.inchesToMeters((54*12) + 3.25);
+        private static final double fieldWidth = Units.inchesToMeters((26*12) + 3.5);
+        // TODO: measure origin to x translation
         private static final Translation2d originToX = new Translation2d(0, 0);
-        // TODO: find a way to reduce hypotenuse to x and y coords
+        // TODO: handle alliance switching
         public static final AprilTagFieldLayout tagLayout = new AprilTagFieldLayout(
             List.of(
               new AprilTag(1, createTagPose(Units.inchesToMeters(440.625), Rotation2d.fromDegrees(63), Units.inchesToMeters(23.75))),//new Pose3d(0, 0, Units.inchesToMeters(23.75), new Rotation3d(VecBuilder.fill(0, 0, 1), 0))),
@@ -62,10 +59,7 @@ public class Constants {
         );
 
         // TODO: fill out robotToCamera transform once robot is designed
-        public static final Transform3d robotToCamera = new Transform3d(
-            new Translation3d(0, null), 
-            new Rotation3d(0, 0, 0)
-        );
+        public static final Transform3d robotToCamera = new Transform3d();
 
         private static Pose3d createTagPose(double distanceMeters, Rotation2d measuredAngle, double heightMeters) {
             // Step 1.start at origin
@@ -75,10 +69,11 @@ public class Constants {
             Pose2d center = originPose.transformBy(new Transform2d(originToX, new Rotation2d()));
             // Step 3. rotate tag angle to new coord system
             Rotation2d angleToTag = Rotation2d.fromDegrees((measuredAngle.getDegrees() - 90) * -1);
-            // Step 4. find and apply translation to tag
+            // Step 4. find and apply translation to tag (on ground)
             Pose2d tagPose = center.transformBy(new Transform2d(new Translation2d(distanceMeters, angleToTag), new Rotation2d()));
-            // move up 
+            // Step 5. move pose up to tag height
             Pose3d tagPose3d = new Pose3d(tagPose.getX(), tagPose.getY(), heightMeters, new Rotation3d());
+            // Done!
             return tagPose3d;
         }
     }
