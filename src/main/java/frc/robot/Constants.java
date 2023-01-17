@@ -5,9 +5,15 @@ import java.util.List;
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.CoordinateAxis;
+import edu.wpi.first.math.geometry.CoordinateSystem;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 
@@ -42,23 +48,38 @@ public class Constants {
         public static final String cameraName = "visionCam";
         private static final double fieldLength = Units.feetToMeters(54);
         private static final double fieldWidth = Units.feetToMeters(26);
+        private static final Translation2d originToX = new Translation2d(0, 0);
         // TODO: find a way to reduce hypotenuse to x and y coords
         public static final AprilTagFieldLayout tagLayout = new AprilTagFieldLayout(
             List.of(
-              new AprilTag(1, new Pose3d(0, 0, Units.inchesToMeters(23.75), new Rotation3d(VecBuilder.fill(0, 0, 1), 0))),
-              new AprilTag(2, new Pose3d(0, 0, Units.inchesToMeters(51.5), new Rotation3d(VecBuilder.fill(0, 0, 1), 0))),
-              new AprilTag(3, new Pose3d(0, 0, Units.inchesToMeters(26.25), new Rotation3d(VecBuilder.fill(0, 0, 1), 0))),
-              new AprilTag(4, new Pose3d(0, 0, Units.inchesToMeters(52.75), new Rotation3d(VecBuilder.fill(0, 0, 1), 0))),
-              new AprilTag(5, new Pose3d(0, 0, Units.inchesToMeters(44), new Rotation3d(VecBuilder.fill(0, 0, 1), 0))),
-              new AprilTag(6, new Pose3d(0, 0, Units.inchesToMeters(57.0625), new Rotation3d(VecBuilder.fill(0, 0, 1), 0))),
-              new AprilTag(7, new Pose3d(0, 0, Units.inchesToMeters(43), new Rotation3d(VecBuilder.fill(0, 0, 1), 0))),
-              new AprilTag(8, new Pose3d(0, 0, Units.inchesToMeters(58.875), new Rotation3d(VecBuilder.fill(0, 0, 1), 0)))
+              new AprilTag(1, createTagPose(Units.inchesToMeters(440.625), Rotation2d.fromDegrees(63), Units.inchesToMeters(23.75))),//new Pose3d(0, 0, Units.inchesToMeters(23.75), new Rotation3d(VecBuilder.fill(0, 0, 1), 0))),
+              new AprilTag(2, createTagPose(Units.inchesToMeters(370), Rotation2d.fromDegrees(123), Units.inchesToMeters(51.5))),
+              new AprilTag(3, createTagPose(Units.inchesToMeters(484.625), Rotation2d.fromDegrees(91), Units.inchesToMeters(26.25))),
+              new AprilTag(5, createTagPose(Units.inchesToMeters(271), Rotation2d.fromDegrees(33), Units.inchesToMeters(44))),
+              new AprilTag(6, createTagPose(Units.inchesToMeters(273), Rotation2d.fromDegrees(302), Units.inchesToMeters(57.0625))),
+              new AprilTag(7, createTagPose(Units.inchesToMeters(211.5), Rotation2d.fromDegrees(0), Units.inchesToMeters(43)))
             ), VisionConstants.fieldLength, VisionConstants.fieldWidth
         );
+
         // TODO: fill out robotToCamera transform once robot is designed
         public static final Transform3d robotToCamera = new Transform3d(
             new Translation3d(0, null), 
             new Rotation3d(0, 0, 0)
         );
+
+        private static Pose3d createTagPose(double distanceMeters, Rotation2d measuredAngle, double heightMeters) {
+            // Step 1.start at origin
+            Pose2d originPose = new Pose2d();
+            // Step 2.  translate to measurement point
+            // at x, facing away on long axis
+            Pose2d center = originPose.transformBy(new Transform2d(originToX, new Rotation2d()));
+            // Step 3. rotate tag angle to new coord system
+            Rotation2d angleToTag = Rotation2d.fromDegrees((measuredAngle.getDegrees() - 90) * -1);
+            // Step 4. find and apply translation to tag
+            Pose2d tagPose = center.transformBy(new Transform2d(new Translation2d(distanceMeters, angleToTag), new Rotation2d()));
+            // move up 
+            Pose3d tagPose3d = new Pose3d(tagPose.getX(), tagPose.getY(), heightMeters, new Rotation3d());
+            return tagPose3d;
+        }
     }
 }
