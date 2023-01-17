@@ -46,8 +46,11 @@ public class Drive extends SubsystemBase {
   DifferentialDrivePoseEstimator poseEstimator = new DifferentialDrivePoseEstimator(new DifferentialDriveKinematics(DriveConstants.trackwidthMeters), new Rotation2d(), getLeftDistanceMeters(), getRightDistanceMeters(), new Pose2d());
   Supplier<EstimatedRobotPose> visionPose;
   DoubleSolenoid shifter = new DoubleSolenoid(PneumaticsModuleType.REVPH, DriveConstants.Shifter_Forward_Channel, DriveConstants.Shifter_Reverse_Channel);
+  public int ShifterPosition;
 
   public Drive(Supplier<EstimatedRobotPose> visionPoseSupplier) {
+    ShifterPosition = 1;
+
 
     Left_Front.configFactoryDefault();
     Right_Front.configFactoryDefault();
@@ -67,34 +70,60 @@ public class Drive extends SubsystemBase {
   public void ArcadeDrive(double throttle, double turn) {
     diffDrive.arcadeDrive(throttle, turn, true);
   }
-
+  /**
+   * shifts the gears in the drive gearbox
+   */
   public void Shift() {
-     switch (shifter.get()) {
-      case kForward:
+     switch (ShifterPosition) {
+      case 1:
           shifter.set(Value.kReverse);
+          ShifterPosition =2;
         break;
 
-      case kReverse:
+      case 2:
         shifter.set(Value.kForward);
+        ShifterPosition =1;
         break;
 
       default:
       shifter.set(Value.kForward);
+      ShifterPosition = 1;
         break;
     }
   }
-
+  /**
+   * Command to drive the robot
+   * @param throttle
+   * % of total forward motor power
+   * @param turn
+   * % of total turning power
+   * @return
+   * Command to drive the robot
+   */
   public Command ArcadeDriveC(double throttle, double turn) {
     return Commands.run(()-> this.ArcadeDrive(throttle, turn), this);
   }
+  /**
+   * command that shifts the gears on the robot
+   * @return
+   * command that shifts the gears on the robot
+   */
   public Command ShiftC() {
     return Commands.runOnce(() -> this.Shift(), this);
   }
-
+  /**
+   * gets the distance that the right side of the robot traveled in meters 
+   * @return
+   * the distance the right side of the robot has traveled
+   */
   private double getLeftDistanceMeters() {
     return Left_Front.getSelectedSensorPosition() * DriveConstants.distancePerTickMeters;
   }
-
+  /**
+   * gets the distance that the right side of the robot traveled in meters 
+   * @return
+   * the distance the right side of the robot has traveled
+   */
   private double getRightDistanceMeters() {
     return Right_Front.getSelectedSensorPosition() * DriveConstants.distancePerTickMeters;
   }

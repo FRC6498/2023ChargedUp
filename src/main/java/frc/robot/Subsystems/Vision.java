@@ -26,6 +26,11 @@ public class Vision extends SubsystemBase {
     poseEstimator = new PhotonPoseEstimator(VisionConstants.tagLayout, PoseStrategy.CLOSEST_TO_REFERENCE_POSE, camera, VisionConstants.robotToCamera);
   }
 
+  /**
+   * gives you the current estimate of your field pose
+   * @return
+   * your current pose estimate
+   */
   public EstimatedRobotPose getCurrentPoseEstimate() {
     return currentFieldPose;
   }
