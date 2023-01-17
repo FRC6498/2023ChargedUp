@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -26,7 +27,8 @@ public class RobotContainer {
 
   private void configureBindings() {
     //shifts gears
-    controller.a().onTrue(Commands.runOnce(driveSub::ShiftC, driveSub));
+    controller.a().onTrue(Commands.runOnce(() -> driveSub.Shift(), driveSub));
+
   }
 
   public Command getAutonomousCommand() {

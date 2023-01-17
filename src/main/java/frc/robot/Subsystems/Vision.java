@@ -55,6 +55,6 @@ public class Vision {
     } else {
       currentFieldPose = Optional.empty();
     }
-    visionSim.run();
+    //visionSim.run();
   }
 }

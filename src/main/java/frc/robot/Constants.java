@@ -34,7 +34,7 @@ public class Constants {
         public static final double distancePerTickMeters = 2048.0 * gearRatio * Math.PI * wheelDiameterMeters;
         public static final double trackwidthMeters = 1.0;
        
-        public static final int Shifter_Forward_Channel = 0;
+        public static final int Shifter_Forward_Channel = 1;
         public static final int Shifter_Reverse_Channel = 1;
 
     }
