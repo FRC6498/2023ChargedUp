@@ -11,6 +11,7 @@ import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.VisionConstants;
@@ -24,6 +25,13 @@ public class Vision extends SubsystemBase {
 
   public Vision() {
     camera = new PhotonCamera(VisionConstants.cameraName);
+    //AprilTagFieldLayout layout = new AprilTagFieldLayout(List.of(), 0, 0);
+    //try {
+    //  layout = AprilTagFieldLayout.loadFromResource(AprilTagFields.k2023ChargedUp.m_resourceFile);
+    //} catch (IOException ioe) {
+    //  DriverStation.reportError(ioe.getMessage(), ioe.getStackTrace());
+    //}
+    //poseEstimator = new PhotonPoseEstimator(layout, PoseStrategy.CLOSEST_TO_REFERENCE_POSE, camera, VisionConstants.robotToCamera);
     poseEstimator = new PhotonPoseEstimator(VisionConstants.tagLayout, PoseStrategy.CLOSEST_TO_REFERENCE_POSE, camera, VisionConstants.robotToCamera);
     NTHelper.sendTagLayout(VisionConstants.tagLayout);
   }
@@ -35,6 +43,10 @@ public class Vision extends SubsystemBase {
    */
   public EstimatedRobotPose getCurrentPoseEstimate() {
     return currentFieldPose;
+  }
+
+  public void setReferencePose(Pose2d pose) {
+    poseEstimator.setReferencePose(pose);
   }
   
   @Override
