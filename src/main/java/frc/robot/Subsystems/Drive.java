@@ -6,11 +6,12 @@ package frc.robot.Subsystems;
 
 import java.util.function.Supplier;
 
+import org.photonvision.EstimatedRobotPose;
+
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.kauailabs.navx.frc.AHRS;
 
 
-import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -43,12 +44,13 @@ public class Drive extends SubsystemBase {
   DifferentialDrive diffDrive = new DifferentialDrive(LeftMCG, RightMCG);
 
   DifferentialDrivePoseEstimator poseEstimator = new DifferentialDrivePoseEstimator(new DifferentialDriveKinematics(DriveConstants.trackwidthMeters), new Rotation2d(), getLeftDistanceMeters(), getRightDistanceMeters(), new Pose2d());
-  Supplier<Pair<Pose2d,Double>> visionPose;
+  Supplier<EstimatedRobotPose> visionPose;
   DoubleSolenoid shifter = new DoubleSolenoid(PneumaticsModuleType.REVPH, DriveConstants.Shifter_Forward_Channel, DriveConstants.Shifter_Reverse_Channel);
   public int ShifterPosition;
 
-  public Drive(Supplier<Pair<Pose2d, Double>> visionPoseSupplier) {
+  public Drive(Supplier<EstimatedRobotPose> visionPoseSupplier) {
     ShifterPosition = 1;
+
 
     Left_Front.configFactoryDefault();
     Right_Front.configFactoryDefault();
@@ -130,10 +132,10 @@ public class Drive extends SubsystemBase {
   public void periodic() {
     poseEstimator.update(gyro.getRotation2d(), getRightDistanceMeters(), getLeftDistanceMeters());
     // if we see targets
-    if (visionPose.get().getFirst() != null) {
+    if (visionPose.get().timestampSeconds > 0) {
       // if the pose is reasonably close
-      if (visionPose.get().getFirst().getTranslation().getDistance(poseEstimator.getEstimatedPosition().getTranslation()) < 1.5) {
-        poseEstimator.addVisionMeasurement(visionPose.get().getFirst(), visionPose.get().getSecond());
+      if (visionPose.get().estimatedPose.toPose2d().getTranslation().getDistance(poseEstimator.getEstimatedPosition().getTranslation()) < 1.5) {
+        poseEstimator.addVisionMeasurement(visionPose.get().estimatedPose.toPose2d(), visionPose.get().timestampSeconds);
       }
     }
 
