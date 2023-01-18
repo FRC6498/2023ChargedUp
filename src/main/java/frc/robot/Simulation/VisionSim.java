@@ -25,6 +25,7 @@ public class VisionSim {
         );
 
         visionSystem.addVisionTargets(VisionConstants.tagLayout);
+        robotPose = new Pose2d();
     }
 
     public void setRobotPose(Pose2d pose) {
