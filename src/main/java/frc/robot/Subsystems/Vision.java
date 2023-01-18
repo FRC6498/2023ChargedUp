@@ -12,28 +12,21 @@ import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
-
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.wpilibj.Timer;
+import frc.robot.Robot;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.Simulation.VisionSim;
 
 public class Vision {
   private PhotonCamera camera;
-  private RobotPoseEstimator poseEstimator;
-  private Optional<Pair<Pose2d, Double>> currentFieldPose;
+  private PhotonPoseEstimator poseEstimator;
+  private Optional<EstimatedRobotPose> currentFieldPose;
   private VisionSim visionSim;
 
   public Vision() {
     camera = new PhotonCamera(VisionConstants.cameraName);
-    poseEstimator = new RobotPoseEstimator(VisionConstants.tagLayout, PoseStrategy.AVERAGE_BEST_TARGETS, List.of(
-      new Pair<PhotonCamera, Transform3d>(camera, VisionConstants.robotToCamera)
-      )
-    );
+    poseEstimator = new PhotonPoseEstimator(VisionConstants.tagLayout, PoseStrategy.CLOSEST_TO_REFERENCE_POSE, camera, VisionConstants.robotToCamera);
     visionSim = new VisionSim();
     currentFieldPose = Optional.empty();
-
   }
 
   /**
@@ -42,25 +35,27 @@ public class Vision {
    * your current pose estimate
    */
 
-  public Optional<Pair<Pose2d,Double>> getCurrentPoseEstimate() {
+  public Optional<EstimatedRobotPose> getCurrentPoseEstimate() {
     return currentFieldPose;
   }
 
   public void setSimPose(Pose2d pose) {
     visionSim.setRobotPose(pose);
+  }
 
+  public void setReferencePose(Pose2d pose) {
+    poseEstimator.setReferencePose(pose);
   }
   
-  public void periodic() {
-    // This method will be called once per scheduler run
+  public void run() {
     Optional<EstimatedRobotPose> poseResult = poseEstimator.update();
     if (poseResult.isPresent()) {
-
-      currentFieldPose = Optional.of(new Pair<Pose2d, Double>(poseResult.get().getFirst().toPose2d(), Timer.getFPGATimestamp() - poseResult.get().getSecond()));
+      currentFieldPose = poseResult;
     } else {
       currentFieldPose = Optional.empty();
-
     }
-    //visionSim.run();
+    if (Robot.isSimulation()) {
+      visionSim.run();
+    }
   }
 }

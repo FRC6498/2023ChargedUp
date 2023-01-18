@@ -4,7 +4,6 @@
 
 package frc.robot;
 
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -21,13 +20,13 @@ public class RobotContainer {
 
   public RobotContainer() {
     Logger.configureLoggingAndConfig(this, false);
-    driveSub.setDefaultCommand(Commands.run(() -> driveSub.ArcadeDrive(-controller.getLeftX(), controller.getRightTriggerAxis() - controller.getLeftTriggerAxis()), driveSub));
+    driveSub.setDefaultCommand(driveSub.ArcadeDrive(-controller.getLeftX(), controller.getRightTriggerAxis() - controller.getLeftTriggerAxis()));
     configureBindings();
   }
 
   private void configureBindings() {
     //shifts gears
-    controller.a().onTrue(Commands.runOnce(() -> driveSub.Shift(), driveSub));
+    controller.a().onTrue(driveSub.Shift());
 
   }
 

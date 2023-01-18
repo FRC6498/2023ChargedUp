@@ -6,8 +6,6 @@ package frc.robot.Subsystems;
 
 //#region imports
 import com.ctre.phoenix.motorcontrol.InvertType;
-import java.util.function.Supplier;
-import org.photonvision.EstimatedRobotPose;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
@@ -22,11 +20,9 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Simulation.DriveSim;
-import io.github.oblarg.oblog.annotations.Log;
 //#endregion
 public class Drive extends SubsystemBase {
   /** Creates a new Drive. */
@@ -56,14 +52,9 @@ public class Drive extends SubsystemBase {
   //#endregion
   
   
-  
   public Drive(Vision vision) {
     compressor.enableDigital();
     isHighGear = false;
-  Supplier<EstimatedRobotPose> visionPose;
-  
-  public int ShifterPosition;
-    ShifterPosition = 1;
 
     Left_Front.configFactoryDefault();
     Right_Front.configFactoryDefault();
@@ -73,35 +64,12 @@ public class Drive extends SubsystemBase {
     Left_Back.follow(Left_Front);
     Right_Back.follow(Right_Front);
 
-   Left_Back.setInverted(InvertType.FollowMaster);
-   Right_Back.setInverted(InvertType.FollowMaster);
+    Left_Back.setInverted(InvertType.FollowMaster);
+    Right_Back.setInverted(InvertType.FollowMaster);
     
 
     this.vision = vision;
     gyro.calibrate();
-  }
-  /**
-   * Controls the drive motors on the robot 
-   * @param throttle
-   * forward motor speed (percent)
-   * @param turn
-   * turning motor speed (percent)
-   */
-  public void ArcadeDrive(double throttle, double turn) {
-    diffDrive.arcadeDrive(throttle, turn, true);
-  }
-  /**
-   * shifts the gears in the drive gearbox
-   */
-  public void Shift() {
-     if (isHighGear) {
-      shifter.set(Value.kOff);
-      isHighGear = false;
-     } else {
-      shifter.set(Value.kForward);
-      isHighGear = true;
-     }
-     SmartDashboard.putBoolean("Gear", isHighGear);
   }
   
   /**
@@ -113,15 +81,24 @@ public class Drive extends SubsystemBase {
    * @return
    * Command to drive the robot
    */
-  public Command ArcadeDriveC(double throttle, double turn) {
-    return Commands.run(()-> this.ArcadeDrive(throttle, turn), this);
+  public Command ArcadeDrive(double throttle, double turn) {
+    return run(()-> diffDrive.arcadeDrive(throttle, turn));
   }
   /**
    * @return
    * command that shifts the gears on the robot
    */
-  public Command ShiftC() {
-    return run(this::Shift);
+  public Command Shift() {
+    return runOnce(() -> {
+      if (isHighGear) {
+        shifter.set(Value.kOff);
+        isHighGear = false;
+       } else {
+        shifter.set(Value.kForward);
+        isHighGear = true;
+       }
+       SmartDashboard.putBoolean("Gear", isHighGear);
+    });
   }
   /**
    * gets the distance that the right side of the robot traveled in meters 
@@ -146,13 +123,12 @@ public class Drive extends SubsystemBase {
   @Override
   public void periodic() {
     poseEstimator.update(gyro.getRotation2d(), getRightDistanceMeters(), getLeftDistanceMeters());
+    vision.setReferencePose(poseEstimator.getEstimatedPosition());
     // if we see targets
-
     if (vision.getCurrentPoseEstimate().isPresent()) {
       // if the pose is reasonably close
-      if (vision.getCurrentPoseEstimate().get().getFirst().getTranslation().getDistance(poseEstimator.getEstimatedPosition().getTranslation()) < 1.5) {
-        poseEstimator.addVisionMeasurement(vision.getCurrentPoseEstimate().get().getFirst(), vision.getCurrentPoseEstimate().get().getSecond());
-
+      if (vision.getCurrentPoseEstimate().get().estimatedPose.toPose2d().getTranslation().getDistance(poseEstimator.getEstimatedPosition().getTranslation()) < 1.5) {
+        poseEstimator.addVisionMeasurement(vision.getCurrentPoseEstimate().get().estimatedPose.toPose2d(), vision.getCurrentPoseEstimate().get().timestampSeconds);
       }
     }
   }

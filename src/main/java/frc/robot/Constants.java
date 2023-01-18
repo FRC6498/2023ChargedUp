@@ -13,6 +13,7 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 
 
@@ -82,10 +83,7 @@ public class Constants {
         public static final int camResolutionHeight = 720;
         public static final double minTargetArea = 10;
 
-        public static final Transform3d robotToCamera = new Transform3d();
-
         // TODO: measure origin to x translation
-        private static final Translation2d originToX = new Translation2d(0, new Rotation2d(0));
 
         /**
          * Given measured distance, angle, and orientation from a predefined measurement point in a WNU coordinate system, determine the 3d pose in the WPILib field coordinate system
@@ -95,6 +93,7 @@ public class Constants {
          * @param tagRotation Angle the tag is facing in the XY plane (i.e. a rotation around the Z axis) in the field coordinate system (0 = towards far wall, 90 = towards archery windows, 180 = towards janitor room, 270 = towards bleachers)
          */
         private static Pose3d createTagPose(double distanceInches, Rotation2d measuredAngle, double heightInches, Rotation2d tagRotation) {
+            Translation2d originToX = new Translation2d(0, new Rotation2d(0));
             // Step 1.start at origin
             Pose2d originPose = new Pose2d();
             // Step 2.  translate to measurement point
