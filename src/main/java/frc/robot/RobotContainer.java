@@ -20,13 +20,13 @@ public class RobotContainer {
 
   public RobotContainer() {
     Logger.configureLoggingAndConfig(this, false);
-    driveSub.setDefaultCommand(Commands.run(() -> driveSub.ArcadeDrive(-controller.getLeftX(), controller.getRightTriggerAxis() - controller.getLeftTriggerAxis()), driveSub));
+    driveSub.setDefaultCommand(driveSub.ArcadeDrive(-controller.getLeftX(), controller.getRightTriggerAxis() - controller.getLeftTriggerAxis()));
     configureBindings();
   }
 
   private void configureBindings() {
     //shifts gears
-    controller.a().onTrue(Commands.runOnce(() -> driveSub.Shift(), driveSub));
+    controller.a().onTrue(driveSub.Shift());
 
   }
 

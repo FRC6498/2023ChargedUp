@@ -20,7 +20,6 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Simulation.DriveSim;
@@ -72,29 +71,6 @@ public class Drive extends SubsystemBase {
     this.vision = vision;
     gyro.calibrate();
   }
-  /**
-   * Controls the drive motors on the robot 
-   * @param throttle
-   * forward motor speed (percent)
-   * @param turn
-   * turning motor speed (percent)
-   */
-  public void ArcadeDrive(double throttle, double turn) {
-    diffDrive.arcadeDrive(throttle, turn, true);
-  }
-  /**
-   * shifts the gears in the drive gearbox
-   */
-  public void Shift() {
-     if (isHighGear) {
-      shifter.set(Value.kOff);
-      isHighGear = false;
-     } else {
-      shifter.set(Value.kForward);
-      isHighGear = true;
-     }
-     SmartDashboard.putBoolean("Gear", isHighGear);
-  }
   
   /**
    * Command to drive the robot
@@ -105,15 +81,24 @@ public class Drive extends SubsystemBase {
    * @return
    * Command to drive the robot
    */
-  public Command ArcadeDriveC(double throttle, double turn) {
-    return Commands.run(()-> this.ArcadeDrive(throttle, turn), this);
+  public Command ArcadeDrive(double throttle, double turn) {
+    return run(()-> diffDrive.arcadeDrive(throttle, turn));
   }
   /**
    * @return
    * command that shifts the gears on the robot
    */
-  public Command ShiftC() {
-    return runOnce(this::Shift);
+  public Command Shift() {
+    return runOnce(() -> {
+      if (isHighGear) {
+        shifter.set(Value.kOff);
+        isHighGear = false;
+       } else {
+        shifter.set(Value.kForward);
+        isHighGear = true;
+       }
+       SmartDashboard.putBoolean("Gear", isHighGear);
+    });
   }
   /**
    * gets the distance that the right side of the robot traveled in meters 
