@@ -4,27 +4,31 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Subsystems.Drive;
 import frc.robot.Subsystems.Vision;
+import io.github.oblarg.oblog.Logger;
 
 public class RobotContainer {
 
   public CommandXboxController controller = new CommandXboxController(OperatorConstants.Driver_Controller_ID);
   Vision visionSub = new Vision();
-  Drive driveSub = new Drive(visionSub::getCurrentPoseEstimate);
+  Drive driveSub = new Drive(visionSub);
 
   public RobotContainer() {
-    driveSub.setDefaultCommand(Commands.run(() -> driveSub.ArcadeDrive(controller.getRightTriggerAxis() - controller.getLeftTriggerAxis(), controller.getLeftX()), driveSub));
+    Logger.configureLoggingAndConfig(this, false);
+    driveSub.setDefaultCommand(Commands.run(() -> driveSub.ArcadeDrive(-controller.getLeftX(), controller.getRightTriggerAxis() - controller.getLeftTriggerAxis()), driveSub));
     configureBindings();
   }
 
   private void configureBindings() {
     //shifts gears
-    controller.a().onTrue(Commands.runOnce(driveSub::ShiftC, driveSub));
+    controller.a().onTrue(Commands.runOnce(() -> driveSub.Shift(), driveSub));
+
   }
 
   public Command getAutonomousCommand() {

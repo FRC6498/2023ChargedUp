@@ -4,60 +4,80 @@
 
 package frc.robot.Subsystems;
 
+//#region imports
+import com.ctre.phoenix.motorcontrol.InvertType;
 import java.util.function.Supplier;
-
 import org.photonvision.EstimatedRobotPose;
-
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.kauailabs.navx.frc.AHRS;
-
-
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
-
-
+import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
-import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
-
+import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DriveConstants;
-
+import frc.robot.Simulation.DriveSim;
+import io.github.oblarg.oblog.annotations.Log;
+//#endregion
 public class Drive extends SubsystemBase {
   /** Creates a new Drive. */
 
-  WPI_TalonFX Left_Front = new WPI_TalonFX(DriveConstants.Left_Front_ID);
+  //#region declarations
+ public  WPI_TalonFX Left_Front = new WPI_TalonFX(DriveConstants.Left_Front_ID);
   WPI_TalonFX Right_Front = new WPI_TalonFX(DriveConstants.Right_Front_ID);
   WPI_TalonFX Left_Back = new WPI_TalonFX(DriveConstants.Left_Back_ID);
   WPI_TalonFX Right_Back = new WPI_TalonFX(DriveConstants.Right_Back_ID);
-
   MotorControllerGroup LeftMCG = new MotorControllerGroup(Left_Front, Left_Back);
   MotorControllerGroup RightMCG = new MotorControllerGroup(Right_Front, Right_Back);
-
-  AHRS gyro = new AHRS();
   DifferentialDrive diffDrive = new DifferentialDrive(LeftMCG, RightMCG);
 
+
+  AHRS gyro = new AHRS();
+
+  Vision vision;
+
   DifferentialDrivePoseEstimator poseEstimator = new DifferentialDrivePoseEstimator(new DifferentialDriveKinematics(DriveConstants.trackwidthMeters), new Rotation2d(), getLeftDistanceMeters(), getRightDistanceMeters(), new Pose2d());
+  DoubleSolenoid shifter = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, DriveConstants.Shifter_Forward_Channel, DriveConstants.Shifter_Reverse_Channel);
+ 
+  public boolean isHighGear;
+  Compressor compressor = new Compressor(PneumaticsModuleType.CTREPCM);
+
+  //Simulation Stuff
+  DriveSim driveSim = new DriveSim(Left_Front, Right_Front, gyro);
+  //#endregion
+  
+  
+  
+  public Drive(Vision vision) {
+    compressor.enableDigital();
+    isHighGear = false;
   Supplier<EstimatedRobotPose> visionPose;
-  DoubleSolenoid shifter = new DoubleSolenoid(PneumaticsModuleType.REVPH, DriveConstants.Shifter_Forward_Channel, DriveConstants.Shifter_Reverse_Channel);
+  
   public int ShifterPosition;
-
-  public Drive(Supplier<EstimatedRobotPose> visionPoseSupplier) {
     ShifterPosition = 1;
-
 
     Left_Front.configFactoryDefault();
     Right_Front.configFactoryDefault();
     Left_Back.configFactoryDefault();
     Right_Back.configFactoryDefault();
 
-    visionPose = visionPoseSupplier;
+    Left_Back.follow(Left_Front);
+    Right_Back.follow(Right_Front);
+
+   Left_Back.setInverted(InvertType.FollowMaster);
+   Right_Back.setInverted(InvertType.FollowMaster);
+    
+
+    this.vision = vision;
     gyro.calibrate();
   }
   /**
@@ -74,29 +94,22 @@ public class Drive extends SubsystemBase {
    * shifts the gears in the drive gearbox
    */
   public void Shift() {
-     switch (ShifterPosition) {
-      case 1:
-          shifter.set(Value.kReverse);
-          ShifterPosition =2;
-        break;
-
-      case 2:
-        shifter.set(Value.kForward);
-        ShifterPosition =1;
-        break;
-
-      default:
+     if (isHighGear) {
+      shifter.set(Value.kOff);
+      isHighGear = false;
+     } else {
       shifter.set(Value.kForward);
-      ShifterPosition = 1;
-        break;
-    }
+      isHighGear = true;
+     }
+     SmartDashboard.putBoolean("Gear", isHighGear);
   }
+  
   /**
    * Command to drive the robot
    * @param throttle
-   * % of total forward motor power
+   * - % of total forward motor power
    * @param turn
-   * % of total turning power
+   * - % of total turning power
    * @return
    * Command to drive the robot
    */
@@ -104,12 +117,11 @@ public class Drive extends SubsystemBase {
     return Commands.run(()-> this.ArcadeDrive(throttle, turn), this);
   }
   /**
-   * command that shifts the gears on the robot
    * @return
    * command that shifts the gears on the robot
    */
   public Command ShiftC() {
-    return Commands.runOnce(() -> this.Shift(), this);
+    return run(this::Shift);
   }
   /**
    * gets the distance that the right side of the robot traveled in meters 
@@ -127,17 +139,27 @@ public class Drive extends SubsystemBase {
   private double getRightDistanceMeters() {
     return Right_Front.getSelectedSensorPosition() * DriveConstants.distancePerTickMeters;
   }
+  public Rotation2d getGyroAngle() {
+    return gyro.getRotation2d();
+  }
 
   @Override
   public void periodic() {
     poseEstimator.update(gyro.getRotation2d(), getRightDistanceMeters(), getLeftDistanceMeters());
     // if we see targets
-    if (visionPose.get().timestampSeconds > 0) {
+
+    if (vision.getCurrentPoseEstimate().isPresent()) {
       // if the pose is reasonably close
-      if (visionPose.get().estimatedPose.toPose2d().getTranslation().getDistance(poseEstimator.getEstimatedPosition().getTranslation()) < 1.5) {
-        poseEstimator.addVisionMeasurement(visionPose.get().estimatedPose.toPose2d(), visionPose.get().timestampSeconds);
+      if (vision.getCurrentPoseEstimate().get().getFirst().getTranslation().getDistance(poseEstimator.getEstimatedPosition().getTranslation()) < 1.5) {
+        poseEstimator.addVisionMeasurement(vision.getCurrentPoseEstimate().get().getFirst(), vision.getCurrentPoseEstimate().get().getSecond());
+
       }
     }
-
   }
+
+  public void simulationPeriodic() {
+    driveSim.run();
+    vision.setSimPose(poseEstimator.getEstimatedPosition());
+  }
+  
 }

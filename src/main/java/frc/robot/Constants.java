@@ -8,11 +8,13 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
+
 
 public class Constants {
     public static final class DriveConstants {
@@ -21,17 +23,21 @@ public class Constants {
         public static final int Left_Back_ID = 2;
         public static final int Right_Back_ID = 4;
 
+        public static final int TalonFXCountsPerRev = 2048;
+        
+
         // 1 motor rev = 2048 ticks
         // gearRatio motor revs = 1 wheel rev
         // 1 wheel rev = 1 wheel circumference travelled
         // 1 wheel circumference = pi*wheel diameter
         
-        private static final double gearRatio = 26.0;
-        private static final double wheelDiameterMeters = Units.inchesToMeters(6);
+        public static final double gearRatio = 26.0;
+        public static final double wheelDiameterMeters = Units.inchesToMeters(6);
+        
         public static final double distancePerTickMeters = 2048.0 * gearRatio * Math.PI * wheelDiameterMeters;
         public static final double trackwidthMeters = 1.0;
        
-        public static final int Shifter_Forward_Channel = 0;
+        public static final int Shifter_Forward_Channel = 1;
         public static final int Shifter_Reverse_Channel = 1;
 
     }
@@ -43,11 +49,14 @@ public class Constants {
     public static final class VisionConstants {
         // TODO: set camera name based on the actual camera name
         public static final String cameraName = "visionCam";
+
         private static final double fieldLength = Units.inchesToMeters((54*12) + 3.25);
         private static final double fieldWidth = Units.inchesToMeters((26*12) + 3.5);
         
         // TODO: handle alliance switching
+
         public static final AprilTagFieldLayout tagLayout = new AprilTagFieldLayout(
+            
             List.of(
               new AprilTag(1, createTagPose(Units.inchesToMeters(440.625),  Rotation2d.fromDegrees(63), 23.75,  Rotation2d.fromDegrees(0))),
               new AprilTag(2, createTagPose(Units.inchesToMeters(370),      Rotation2d.fromDegrees(123),51.5,   Rotation2d.fromDegrees(0))),
@@ -59,6 +68,20 @@ public class Constants {
         );
 
         // TODO: fill out robotToCamera transform once robot is designed
+
+        public static final Transform3d robotToCamera = new Transform3d(
+            new Translation3d(), 
+            new Rotation3d(0, 0, 0)
+        );
+        
+        public static final double camDiagFOV = 95.0;
+        public static final double camPitch = robotToCamera.getRotation().getX();
+        public static final double camHeight = robotToCamera.getTranslation().getZ();
+        public static final double maxLEDRange = 0;
+        public static final int camResolutionWidth = 1280;
+        public static final int camResolutionHeight = 720;
+        public static final double minTargetArea = 10;
+
         public static final Transform3d robotToCamera = new Transform3d();
 
         // TODO: measure origin to x translation
@@ -86,5 +109,6 @@ public class Constants {
             // Done!
             return tagPose3d;
         }
+
     }
 }

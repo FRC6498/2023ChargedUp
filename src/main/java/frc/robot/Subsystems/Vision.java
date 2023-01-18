@@ -13,27 +13,27 @@ import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants.VisionConstants;
-import frc.robot.Utility.NTHelper;
 
-public class Vision extends SubsystemBase {
-  PhotonCamera camera;
-  PhotonPoseEstimator poseEstimator;
-  EstimatedRobotPose currentFieldPose;
-  /** Creates a new Vision. */
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.wpilibj.Timer;
+import frc.robot.Constants.VisionConstants;
+import frc.robot.Simulation.VisionSim;
+
+public class Vision {
+  private PhotonCamera camera;
+  private RobotPoseEstimator poseEstimator;
+  private Optional<Pair<Pose2d, Double>> currentFieldPose;
+  private VisionSim visionSim;
 
   public Vision() {
     camera = new PhotonCamera(VisionConstants.cameraName);
-    //AprilTagFieldLayout layout = new AprilTagFieldLayout(List.of(), 0, 0);
-    //try {
-    //  layout = AprilTagFieldLayout.loadFromResource(AprilTagFields.k2023ChargedUp.m_resourceFile);
-    //} catch (IOException ioe) {
-    //  DriverStation.reportError(ioe.getMessage(), ioe.getStackTrace());
-    //}
-    //poseEstimator = new PhotonPoseEstimator(layout, PoseStrategy.CLOSEST_TO_REFERENCE_POSE, camera, VisionConstants.robotToCamera);
-    poseEstimator = new PhotonPoseEstimator(VisionConstants.tagLayout, PoseStrategy.CLOSEST_TO_REFERENCE_POSE, camera, VisionConstants.robotToCamera);
-    NTHelper.sendTagLayout(VisionConstants.tagLayout);
+    poseEstimator = new RobotPoseEstimator(VisionConstants.tagLayout, PoseStrategy.AVERAGE_BEST_TARGETS, List.of(
+      new Pair<PhotonCamera, Transform3d>(camera, VisionConstants.robotToCamera)
+      )
+    );
+    visionSim = new VisionSim();
+    currentFieldPose = Optional.empty();
+
   }
 
   /**
@@ -41,22 +41,26 @@ public class Vision extends SubsystemBase {
    * @return
    * your current pose estimate
    */
-  public EstimatedRobotPose getCurrentPoseEstimate() {
+
+  public Optional<Pair<Pose2d,Double>> getCurrentPoseEstimate() {
     return currentFieldPose;
   }
 
-  public void setReferencePose(Pose2d pose) {
-    poseEstimator.setReferencePose(pose);
+  public void setSimPose(Pose2d pose) {
+    visionSim.setRobotPose(pose);
+
   }
   
-  @Override
   public void periodic() {
     // This method will be called once per scheduler run
     Optional<EstimatedRobotPose> poseResult = poseEstimator.update();
     if (poseResult.isPresent()) {
-      currentFieldPose = poseResult.get();
+
+      currentFieldPose = Optional.of(new Pair<Pose2d, Double>(poseResult.get().getFirst().toPose2d(), Timer.getFPGATimestamp() - poseResult.get().getSecond()));
     } else {
-      currentFieldPose = new EstimatedRobotPose(new Pose3d(), -1);
+      currentFieldPose = Optional.empty();
+
     }
+    //visionSim.run();
   }
 }
