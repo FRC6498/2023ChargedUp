@@ -3,11 +3,13 @@
 // the WPILib BSD license file in the root directory of this project.
 
 package frc.robot.Subsystems;
+
 //#region imports
 import com.ctre.phoenix.motorcontrol.InvertType;
+import java.util.function.Supplier;
+import org.photonvision.EstimatedRobotPose;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.kauailabs.navx.frc.AHRS;
-
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -38,6 +40,7 @@ public class Drive extends SubsystemBase {
   MotorControllerGroup RightMCG = new MotorControllerGroup(Right_Front, Right_Back);
   DifferentialDrive diffDrive = new DifferentialDrive(LeftMCG, RightMCG);
 
+
   AHRS gyro = new AHRS();
 
   Vision vision;
@@ -45,7 +48,6 @@ public class Drive extends SubsystemBase {
   DifferentialDrivePoseEstimator poseEstimator = new DifferentialDrivePoseEstimator(new DifferentialDriveKinematics(DriveConstants.trackwidthMeters), new Rotation2d(), getLeftDistanceMeters(), getRightDistanceMeters(), new Pose2d());
   DoubleSolenoid shifter = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, DriveConstants.Shifter_Forward_Channel, DriveConstants.Shifter_Reverse_Channel);
  
-  @Log
   public boolean isHighGear;
   Compressor compressor = new Compressor(PneumaticsModuleType.CTREPCM);
 
@@ -53,10 +55,16 @@ public class Drive extends SubsystemBase {
   DriveSim driveSim = new DriveSim(Left_Front, Right_Front, gyro);
   //#endregion
   
+  
+  
   public Drive(Vision vision) {
     compressor.enableDigital();
     isHighGear = false;
-    
+  Supplier<EstimatedRobotPose> visionPose;
+  
+  public int ShifterPosition;
+    ShifterPosition = 1;
+
     Left_Front.configFactoryDefault();
     Right_Front.configFactoryDefault();
     Left_Back.configFactoryDefault();
@@ -139,10 +147,12 @@ public class Drive extends SubsystemBase {
   public void periodic() {
     poseEstimator.update(gyro.getRotation2d(), getRightDistanceMeters(), getLeftDistanceMeters());
     // if we see targets
+
     if (vision.getCurrentPoseEstimate().isPresent()) {
       // if the pose is reasonably close
       if (vision.getCurrentPoseEstimate().get().getFirst().getTranslation().getDistance(poseEstimator.getEstimatedPosition().getTranslation()) < 1.5) {
         poseEstimator.addVisionMeasurement(vision.getCurrentPoseEstimate().get().getFirst(), vision.getCurrentPoseEstimate().get().getSecond());
+
       }
     }
   }
