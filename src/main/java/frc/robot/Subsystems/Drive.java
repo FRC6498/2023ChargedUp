@@ -12,6 +12,8 @@ import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.networktables.DoubleArrayPublisher;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
@@ -28,7 +30,7 @@ public class Drive extends SubsystemBase {
   /** Creates a new Drive. */
 
   //#region declarations
- public  WPI_TalonFX Left_Front = new WPI_TalonFX(DriveConstants.Left_Front_ID);
+  public  WPI_TalonFX Left_Front = new WPI_TalonFX(DriveConstants.Left_Front_ID);
   WPI_TalonFX Right_Front = new WPI_TalonFX(DriveConstants.Right_Front_ID);
   WPI_TalonFX Left_Back = new WPI_TalonFX(DriveConstants.Left_Back_ID);
   WPI_TalonFX Right_Back = new WPI_TalonFX(DriveConstants.Right_Back_ID);
@@ -36,14 +38,14 @@ public class Drive extends SubsystemBase {
   MotorControllerGroup RightMCG = new MotorControllerGroup(Right_Front, Right_Back);
   DifferentialDrive diffDrive = new DifferentialDrive(LeftMCG, RightMCG);
 
-
   AHRS gyro = new AHRS();
 
   Vision vision;
 
   DifferentialDrivePoseEstimator poseEstimator = new DifferentialDrivePoseEstimator(new DifferentialDriveKinematics(DriveConstants.trackwidthMeters), new Rotation2d(), getLeftDistanceMeters(), getRightDistanceMeters(), new Pose2d());
+  DoubleArrayPublisher posePub = NetworkTableInstance.getDefault().getTable("Poses").getDoubleArrayTopic("RobotPose").publish();
+
   DoubleSolenoid shifter = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, DriveConstants.Shifter_Forward_Channel, DriveConstants.Shifter_Reverse_Channel);
- 
   public boolean isHighGear;
   Compressor compressor = new Compressor(PneumaticsModuleType.CTREPCM);
 
@@ -116,6 +118,7 @@ public class Drive extends SubsystemBase {
   private double getRightDistanceMeters() {
     return Right_Front.getSelectedSensorPosition() * DriveConstants.distancePerTickMeters;
   }
+
   public Rotation2d getGyroAngle() {
     return gyro.getRotation2d();
   }
@@ -131,6 +134,12 @@ public class Drive extends SubsystemBase {
         poseEstimator.addVisionMeasurement(vision.getCurrentPoseEstimate().get().estimatedPose.toPose2d(), vision.getCurrentPoseEstimate().get().timestampSeconds);
       }
     }
+
+    posePub.set(new double[] {
+      poseEstimator.getEstimatedPosition().getX(),
+      poseEstimator.getEstimatedPosition().getY(),
+      poseEstimator.getEstimatedPosition().getRotation().getDegrees()
+    });
   }
 
   public void simulationPeriodic() {
