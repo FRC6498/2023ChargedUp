@@ -6,6 +6,8 @@ package frc.robot.Subsystems;
 
 
 
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
+
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
@@ -13,7 +15,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 /**
  * Class based on the sucker prototype from Saturday
  */
-public class pickup extends SubsystemBase {
+public class pickup extends SubsystemBase implements SysIdMechanism {
   /** Creates a new pickup. */
   DoubleSolenoid pickerUpper = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, 0, 0);
   public int pickupPosition;
@@ -48,5 +50,23 @@ public class pickup extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+  }
+
+  @Override
+  public WPI_TalonFX getMotor() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public double getPosition() {
+    // TODO Auto-generated method stub
+    return 0;
+  }
+
+  @Override
+  public double getVelocity() {
+    // TODO Auto-generated method stub
+    return 0;
   }
 }

@@ -4,6 +4,8 @@
 
 package frc.robot.Subsystems;
 
+import java.util.List;
+
 //#region imports
 import com.ctre.phoenix.motorcontrol.InvertType;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
@@ -12,6 +14,7 @@ import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
@@ -28,7 +31,7 @@ public class Drive extends SubsystemBase {
   /** Creates a new Drive. */
 
   //#region declarations
- public  WPI_TalonFX Left_Front = new WPI_TalonFX(DriveConstants.Left_Front_ID);
+  WPI_TalonFX Left_Front = new WPI_TalonFX(DriveConstants.Left_Front_ID);
   WPI_TalonFX Right_Front = new WPI_TalonFX(DriveConstants.Right_Front_ID);
   WPI_TalonFX Left_Back = new WPI_TalonFX(DriveConstants.Left_Back_ID);
   WPI_TalonFX Right_Back = new WPI_TalonFX(DriveConstants.Right_Back_ID);
@@ -105,7 +108,7 @@ public class Drive extends SubsystemBase {
    * @return
    * the distance the right side of the robot has traveled
    */
-  private double getLeftDistanceMeters() {
+  public double getLeftDistanceMeters() {
     return Left_Front.getSelectedSensorPosition() * DriveConstants.distancePerTickMeters;
   }
   /**
@@ -113,12 +116,32 @@ public class Drive extends SubsystemBase {
    * @return
    * the distance the right side of the robot has traveled
    */
-  private double getRightDistanceMeters() {
+  public double getRightDistanceMeters() {
     return Right_Front.getSelectedSensorPosition() * DriveConstants.distancePerTickMeters;
   }
+
   public Rotation2d getGyroAngle() {
     return gyro.getRotation2d();
   }
+
+  //#region SysId Getters
+  public List<WPI_TalonFX> getLeftMotors() {
+    return List.of(Left_Front, Left_Back);
+  }
+
+  public List<WPI_TalonFX> getRightMotors() {
+    return List.of(Right_Front, Right_Back);
+  }
+
+  public double getGyroRate() {
+    return gyro.getRate();
+  }
+
+  public DifferentialDriveWheelSpeeds getWheelSpeeds() {
+    // TODO: add converter for wheel speeds
+    return new DifferentialDriveWheelSpeeds(Left_Front.getSelectedSensorVelocity(), Right_Front.getSelectedSensorVelocity());
+  }
+  //#endregion
 
   @Override
   public void periodic() {

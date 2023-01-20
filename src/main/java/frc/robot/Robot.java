@@ -4,15 +4,22 @@
 
 package frc.robot;
 
+import java.util.List;
+
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
+
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.Subsystems.SysIdMechanism;
 import io.github.oblarg.oblog.Logger;
 
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
 
   private RobotContainer m_robotContainer;
+
+  public static boolean sysidActive = true;
 
   @Override
   public void robotInit() {
@@ -27,10 +34,29 @@ public class Robot extends TimedRobot {
   }
 
   @Override
-  public void disabledInit() {}
+  public void disabledInit() {
+    if (sysidActive) {
+      if (m_robotContainer.sysidMech != null) {
+        SysIdMechanism mech = (SysIdMechanism)m_robotContainer.mechChooser.getSelected();
+        m_robotContainer.sysidMech.setMotorControllers(0, List.of(mech.getMotor()));
+        m_robotContainer.sysidMech.sendData();
+      } else if (m_robotContainer.sysidDrive != null) {
+        List<WPI_TalonFX> motors = m_robotContainer.driveSub.getLeftMotors();
+        //motors.addAll(m_robotContainer.driveSub.getRightMotors());
+        for (WPI_TalonFX motorFx : m_robotContainer.driveSub.getRightMotors()) {
+          motors.add(motorFx);
+        }
+        m_robotContainer.sysidDrive.setMotorControllers(0, motors);
+        m_robotContainer.sysidDrive.sendData();
+      }
+      
+    }
+  }
 
   @Override
-  public void disabledPeriodic() {}
+  public void disabledPeriodic() {
+
+  }
 
   @Override
   public void disabledExit() {}

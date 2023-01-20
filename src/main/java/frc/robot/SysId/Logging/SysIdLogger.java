@@ -2,9 +2,10 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.SysId;
+package frc.robot.SysId.Logging;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
@@ -79,7 +80,7 @@ public class SysIdLogger {
     }
 
 
-    void initLogging() {
+    public void initLogging() {
         mechanism = testSub.get("");
         if (isWrongMechanism()) {
             wrongMechPub.set(true);
@@ -93,7 +94,7 @@ public class SysIdLogger {
         ackNum = (int)ackNumSub.get(0);
     }
 
-    double measureVoltage(ArrayList<WPI_TalonFX> controllers) {
+    public double measureVoltage(List<WPI_TalonFX> controllers) {
         double sum = 0.0;
         for (int i = 0; i < controllers.size(); ++i) {
             WPI_TalonFX falcon = controllers.get(i);
@@ -105,7 +106,7 @@ public class SysIdLogger {
         return sum / controllers.size();
     }
 
-    void sendData() {
+    public void sendData() {
         System.out.println("Collected: " + data.size() + " data points.\n");
 
         overflowPub.set(data.size() >= dataVectorSize);
@@ -127,14 +128,14 @@ public class SysIdLogger {
         reset();
     }
 
-    void clearWhenRecieved() {
+    public void clearWhenRecieved() {
         if (ackNumSub.get(0) > ackNum) {
             telemetryPub.set("");
             ackNum = (int) ackNumSub.get(0);
         }
     }
     
-    void updateThreadPriority() {
+    public void updateThreadPriority() {
         if (!Robot.isSimulation()) {
             if (!Notifier.setHALThreadPriority(true, 40) || Threads.setCurrentThreadPriority(true, 15)) {
                 throw new RuntimeException("Setting RT priority failed");
@@ -142,12 +143,16 @@ public class SysIdLogger {
         }
     }
 
-    void updateData() {
+    public void updateData() {
         timestamp = Timer.getFPGATimestamp();
+        // if the mechanism is supported
         if (!isWrongMechanism()) {
+            // if ramp test
             if (testType == "Quasistatic") {
+                // voltage = ramp rate * test elapsed time
                 motorVoltage = voltageCommand * (timestamp - startTime);
-            } else if (testType == "Dynamic") {
+            } else if (testType == "Dynamic") { // if steady state test
+                // voltage = steady state voltage
                 motorVoltage = voltageCommand;
             } else {
                 motorVoltage = 0.0;
@@ -157,11 +162,17 @@ public class SysIdLogger {
         }
     }
 
-    void reset() {
+    public void reset() {
         motorVoltage = 0.0;
         timestamp = 0.0;
         startTime = 0.0;
         data.clear();
+    }
+
+    public void setMotorControllers(double volts, List<WPI_TalonFX> motors) {
+        for (WPI_TalonFX motor : motors) {
+            motor.setVoltage(volts);
+        }
     }
 
     boolean isWrongMechanism() {
