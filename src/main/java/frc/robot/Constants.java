@@ -5,14 +5,9 @@ import java.util.List;
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
-
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 
@@ -56,22 +51,27 @@ public class Constants {
         
         // TODO: handle alliance switching
 
+        static double archeryWallY = Units.inchesToMeters(351);
+        static double bleacherY = Units.inchesToMeters(97);
         public static final AprilTagFieldLayout tagLayout = new AprilTagFieldLayout(
-            
             List.of(
-              new AprilTag(1, createTagPose(Units.inchesToMeters(440.625),  Rotation2d.fromDegrees(63), 23.75,  Rotation2d.fromDegrees(0))),
-              new AprilTag(2, createTagPose(Units.inchesToMeters(370),      Rotation2d.fromDegrees(123),51.5,   Rotation2d.fromDegrees(0))),
-              new AprilTag(3, createTagPose(Units.inchesToMeters(484.625),  Rotation2d.fromDegrees(91), 26.25,  Rotation2d.fromDegrees(0))),
-              new AprilTag(5, createTagPose(Units.inchesToMeters(271),      Rotation2d.fromDegrees(33), 44,     Rotation2d.fromDegrees(0))),
-              new AprilTag(6, createTagPose(Units.inchesToMeters(273),      Rotation2d.fromDegrees(322),57.0625,Rotation2d.fromDegrees(0))),
-              new AprilTag(7, createTagPose(Units.inchesToMeters(211.5),    Rotation2d.fromDegrees(0),  43,     Rotation2d.fromDegrees(0)))
+                // X axis = long axis, y axis = short axis
+                // only need to measure X 2-3 times
+                // Y needed for all tags
+                // origin at near-right corner
+                new AprilTag(1, new Pose3d(Units.inchesToMeters(120.25+300), archeryWallY, Units.inchesToMeters(23.75), new Rotation3d(VecBuilder.fill(0, 0, 1), Units.degreesToRadians(270)))),
+                //new AprilTag(2, new Pose3d(0, 0, Units.inchesToMeters(51.5),    new Rotation3d(VecBuilder.fill(0, 0, 1), Units.degreesToRadians(90)))),
+                new AprilTag(3, new Pose3d(Units.inchesToMeters(214.375+300), Units.inchesToMeters(29.25), Units.inchesToMeters(26.25), new Rotation3d(VecBuilder.fill(0, 0, 1), Units.degreesToRadians(180)))),
+                new AprilTag(5, new Pose3d(Units.inchesToMeters(208.125), archeryWallY, Units.inchesToMeters(44), new Rotation3d(VecBuilder.fill(0, 0, 1), Units.degreesToRadians(270)))),
+                //new AprilTag(6, new Pose3d(0, 0, Units.inchesToMeters(57.0625), new Rotation3d(VecBuilder.fill(0, 0, 1), Units.degreesToRadians(90)))),
+                new AprilTag(7, new Pose3d(Units.inchesToMeters(30.5), archeryWallY, Units.inchesToMeters(43), new Rotation3d(VecBuilder.fill(0, 0, 1), Units.degreesToRadians(270))))
             ), VisionConstants.fieldLength, VisionConstants.fieldWidth
         );
 
         // TODO: fill out robotToCamera transform once robot is designed
 
         public static final Transform3d robotToCamera = new Transform3d(
-            new Translation3d(), 
+            new Translation3d(Units.inchesToMeters(13.125), 0, Units.inchesToMeters(6.125)), 
             new Rotation3d(0, 0, 0)
         );
         
@@ -82,32 +82,5 @@ public class Constants {
         public static final int camResolutionWidth = 1280;
         public static final int camResolutionHeight = 720;
         public static final double minTargetArea = 10;
-
-        // TODO: measure origin to x translation
-
-        /**
-         * Given measured distance, angle, and orientation from a predefined measurement point in a WNU coordinate system, determine the 3d pose in the WPILib field coordinate system
-         * @param distanceInches Hypotenuse distance from the measurement point to the tag's 2d location in inches
-         * @param measuredAngle WNU angle to the tag, measured at the measurement point
-         * @param heightInches Height of the tag centerpoint above the ground in inches
-         * @param tagRotation Angle the tag is facing in the XY plane (i.e. a rotation around the Z axis) in the field coordinate system (0 = towards far wall, 90 = towards archery windows, 180 = towards janitor room, 270 = towards bleachers)
-         */
-        private static Pose3d createTagPose(double distanceInches, Rotation2d measuredAngle, double heightInches, Rotation2d tagRotation) {
-            Translation2d originToX = new Translation2d(0, new Rotation2d(0));
-            // Step 1.start at origin
-            Pose2d originPose = new Pose2d();
-            // Step 2.  translate to measurement point
-            // at x, facing away on long axis
-            Pose2d center = originPose.transformBy(new Transform2d(originToX, new Rotation2d()));
-            // Step 3. rotate tag angle to new coord system
-            Rotation2d angleToTag = Rotation2d.fromDegrees((measuredAngle.getDegrees() - 90) * -1);
-            // Step 4. find and apply translation to tag (on ground)
-            Pose2d tagPose = center.transformBy(new Transform2d(new Translation2d(Units.inchesToMeters(distanceInches), angleToTag), new Rotation2d()));
-            // Step 5. move pose up to tag height and apply orientation
-            Pose3d tagPose3d = new Pose3d(tagPose.getX(), tagPose.getY(), Units.inchesToMeters(heightInches), new Rotation3d(VecBuilder.fill(0, 0, 1), tagRotation.getRadians()));
-            // Done!
-            return tagPose3d;
-        }
-
     }
 }
