@@ -11,9 +11,9 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.kauailabs.navx.frc.AHRS;
 import com.kauailabs.navx.frc.AHRSSim;
 
+import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
@@ -31,7 +31,7 @@ public class DriveSim {
 
     private Field2d field2d = new Field2d();
     //drive odometry object
-    private DifferentialDriveOdometry SimOdometry;
+    private DifferentialDrivePoseEstimator SimPoseEstimator;
     //starting pose 2d (not really necessary)
     private Pose2d startPose2d = new Pose2d(5.0, 5.0, new Rotation2d(45.0));
 
@@ -59,7 +59,7 @@ Conversions conversions;
          * @param gyro
          * Gyro you are using
          */
-    public DriveSim(WPI_TalonFX Front_left_Motor, WPI_TalonFX Front_Right_Motor, AHRS gyro){
+    public DriveSim(WPI_TalonFX Front_left_Motor, WPI_TalonFX Front_Right_Motor, AHRS gyro, DifferentialDrivePoseEstimator poseEstimator) {
 
         this.leftMotor = Front_left_Motor;
         this.rightMotor = Front_Right_Motor;
@@ -70,7 +70,7 @@ Conversions conversions;
         this.gyro = gyro;
         this.gyroSim = new AHRSSim();
 
-        this.SimOdometry = new DifferentialDriveOdometry(gyro.getRotation2d(), 0, 0, startPose2d);
+        SimPoseEstimator = poseEstimator;
         
         field2d.setRobotPose(startPose2d);
     }
@@ -106,19 +106,18 @@ Conversions conversions;
         );
         gyroSim.setYaw(drivetrainSim.getHeading().getDegrees());
 
-        SimOdometry.update(
+        SimPoseEstimator.update(
         gyro.getRotation2d(), 
         conversions.nativeUnitsToDistanceMeters(leftMotor.getSelectedSensorPosition()), /*update distance the left side of the robot has traveled*/
         conversions.nativeUnitsToDistanceMeters(rightMotor.getSelectedSensorPosition()) /*update distance the right side of the robot has traveled*/
         );
 
-        field2d.setRobotPose(SimOdometry.getPoseMeters()); /*update robot position on the field */
-
+        field2d.setRobotPose(SimPoseEstimator.getEstimatedPosition()); /*update robot position on the field */
         //useful date that is put on the SmartDashboard tab in NetworkTables
         SmartDashboard.putData("Field", field2d);
-        SmartDashboard.putNumber("Odometry X", SimOdometry.getPoseMeters().getX());
-        SmartDashboard.putNumber("Odometry Y", SimOdometry.getPoseMeters().getY());
-        SmartDashboard.putNumber("Rotation", gyro.getRotation2d().getDegrees());
+        SmartDashboard.putNumber("Odometry X", SimPoseEstimator.getEstimatedPosition().getX());
+        SmartDashboard.putNumber("Odometry Y", SimPoseEstimator.getEstimatedPosition().getY());
+        SmartDashboard.putNumber("Rotation", SimPoseEstimator.getEstimatedPosition().getRotation().getDegrees());
     }
     
 

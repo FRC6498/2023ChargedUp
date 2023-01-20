@@ -1,5 +1,12 @@
 {
   "HALProvider": {
+    "Other Devices": {
+      "Talon FX[1]": {
+        "header": {
+          "open": true
+        }
+      }
+    },
     "RoboRIO": {
       "3.3V Rail": {
         "open": true
@@ -45,6 +52,12 @@
       "LiveWindow": {
         "open": true
       },
+      "Shuffleboard": {
+        "RobotContainer": {
+          "open": true
+        },
+        "open": true
+      },
       "SmartDashboard": {
         "Field": {
           "open": true
@@ -65,8 +78,5 @@
         "open": true
       }
     }
-  },
-  "NetworkTables View": {
-    "visible": false
   }
 }

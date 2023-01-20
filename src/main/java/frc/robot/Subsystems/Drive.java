@@ -4,6 +4,8 @@
 
 package frc.robot.Subsystems;
 
+import java.util.function.DoubleSupplier;
+
 //#region imports
 import com.ctre.phoenix.motorcontrol.InvertType;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
@@ -12,6 +14,7 @@ import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.networktables.DoubleArrayPublisher;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.Compressor;
@@ -19,16 +22,18 @@ import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.drive.DifferentialDrive.WheelSpeeds;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Simulation.DriveSim;
+import io.github.oblarg.oblog.Loggable;
+import io.github.oblarg.oblog.annotations.Log;
 //#endregion
-public class Drive extends SubsystemBase {
+public class Drive extends SubsystemBase implements Loggable {
   /** Creates a new Drive. */
-
   //#region declarations
   public  WPI_TalonFX Left_Front = new WPI_TalonFX(DriveConstants.Left_Front_ID);
   WPI_TalonFX Right_Front = new WPI_TalonFX(DriveConstants.Right_Front_ID);
@@ -42,15 +47,15 @@ public class Drive extends SubsystemBase {
 
   Vision vision;
 
-  DifferentialDrivePoseEstimator poseEstimator = new DifferentialDrivePoseEstimator(new DifferentialDriveKinematics(DriveConstants.trackwidthMeters), new Rotation2d(), getLeftDistanceMeters(), getRightDistanceMeters(), new Pose2d());
+  DifferentialDrivePoseEstimator poseEstimator = new DifferentialDrivePoseEstimator(new DifferentialDriveKinematics(DriveConstants.trackwidthMeters), new Rotation2d(), getLeftDistanceMeters(), getRightDistanceMeters(), new Pose2d(5, 2, Rotation2d.fromDegrees(45)));
   DoubleArrayPublisher posePub = NetworkTableInstance.getDefault().getTable("Poses").getDoubleArrayTopic("RobotPose").publish();
-
+  DifferentialDrive.WheelSpeeds ws = new WheelSpeeds(0, 0);
   DoubleSolenoid shifter = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, DriveConstants.Shifter_Forward_Channel, DriveConstants.Shifter_Reverse_Channel);
   public boolean isHighGear;
   Compressor compressor = new Compressor(PneumaticsModuleType.CTREPCM);
 
   //Simulation Stuff
-  DriveSim driveSim = new DriveSim(Left_Front, Right_Front, gyro);
+  DriveSim driveSim;
   //#endregion
   
   
@@ -72,6 +77,23 @@ public class Drive extends SubsystemBase {
 
     this.vision = vision;
     gyro.calibrate();
+
+    driveSim = new DriveSim(Left_Front, Right_Front, gyro, poseEstimator);
+  }
+
+  @Log
+  private double getLeftCmd() {
+    return LeftMCG.get();
+  }
+
+  @Log
+  private double getRightCmd() {
+    return RightMCG.get();
+  }
+
+  @Log
+  private double getLeftWheelSpeed() {
+    return ws.left;
   }
   
   /**
@@ -83,8 +105,10 @@ public class Drive extends SubsystemBase {
    * @return
    * Command to drive the robot
    */
-  public Command ArcadeDrive(double throttle, double turn) {
-    return run(()-> diffDrive.arcadeDrive(throttle, turn));
+  public Command ArcadeDrive(DoubleSupplier throttle, DoubleSupplier turn) {
+    return run(()-> {
+      diffDrive.arcadeDrive(throttle.getAsDouble(), turn.getAsDouble());
+    });
   }
   /**
    * @return
@@ -126,12 +150,12 @@ public class Drive extends SubsystemBase {
   @Override
   public void periodic() {
     poseEstimator.update(gyro.getRotation2d(), getRightDistanceMeters(), getLeftDistanceMeters());
-    vision.setReferencePose(poseEstimator.getEstimatedPosition());
+    //vision.setReferencePose(poseEstimator.getEstimatedPosition());
     // if we see targets
     if (vision.getCurrentPoseEstimate().isPresent()) {
       // if the pose is reasonably close
       if (vision.getCurrentPoseEstimate().get().estimatedPose.toPose2d().getTranslation().getDistance(poseEstimator.getEstimatedPosition().getTranslation()) < 1.5) {
-        poseEstimator.addVisionMeasurement(vision.getCurrentPoseEstimate().get().estimatedPose.toPose2d(), vision.getCurrentPoseEstimate().get().timestampSeconds);
+        //poseEstimator.addVisionMeasurement(vision.getCurrentPoseEstimate().get().estimatedPose.toPose2d(), vision.getCurrentPoseEstimate().get().timestampSeconds);
       }
     }
 
