@@ -7,6 +7,8 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.Constants.VisionConstants;
+import frc.robot.Utility.NTHelper;
 import io.github.oblarg.oblog.Logger;
 
 public class Robot extends TimedRobot {
@@ -18,6 +20,7 @@ public class Robot extends TimedRobot {
   public void robotInit() {
     m_robotContainer = new RobotContainer();
     addPeriodic(m_robotContainer.visionSub::run, kDefaultPeriod);
+    NTHelper.sendTagLayout(VisionConstants.tagLayout);
   }
 
   @Override
