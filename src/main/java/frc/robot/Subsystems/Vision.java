@@ -30,19 +30,25 @@ public class Vision {
   }
 
   /**
-   * gives you the current estimate of your field pose
-   * @return
-   * your current pose estimate
+   * Returns the stored pose estimate and timestamp
+   * @return latest estimated Pose3d and associated timestamp
    */
-
   public Optional<EstimatedRobotPose> getCurrentPoseEstimate() {
     return currentFieldPose;
   }
 
+  /**
+   * Sets the robot pose in simulation
+   * @param pose the robot's pose2d as calculated by the drivetrain
+   */
   public void setSimPose(Pose2d pose) {
     visionSim.setRobotPose(pose);
   }
 
+  /**
+   * Sets the reference pose used by the PhotonPoseEstimator
+   * @param pose drivetrain odometry pose
+   */
   public void setReferencePose(Pose2d pose) {
     poseEstimator.setReferencePose(pose);
   }
