@@ -4,6 +4,8 @@
 
 package frc.robot.Simulation;
 
+import java.util.function.DoubleSupplier;
+
 //#region imports
 import com.ctre.phoenix.motorcontrol.TalonFXSimCollection;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
@@ -42,11 +44,11 @@ Conversions conversions;
     
     private DifferentialDrivetrainSim drivetrainSim  = new DifferentialDrivetrainSim(
         DCMotor.getFalcon500(2),//2 Falcon 500s on each side of the robot
-        DriveConstants.gearRatio,//gear ratio between the wheels and the encoder on the robot
+        DriveConstants.gearRatioLow,//gear ratio between the wheels and the encoder on the robot
         2.1, //MOI? of the robot (your supposed to get it from the cad model but I just made this up)
         30,//mass of the robot (I also made this up)
         Units.inchesToMeters(3),//radius of the robot's wheels
-        0.546, //distance between the robot's wheels in meters
+        DriveConstants.trackwidthMeters, //distance between the robot's wheels in meters
         null); //standard deviation in your measurement devices
     //#endregion
 
@@ -59,7 +61,7 @@ Conversions conversions;
          * @param gyro
          * Gyro you are using
          */
-    public DriveSim(WPI_TalonFX Front_left_Motor, WPI_TalonFX Front_Right_Motor, AHRS gyro, DifferentialDrivePoseEstimator poseEstimator) {
+    public DriveSim(WPI_TalonFX Front_left_Motor, WPI_TalonFX Front_Right_Motor, AHRS gyro, DifferentialDrivePoseEstimator poseEstimator, DoubleSupplier gearRatio) {
 
         this.leftMotor = Front_left_Motor;
         this.rightMotor = Front_Right_Motor;
@@ -86,7 +88,6 @@ Conversions conversions;
      * runs the DrivetrainSimulation
      */
     public void run() {
-        conversions = new Conversions();
         drivetrainSim.setInputs(leftSim.getMotorOutputLeadVoltage(), rightSim.getMotorOutputLeadVoltage());
 
         drivetrainSim.update(0.02);
