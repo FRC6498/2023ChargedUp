@@ -5,6 +5,9 @@
         "header": {
           "open": true
         }
+      },
+      "window": {
+        "visible": false
       }
     },
     "RoboRIO": {
@@ -19,9 +22,6 @@
       },
       "RoboRIO Input": {
         "open": true
-      },
-      "window": {
-        "visible": true
       }
     }
   },

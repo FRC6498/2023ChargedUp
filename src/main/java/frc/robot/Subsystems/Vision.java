@@ -55,7 +55,7 @@ public class Vision {
       currentFieldPose = Optional.empty();
     }
     if (Robot.isSimulation()) {
-      visionSim.run();
+      //visionSim.run();
     }
   }
 }
