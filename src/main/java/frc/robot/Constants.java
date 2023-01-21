@@ -28,10 +28,11 @@ public class Constants {
         // 1 wheel circumference = pi*wheel diameter
         
         public static final double gearRatio = 26.0;
+        // 0.1524
         public static final double wheelDiameterMeters = Units.inchesToMeters(6);
         
-        public static final double distancePerTickMeters = 2048.0 * gearRatio * Math.PI * wheelDiameterMeters;
-        public static final double trackwidthMeters = 1.0;
+        public static final double distancePerTickMeters = (Math.PI * wheelDiameterMeters) / (2048 * gearRatio);
+        public static final double trackwidthMeters = Units.inchesToMeters(28.625);
        
         public static final int Shifter_Forward_Channel = 1;
         public static final int Shifter_Reverse_Channel = 1;
@@ -44,7 +45,7 @@ public class Constants {
 
     public static final class VisionConstants {
         // TODO: set camera name based on the actual camera name
-        public static final String cameraName = "visionCam";
+        public static final String cameraName = "aprilCam";
 
         private static final double fieldLength = Units.inchesToMeters((54*12) + 3.25);
         private static final double fieldWidth = Units.inchesToMeters((26*12) + 3.5);

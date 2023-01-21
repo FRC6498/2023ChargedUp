@@ -22,13 +22,8 @@ public class RobotContainer implements Loggable {
 
   public RobotContainer() {
     Logger.configureLoggingAndConfig(this, false);
-    driveSub.setDefaultCommand(driveSub.ArcadeDrive(this::getDriveForce, controller::getLeftX));
+    driveSub.setDefaultCommand(driveSub.ArcadeDrive(() -> controller.getRightTriggerAxis() - controller.getLeftTriggerAxis(), controller::getLeftX));
     configureBindings();
-  }
-
-  @Log
-  private double getDriveForce() {
-    return controller.getLeftY();
   }
 
   private void configureBindings() {

@@ -5,6 +5,8 @@
 package frc.robot.Utility;
 
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.DoublePublisher;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import frc.robot.Constants.DriveConstants;
 
 /** Add your docs here. */
@@ -16,9 +18,14 @@ public class Conversions {
     * @return
     * meters -> ticks
     */
+
+    DoublePublisher motorRotsPub, wheelRotsPub, metersPub;
     public Conversions() {
-      
+      motorRotsPub = NetworkTableInstance.getDefault().getTable("debug").getDoubleTopic("motor_rotations").publish();
+      wheelRotsPub = NetworkTableInstance.getDefault().getTable("debug").getDoubleTopic("wheel_rotations").publish();
+      metersPub = NetworkTableInstance.getDefault().getTable("debug").getDoubleTopic("meters").publish();
     }
+
     public int distanceToNativeUnits(double positionMeters){
 		double wheelRotations = positionMeters/(2 * Math.PI * Units.inchesToMeters(3));
 		double motorRotations = wheelRotations * DriveConstants.gearRatio;
@@ -47,8 +54,11 @@ public class Conversions {
      */
     public double nativeUnitsToDistanceMeters(double sensorCounts){
 		double motorRotations = (double)sensorCounts / DriveConstants.TalonFXCountsPerRev;
+    motorRotsPub.set(motorRotations);
 		double wheelRotations = motorRotations / DriveConstants.gearRatio;
+    wheelRotsPub.set(wheelRotations);
 		double positionMeters = wheelRotations * (2 * Math.PI * Units.inchesToMeters(3));
+    metersPub.set(positionMeters);
 		return positionMeters;
 	}
 

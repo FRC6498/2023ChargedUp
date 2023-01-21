@@ -24,6 +24,7 @@ import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive.WheelSpeeds;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -49,10 +50,14 @@ public class Drive extends SubsystemBase implements Loggable {
 
   Vision vision;
 
+  @Log.Field2d
+  Field2d field;
+
   DifferentialDrivePoseEstimator poseEstimator = new DifferentialDrivePoseEstimator(new DifferentialDriveKinematics(DriveConstants.trackwidthMeters), new Rotation2d(), getLeftDistanceMeters(), getRightDistanceMeters(), new Pose2d(5, 2, Rotation2d.fromDegrees(45)));
   DoubleArrayPublisher posePub = NetworkTableInstance.getDefault().getTable("Poses").getDoubleArrayTopic("RobotPose").publish();
   DifferentialDrive.WheelSpeeds ws = new WheelSpeeds(0, 0);
   DoubleSolenoid shifter = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, DriveConstants.Shifter_Forward_Channel, DriveConstants.Shifter_Reverse_Channel);
+  @Log
   public boolean isHighGear;
   Compressor compressor = new Compressor(PneumaticsModuleType.CTREPCM);
 
@@ -69,33 +74,24 @@ public class Drive extends SubsystemBase implements Loggable {
     Right_Front.configFactoryDefault();
     Left_Back.configFactoryDefault();
     Right_Back.configFactoryDefault();
+    Left_Front.setSelectedSensorPosition(0);
+    Left_Back.setSelectedSensorPosition(0);
+    Right_Front.setSelectedSensorPosition(0);
+    Right_Back.setSelectedSensorPosition(0);
 
     Left_Back.follow(Left_Front);
     Right_Back.follow(Right_Front);
 
     Left_Back.setInverted(InvertType.FollowMaster);
     Right_Back.setInverted(InvertType.FollowMaster);
+    LeftMCG.setInverted(true);
     
 
     this.vision = vision;
     gyro.calibrate();
 
     driveSim = new DriveSim(Left_Front, Right_Front, gyro, poseEstimator);
-  }
-
-  @Log
-  private double getLeftCmd() {
-    return LeftMCG.get();
-  }
-
-  @Log
-  private double getRightCmd() {
-    return RightMCG.get();
-  }
-
-  @Log
-  private double getLeftWheelSpeed() {
-    return ws.left;
+    field = new Field2d();
   }
   
   /**
@@ -109,7 +105,7 @@ public class Drive extends SubsystemBase implements Loggable {
    */
   public Command ArcadeDrive(DoubleSupplier throttle, DoubleSupplier turn) {
     return run(()-> {
-      diffDrive.arcadeDrive(throttle.getAsDouble(), 0.25);
+      diffDrive.arcadeDrive(throttle.getAsDouble(), turn.getAsDouble());
     });
   }
   /**
@@ -133,6 +129,7 @@ public class Drive extends SubsystemBase implements Loggable {
    * @return
    * the distance the right side of the robot has traveled
    */
+  @Log
   private double getLeftDistanceMeters() {
     return Left_Front.getSelectedSensorPosition() * DriveConstants.distancePerTickMeters;
   }
@@ -141,6 +138,7 @@ public class Drive extends SubsystemBase implements Loggable {
    * @return
    * the distance the right side of the robot has traveled
    */
+  @Log
   private double getRightDistanceMeters() {
     return Right_Front.getSelectedSensorPosition() * DriveConstants.distancePerTickMeters;
   }
@@ -151,42 +149,27 @@ public class Drive extends SubsystemBase implements Loggable {
 
   @Override
   public void periodic() {
-    poseEstimator.update(gyro.getRotation2d(), getRightDistanceMeters(), getLeftDistanceMeters());
-    //vision.setReferencePose(poseEstimator.getEstimatedPosition());
+    poseEstimator.update(gyro.getRotation2d(), -getLeftDistanceMeters(), getRightDistanceMeters());
+    vision.setReferencePose(poseEstimator.getEstimatedPosition());
     // if we see targets
     if (vision.getCurrentPoseEstimate().isPresent()) {
       // if the pose is reasonably close
-      if (vision.getCurrentPoseEstimate().get().estimatedPose.toPose2d().getTranslation().getDistance(poseEstimator.getEstimatedPosition().getTranslation()) < 1.5) {
-        //poseEstimator.addVisionMeasurement(vision.getCurrentPoseEstimate().get().estimatedPose.toPose2d(), vision.getCurrentPoseEstimate().get().timestampSeconds);
+      if (vision.getCurrentPoseEstimate().get().estimatedPose.toPose2d().getTranslation().getDistance(poseEstimator.getEstimatedPosition().getTranslation()) < 10) {
+        poseEstimator.addVisionMeasurement(vision.getCurrentPoseEstimate().get().estimatedPose.toPose2d(), vision.getCurrentPoseEstimate().get().timestampSeconds);
       }
     }
-    if (Robot.isReal()) {
+    if (true) {
       posePub.set(new double[] {
         poseEstimator.getEstimatedPosition().getX(),
         poseEstimator.getEstimatedPosition().getY(),
         poseEstimator.getEstimatedPosition().getRotation().getDegrees()
       });
-    }
-    
-  }
-
-  @Log
-  public double getPoseX() {
-    return poseEstimator.getEstimatedPosition().getX();
-  }
-
-  @Log
-  public double getPoseY() {
-    return poseEstimator.getEstimatedPosition().getY();
+    }  
   }
 
   public void simulationPeriodic() {
     driveSim.run();
-    posePub.set(new double[] {
-      driveSim.getPoseMeters().getX(),
-      driveSim.getPoseMeters().getY(),
-      driveSim.getPoseMeters().getRotation().getDegrees()
-    });
+    poseEstimator.resetPosition(getGyroAngle(), getLeftDistanceMeters(), getRightDistanceMeters(), driveSim.getPoseMeters());
     //vision.setSimPose(poseEstimator.getEstimatedPosition());
   }
   
