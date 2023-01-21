@@ -84,7 +84,9 @@ public class Drive extends SubsystemBase implements Loggable {
 
     Left_Back.setInverted(InvertType.FollowMaster);
     Right_Back.setInverted(InvertType.FollowMaster);
-    LeftMCG.setInverted(true);
+    if (Robot.isReal()) {
+      LeftMCG.setInverted(true);
+    }
     
 
     this.vision = vision;
@@ -149,28 +151,30 @@ public class Drive extends SubsystemBase implements Loggable {
 
   @Override
   public void periodic() {
-    poseEstimator.update(gyro.getRotation2d(), -getLeftDistanceMeters(), getRightDistanceMeters());
+    if (Robot.isReal()) {
+      poseEstimator.update(gyro.getRotation2d(), -getLeftDistanceMeters(), getRightDistanceMeters());
+    } else {
+      poseEstimator.update(gyro.getRotation2d(), getLeftDistanceMeters(), getRightDistanceMeters());
+    }
     vision.setReferencePose(poseEstimator.getEstimatedPosition());
     // if we see targets
     if (vision.getCurrentPoseEstimate().isPresent()) {
       // if the pose is reasonably close
-      if (vision.getCurrentPoseEstimate().get().estimatedPose.toPose2d().getTranslation().getDistance(poseEstimator.getEstimatedPosition().getTranslation()) < 10) {
+      if (vision.getCurrentPoseEstimate().get().estimatedPose.toPose2d().getTranslation().getDistance(poseEstimator.getEstimatedPosition().getTranslation()) < 1.5) {
         poseEstimator.addVisionMeasurement(vision.getCurrentPoseEstimate().get().estimatedPose.toPose2d(), vision.getCurrentPoseEstimate().get().timestampSeconds);
       }
     }
-    if (true) {
-      posePub.set(new double[] {
-        poseEstimator.getEstimatedPosition().getX(),
-        poseEstimator.getEstimatedPosition().getY(),
-        poseEstimator.getEstimatedPosition().getRotation().getDegrees()
-      });
-    }  
+    posePub.set(new double[] {
+      poseEstimator.getEstimatedPosition().getX(),
+      poseEstimator.getEstimatedPosition().getY(),
+      poseEstimator.getEstimatedPosition().getRotation().getDegrees()
+    });
   }
 
   public void simulationPeriodic() {
     driveSim.run();
     poseEstimator.resetPosition(getGyroAngle(), getLeftDistanceMeters(), getRightDistanceMeters(), driveSim.getPoseMeters());
-    //vision.setSimPose(poseEstimator.getEstimatedPosition());
+    vision.setSimPose(poseEstimator.getEstimatedPosition());
   }
   
 }

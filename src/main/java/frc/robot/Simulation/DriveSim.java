@@ -14,7 +14,6 @@ import com.kauailabs.navx.frc.AHRSSim;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
@@ -32,7 +31,6 @@ public class DriveSim {
 
     private Field2d field2d = new Field2d();
     //drive odometry object
-    private DifferentialDriveOdometry odometry;
     private DifferentialDrivePoseEstimator poseEstimator;
     //starting pose 2d (not really necessary)
     private Pose2d startPose2d = new Pose2d(5.0, 5.0, new Rotation2d(45.0));
@@ -71,8 +69,6 @@ Conversions conversions;
 
         this.gyro = gyro;
         this.gyroSim = new AHRSSim();
-
-        odometry = new DifferentialDriveOdometry(gyro.getRotation2d(), 0, 0, startPose2d);
         
         field2d.setRobotPose(startPose2d);
 
@@ -110,23 +106,23 @@ Conversions conversions;
         );
         gyroSim.setYaw(drivetrainSim.getHeading().getDegrees());
 
-        odometry.update(
+        poseEstimator.update(
         gyro.getRotation2d(), 
         conversions.nativeUnitsToDistanceMeters(leftMotor.getSelectedSensorPosition()), /*update distance the left side of the robot has traveled*/
         conversions.nativeUnitsToDistanceMeters(rightMotor.getSelectedSensorPosition()) /*update distance the right side of the robot has traveled*/
         );
 
-        field2d.setRobotPose(odometry.getPoseMeters()); /*update robot position on the field */
+        field2d.setRobotPose(poseEstimator.getEstimatedPosition()); /*update robot position on the field */
         //useful date that is put on the SmartDashboard tab in NetworkTables
         SmartDashboard.putData("Field", field2d);
-        SmartDashboard.putNumber("Odometry X", odometry.getPoseMeters().getX());
-        SmartDashboard.putNumber("Odometry Y", odometry.getPoseMeters().getY());
-        SmartDashboard.putNumber("Rotation",   odometry.getPoseMeters().getRotation().getDegrees());
+        SmartDashboard.putNumber("Odometry X", poseEstimator.getEstimatedPosition().getX());
+        SmartDashboard.putNumber("Odometry Y", poseEstimator.getEstimatedPosition().getY());
+        SmartDashboard.putNumber("Rotation",   poseEstimator.getEstimatedPosition().getRotation().getDegrees());
         //poseEstimator.resetPosition(gyro.getRotation2d(), conversions.nativeUnitsToDistanceMeters(leftMotor.getSelectedSensorPosition()), conversions.nativeUnitsToDistanceMeters(rightMotor.getSelectedSensorPosition()), odometry.getPoseMeters());
     }
     
     public Pose2d getPoseMeters() {
-        return odometry.getPoseMeters();
+        return poseEstimator.getEstimatedPosition();
     }
 
 }
