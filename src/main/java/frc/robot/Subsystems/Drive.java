@@ -10,6 +10,7 @@ import java.util.function.DoubleSupplier;
 import com.ctre.phoenix.motorcontrol.InvertType;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.kauailabs.navx.frc.AHRS;
+
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -26,11 +27,13 @@ import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Robot;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Simulation.DriveSim;
 import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.annotations.Log;
 //#endregion
+
 public class Drive extends SubsystemBase implements Loggable {
   /** Creates a new Drive. */
   //#region declarations
@@ -106,7 +109,7 @@ public class Drive extends SubsystemBase implements Loggable {
    */
   public Command ArcadeDrive(DoubleSupplier throttle, DoubleSupplier turn) {
     return run(()-> {
-      diffDrive.arcadeDrive(0.5, turn.getAsDouble());
+      diffDrive.arcadeDrive(throttle.getAsDouble(), 0.25);
     });
   }
   /**
@@ -157,17 +160,34 @@ public class Drive extends SubsystemBase implements Loggable {
         //poseEstimator.addVisionMeasurement(vision.getCurrentPoseEstimate().get().estimatedPose.toPose2d(), vision.getCurrentPoseEstimate().get().timestampSeconds);
       }
     }
+    if (Robot.isReal()) {
+      posePub.set(new double[] {
+        poseEstimator.getEstimatedPosition().getX(),
+        poseEstimator.getEstimatedPosition().getY(),
+        poseEstimator.getEstimatedPosition().getRotation().getDegrees()
+      });
+    }
+    
+  }
 
-    posePub.set(new double[] {
-      poseEstimator.getEstimatedPosition().getX(),
-      poseEstimator.getEstimatedPosition().getY(),
-      poseEstimator.getEstimatedPosition().getRotation().getDegrees()
-    });
+  @Log
+  public double getPoseX() {
+    return poseEstimator.getEstimatedPosition().getX();
+  }
+
+  @Log
+  public double getPoseY() {
+    return poseEstimator.getEstimatedPosition().getY();
   }
 
   public void simulationPeriodic() {
     driveSim.run();
-    vision.setSimPose(poseEstimator.getEstimatedPosition());
+    posePub.set(new double[] {
+      driveSim.getPoseMeters().getX(),
+      driveSim.getPoseMeters().getY(),
+      driveSim.getPoseMeters().getRotation().getDegrees()
+    });
+    //vision.setSimPose(poseEstimator.getEstimatedPosition());
   }
   
 }
