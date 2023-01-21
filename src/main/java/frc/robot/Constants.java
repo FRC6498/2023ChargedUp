@@ -27,11 +27,13 @@ public class Constants {
         // 1 wheel rev = 1 wheel circumference travelled
         // 1 wheel circumference = pi*wheel diameter
         
-        public static final double gearRatio = 26.0;
+        public static final double gearRatioLow = 26.0;
+        public static final double gearRatioHigh = 10.71;
         // 0.1524
         public static final double wheelDiameterMeters = Units.inchesToMeters(6);
         
-        public static final double distancePerTickMeters = (Math.PI * wheelDiameterMeters) / (2048 * gearRatio);
+        public static final double distancePerTickMetersLowGear = (Math.PI * wheelDiameterMeters) / (2048 * gearRatioLow);
+        public static final double distancePerTickMetersHighGear = (Math.PI * wheelDiameterMeters) / (2048 * gearRatioHigh);
         public static final double trackwidthMeters = Units.inchesToMeters(28.625);
        
         public static final int Shifter_Forward_Channel = 1;

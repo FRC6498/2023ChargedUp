@@ -11,6 +11,7 @@ import com.ctre.phoenix.motorcontrol.InvertType;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.kauailabs.navx.frc.AHRS;
 
+import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -25,12 +26,13 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive.WheelSpeeds;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 import frc.robot.Constants.DriveConstants;
+import frc.robot.Constants.VisionConstants;
 import frc.robot.Simulation.DriveSim;
+import frc.robot.Utility.Conversions;
 import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.annotations.Log;
 //#endregion
@@ -38,7 +40,7 @@ import io.github.oblarg.oblog.annotations.Log;
 public class Drive extends SubsystemBase implements Loggable {
   /** Creates a new Drive. */
   //#region declarations
-  public  WPI_TalonFX Left_Front = new WPI_TalonFX(DriveConstants.Left_Front_ID);
+  WPI_TalonFX Left_Front = new WPI_TalonFX(DriveConstants.Left_Front_ID);
   WPI_TalonFX Right_Front = new WPI_TalonFX(DriveConstants.Right_Front_ID);
   WPI_TalonFX Left_Back = new WPI_TalonFX(DriveConstants.Left_Back_ID);
   WPI_TalonFX Right_Back = new WPI_TalonFX(DriveConstants.Right_Back_ID);
@@ -52,7 +54,7 @@ public class Drive extends SubsystemBase implements Loggable {
 
   @Log.Field2d
   Field2d field;
-
+  Conversions conversions = new Conversions(this::getGearRatio);
   DifferentialDrivePoseEstimator poseEstimator = new DifferentialDrivePoseEstimator(new DifferentialDriveKinematics(DriveConstants.trackwidthMeters), new Rotation2d(), getLeftDistanceMeters(), getRightDistanceMeters(), new Pose2d(5, 2, Rotation2d.fromDegrees(45)));
   DoubleArrayPublisher posePub = NetworkTableInstance.getDefault().getTable("Poses").getDoubleArrayTopic("RobotPose").publish();
   DifferentialDrive.WheelSpeeds ws = new WheelSpeeds(0, 0);
@@ -92,8 +94,21 @@ public class Drive extends SubsystemBase implements Loggable {
     this.vision = vision;
     gyro.calibrate();
 
-    driveSim = new DriveSim(Left_Front, Right_Front, gyro, poseEstimator);
+    driveSim = new DriveSim(Left_Front, Right_Front, gyro, poseEstimator, this::getGearRatio);
     field = new Field2d();
+    for (AprilTag tag : VisionConstants.tagLayout.getTags()) {
+      field.getObject("AprilTag_" + tag.ID).setPose(tag.pose.toPose2d());
+    }
+  }
+
+  public boolean getGear() {
+    return isHighGear;
+  }
+
+  private double getGearRatio() {
+    if (isHighGear) {
+      return DriveConstants.gearRatioHigh;
+    } else return DriveConstants.gearRatioLow;
   }
   
   /**
@@ -123,7 +138,6 @@ public class Drive extends SubsystemBase implements Loggable {
         shifter.set(Value.kForward);
         isHighGear = true;
        }
-       SmartDashboard.putBoolean("Gear", isHighGear);
     });
   }
   /**
@@ -133,7 +147,7 @@ public class Drive extends SubsystemBase implements Loggable {
    */
   @Log
   private double getLeftDistanceMeters() {
-    return Left_Front.getSelectedSensorPosition() * DriveConstants.distancePerTickMeters;
+    return conversions.nativeUnitsToDistanceMeters(Left_Front.getSelectedSensorPosition());
   }
   /**
    * gets the distance that the right side of the robot traveled in meters 
@@ -142,7 +156,7 @@ public class Drive extends SubsystemBase implements Loggable {
    */
   @Log
   private double getRightDistanceMeters() {
-    return Right_Front.getSelectedSensorPosition() * DriveConstants.distancePerTickMeters;
+    return conversions.nativeUnitsToDistanceMeters(Right_Front.getSelectedSensorPosition());
   }
 
   public Rotation2d getGyroAngle() {
@@ -169,6 +183,7 @@ public class Drive extends SubsystemBase implements Loggable {
       poseEstimator.getEstimatedPosition().getY(),
       poseEstimator.getEstimatedPosition().getRotation().getDegrees()
     });
+    field.setRobotPose(poseEstimator.getEstimatedPosition());
   }
 
   public void simulationPeriodic() {
