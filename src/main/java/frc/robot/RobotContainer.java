@@ -76,9 +76,6 @@ public class RobotContainer {
               driveSub.getGyroAngle().getDegrees(), 
               driveSub.getGyroRate()
             );
-            if (Robot.isSimulation()) {
-              
-            }
             sysidDrive.setMotorControllers(sysidDrive.getLeftMotorVoltage(), driveSub.getLeftMotors());
             sysidDrive.setMotorControllers(sysidDrive.getRightMotorVoltage(), driveSub.getRightMotors());
           }, driveSub)

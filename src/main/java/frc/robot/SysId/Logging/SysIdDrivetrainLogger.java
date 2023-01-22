@@ -28,7 +28,7 @@ public class SysIdDrivetrainLogger extends SysIdLogger {
                 data.add(d);
             }
         }
-        primaryMotorVoltage = rotate ? -1 : 1 * motorVoltage;
+        primaryMotorVoltage = rotate ? -1 * motorVoltage : 1 * motorVoltage;
         secondaryMotorVoltage = motorVoltage;
         SmartDashboard.putNumber("motorVoltage", motorVoltage);
         SmartDashboard.putBoolean("wrongmech", isWrongMechanism());
