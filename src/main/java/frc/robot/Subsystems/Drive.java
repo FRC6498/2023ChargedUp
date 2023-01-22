@@ -5,6 +5,7 @@
 package frc.robot.Subsystems;
 
 import java.util.List;
+import java.util.function.DoubleSupplier;
 
 //#region imports
 import com.ctre.phoenix.motorcontrol.InvertType;
@@ -69,6 +70,8 @@ public class Drive extends SubsystemBase {
 
     Left_Back.setInverted(InvertType.FollowMaster);
     Right_Back.setInverted(InvertType.FollowMaster);
+
+    LeftMCG.setInverted(true);
     
 
     this.vision = vision;
@@ -84,8 +87,8 @@ public class Drive extends SubsystemBase {
    * @return
    * Command to drive the robot
    */
-  public Command ArcadeDrive(double throttle, double turn) {
-    return run(()-> diffDrive.arcadeDrive(throttle, turn));
+  public Command ArcadeDrive(DoubleSupplier throttle, DoubleSupplier turn) {
+    return run(()-> diffDrive.arcadeDrive(throttle.getAsDouble(), turn.getAsDouble()));
   }
   /**
    * @return

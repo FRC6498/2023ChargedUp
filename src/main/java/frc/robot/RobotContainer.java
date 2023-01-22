@@ -32,8 +32,8 @@ public class RobotContainer {
   public RobotContainer() {
     driveSub.setName("Drive");
     Logger.configureLoggingAndConfig(this, false);
-    driveSub.setDefaultCommand(driveSub.ArcadeDrive(-controller.getLeftX(),
-        controller.getRightTriggerAxis() - controller.getLeftTriggerAxis()));
+    //driveSub.setDefaultCommand(driveSub.ArcadeDrive(controller.getLeftX(), controller.getRightTriggerAxis() - controller.getLeftTriggerAxis()));
+    driveSub.setDefaultCommand(driveSub.ArcadeDrive(controller::getLeftX, controller::getLeftY));
     mechChooser = new SendableChooser<>();
     //mechChooser.addOption("Drivetrain", driveSub);
     mechChooser.setDefaultOption("Drivetrain", driveSub);
@@ -76,6 +76,9 @@ public class RobotContainer {
               driveSub.getGyroAngle().getDegrees(), 
               driveSub.getGyroRate()
             );
+            if (Robot.isSimulation()) {
+              
+            }
             sysidDrive.setMotorControllers(sysidDrive.getLeftMotorVoltage(), driveSub.getLeftMotors());
             sysidDrive.setMotorControllers(sysidDrive.getRightMotorVoltage(), driveSub.getRightMotors());
           }, driveSub)

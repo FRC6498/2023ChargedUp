@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
@@ -41,7 +42,7 @@ public class Robot extends TimedRobot {
         m_robotContainer.sysidMech.setMotorControllers(0, List.of(mech.getMotor()));
         m_robotContainer.sysidMech.sendData();
       } else if (m_robotContainer.sysidDrive != null) {
-        List<WPI_TalonFX> motors = m_robotContainer.driveSub.getLeftMotors();
+        ArrayList<WPI_TalonFX> motors = new ArrayList<WPI_TalonFX>(m_robotContainer.driveSub.getLeftMotors());
         //motors.addAll(m_robotContainer.driveSub.getRightMotors());
         for (WPI_TalonFX motorFx : m_robotContainer.driveSub.getRightMotors()) {
           motors.add(motorFx);

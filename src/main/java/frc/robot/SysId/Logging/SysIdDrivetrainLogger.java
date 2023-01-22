@@ -4,15 +4,16 @@
 
 package frc.robot.SysId.Logging;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 /** Add your docs here. */
 public class SysIdDrivetrainLogger extends SysIdLogger {
+    
     double primaryMotorVoltage = 0.0;
     double secondaryMotorVoltage = 0.0;
-
     public double getLeftMotorVoltage() {
         return primaryMotorVoltage;
     }
-
     public double getRightMotorVoltage() {
         return secondaryMotorVoltage;
     }
@@ -29,6 +30,8 @@ public class SysIdDrivetrainLogger extends SysIdLogger {
         }
         primaryMotorVoltage = rotate ? -1 : 1 * motorVoltage;
         secondaryMotorVoltage = motorVoltage;
+        SmartDashboard.putNumber("motorVoltage", motorVoltage);
+        SmartDashboard.putBoolean("wrongmech", isWrongMechanism());
     }
 
     public void reset() {
@@ -38,6 +41,7 @@ public class SysIdDrivetrainLogger extends SysIdLogger {
     }
 
     boolean isWrongMechanism() {
-        return mechanism != "Drivetrain" && mechanism != "Drivetrain (Angular)";
+        return !mechanism.equals("Drivetrain") && !mechanism.equals("Drivetrain (Angular)");
+        //return false;
     }
 }

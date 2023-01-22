@@ -87,7 +87,7 @@ Conversions conversions;
      */
     public void run() {
         conversions = new Conversions();
-        drivetrainSim.setInputs(-leftSim.getMotorOutputLeadVoltage(), rightSim.getMotorOutputLeadVoltage());
+        drivetrainSim.setInputs(leftSim.getMotorOutputLeadVoltage(), rightSim.getMotorOutputLeadVoltage());
 
         drivetrainSim.update(0.02);
 
