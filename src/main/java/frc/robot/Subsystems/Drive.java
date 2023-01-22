@@ -12,18 +12,23 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.kauailabs.navx.frc.AHRS;
 
 import edu.wpi.first.apriltag.AprilTag;
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.controller.DifferentialDriveWheelVoltages;
+import edu.wpi.first.math.controller.LTVDifferentialDriveController;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.math.system.plant.LinearSystemId;
+import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.networktables.DoubleArrayPublisher;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
-import edu.wpi.first.wpilibj.drive.DifferentialDrive.WheelSpeeds;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -57,7 +62,8 @@ public class Drive extends SubsystemBase implements Loggable {
   Conversions conversions = new Conversions(this::getGearRatio);
   DifferentialDrivePoseEstimator poseEstimator = new DifferentialDrivePoseEstimator(new DifferentialDriveKinematics(DriveConstants.trackwidthMeters), new Rotation2d(), getLeftDistanceMeters(), getRightDistanceMeters(), new Pose2d(5, 2, Rotation2d.fromDegrees(45)));
   DoubleArrayPublisher posePub = NetworkTableInstance.getDefault().getTable("Poses").getDoubleArrayTopic("RobotPose").publish();
-  DifferentialDrive.WheelSpeeds ws = new WheelSpeeds(0, 0);
+  LTVDifferentialDriveController ltv;
+  Timer trajectoryTimer = new Timer();
   DoubleSolenoid shifter = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, DriveConstants.Shifter_Forward_Channel, DriveConstants.Shifter_Reverse_Channel);
   @Log
   public boolean isHighGear;
@@ -99,6 +105,21 @@ public class Drive extends SubsystemBase implements Loggable {
     for (AprilTag tag : VisionConstants.tagLayout.getTags()) {
       field.getObject("AprilTag_" + tag.ID).setPose(tag.pose.toPose2d());
     }
+    ltv = new LTVDifferentialDriveController(
+      LinearSystemId.identifyDrivetrainSystem(
+        0, 
+        0, 
+        0, 
+        0, 
+        DriveConstants.trackwidthMeters
+      ), 
+      DriveConstants.trackwidthMeters,
+      // states = x pos, y pos, angle, left speed, right speed
+      VecBuilder.fill(0, 0, 0, 0, 0),
+      // inputs = left volts, right volts 
+      VecBuilder.fill(12.0, 12.0),
+      0.02
+    );
   }
 
   public boolean getGear() {
@@ -159,8 +180,41 @@ public class Drive extends SubsystemBase implements Loggable {
     return conversions.nativeUnitsToDistanceMeters(Right_Front.getSelectedSensorPosition());
   }
 
+  private double getLeftVelocityMetersPerSecond() {
+    return conversions.nativeUnitsToVelocityMetersPerSecond(Left_Front.getSelectedSensorVelocity());
+  }
+
+  private double getRightVelocityMetersPerSecond() {
+    return conversions.nativeUnitsToVelocityMetersPerSecond(Right_Front.getSelectedSensorVelocity());
+  }
+
+  public Command followTrajectory(Trajectory trajectory) {
+    return runOnce(trajectoryTimer::start).andThen(
+      run(() -> 
+        setWheelVoltages(
+          ltv.calculate(
+            poseEstimator.getEstimatedPosition(), 
+            getLeftVelocityMetersPerSecond(), 
+            getRightVelocityMetersPerSecond(), 
+            trajectory.sample(trajectoryTimer.get())
+          )
+        )
+      ).until(() -> trajectoryTimer.get() >= trajectory.getTotalTimeSeconds())
+      .andThen(() -> setWheelVoltages(new DifferentialDriveWheelVoltages(0, 0)))
+    );
+  }
+
+  private void setWheelVoltages(DifferentialDriveWheelVoltages volts) {
+    LeftMCG.setVoltage(volts.left);
+    RightMCG.setVoltage(volts.right);
+  }
+
   public Rotation2d getGyroAngle() {
     return gyro.getRotation2d();
+  }
+
+  public Command turnAngleRelative(Rotation2d angle) {
+    return run(null);
   }
 
   @Override

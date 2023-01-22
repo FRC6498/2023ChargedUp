@@ -46,6 +46,14 @@ public class Conversions {
       return sensorCountsPer100ms;
 	  }
 
+    public double nativeUnitsToVelocityMetersPerSecond(double nativeUnits) {
+      // encoder ticks per 100ms
+      // encoder ticks per 1000ms
+      nativeUnits *= 10;
+      // meters per second
+      return nativeUnitsToDistanceMeters(nativeUnits);
+    }
+
     /**
      * converts from Falcon500 integrated encoder ticks to meters
      * @param sensorCounts
