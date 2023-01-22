@@ -9,6 +9,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.util.Units;
 
 
@@ -21,7 +22,6 @@ public class Constants {
 
         public static final int TalonFXCountsPerRev = 2048;
         
-
         // 1 motor rev = 2048 ticks
         // gearRatio motor revs = 1 wheel rev
         // 1 wheel rev = 1 wheel circumference travelled
@@ -38,6 +38,7 @@ public class Constants {
        
         public static final int Shifter_Forward_Channel = 1;
         public static final int Shifter_Reverse_Channel = 1;
+        public static final TrajectoryConfig trajectoryConfig = new TrajectoryConfig(4.6, 3.5);
 
     }
 
@@ -52,7 +53,7 @@ public class Constants {
         private static final double fieldLength = Units.inchesToMeters((54*12) + 3.25);
         private static final double fieldWidth = Units.inchesToMeters((26*12) + 3.5);
         
-        // TODO: handle alliance switching
+        // TODO: handle alliance switching (mirror trajectories)
 
         static double archeryWallY = Units.inchesToMeters(351);
         static double bleacherY = Units.inchesToMeters(97);

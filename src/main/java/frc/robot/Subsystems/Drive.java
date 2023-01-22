@@ -201,6 +201,7 @@ public class Drive extends SubsystemBase implements Loggable {
         )
       ).until(() -> trajectoryTimer.get() >= trajectory.getTotalTimeSeconds())
       .andThen(() -> setWheelVoltages(new DifferentialDriveWheelVoltages(0, 0)))
+      .andThen(trajectoryTimer::stop).andThen(trajectoryTimer::reset)
     );
   }
 
@@ -213,8 +214,8 @@ public class Drive extends SubsystemBase implements Loggable {
     return gyro.getRotation2d();
   }
 
-  public Command turnAngleRelative(Rotation2d angle) {
-    return run(null);
+  public Pose2d getPose2d() {
+    return poseEstimator.getEstimatedPosition();
   }
 
   @Override
