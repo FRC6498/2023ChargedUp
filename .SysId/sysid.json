@@ -3,7 +3,6 @@
     "Analysis Type": "General Mechanism",
     "dsClient": false,
     "mode": "Client (NT4)",
-    "port4": 6498,
     "serverTeam": "localhost"
   }
 }
