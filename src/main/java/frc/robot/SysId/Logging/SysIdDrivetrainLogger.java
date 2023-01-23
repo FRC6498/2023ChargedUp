@@ -21,6 +21,7 @@ public class SysIdDrivetrainLogger extends SysIdLogger {
     public void log(double leftVoltage, double rightVoltage, double leftPosition, double rightPosition, double leftVelocity,
             double rightVelocity, double measuredAngle, double angularRate) {
         updateData();
+        SmartDashboard.putNumber("gyroAngle", measuredAngle);
         if (data.size() < dataVectorSize) {
             double[] dataPacket = new double[] { timestamp, leftVoltage, rightVoltage, leftPosition, rightPosition,
                     leftVelocity, rightVelocity, measuredAngle, angularRate };

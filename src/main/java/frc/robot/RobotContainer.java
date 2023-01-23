@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.NotifierCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.OperatorConstants;
@@ -65,7 +66,7 @@ public class RobotContainer {
         // drivetrain
         sysidDrive = new SysIdDrivetrainLogger();
         return Commands.runOnce(sysidDrive::initLogging, driveSub).andThen(
-          Commands.run(() -> {
+          new NotifierCommand(() -> {
             sysidDrive.log(
               sysidDrive.measureVoltage(driveSub.getLeftMotors()),
               sysidDrive.measureVoltage(driveSub.getRightMotors()), 
@@ -78,7 +79,7 @@ public class RobotContainer {
             );
             sysidDrive.setMotorControllers(sysidDrive.getLeftMotorVoltage(), driveSub.getLeftMotors());
             sysidDrive.setMotorControllers(sysidDrive.getRightMotorVoltage(), driveSub.getRightMotors());
-          }, driveSub)
+          }, 0.005, driveSub)
         );
       }
     } else {

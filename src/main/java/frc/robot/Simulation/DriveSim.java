@@ -33,7 +33,7 @@ public class DriveSim {
     //drive odometry object
     private DifferentialDriveOdometry SimOdometry;
     //starting pose 2d (not really necessary)
-    private Pose2d startPose2d = new Pose2d(5.0, 5.0, new Rotation2d(45.0));
+    private Pose2d startPose2d = new Pose2d(0.0, 5.0, new Rotation2d(0.0));
 
     private AHRS gyro;
     private AHRSSim gyroSim;
