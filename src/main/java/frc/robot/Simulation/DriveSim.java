@@ -73,6 +73,7 @@ Conversions conversions;
         this.gyroSim = new AHRSSim();
         
         field2d.setRobotPose(startPose2d);
+        conversions = new Conversions(gearRatio);
 
         this.poseEstimator = poseEstimator;
     }

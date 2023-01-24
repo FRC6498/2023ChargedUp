@@ -37,7 +37,8 @@
       "/SmartDashboard/Field": {
         "units": "meters",
         "window": {
-          "name": "field"
+          "name": "field",
+          "visible": true
         }
       }
     }
