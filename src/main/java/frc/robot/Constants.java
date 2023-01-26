@@ -47,6 +47,22 @@ public class Constants {
         public static final int Driver_Controller_ID = 0; //note that controller ID's are not the same as can ID's
     }
 
+    public static final class ArmConstants {
+
+        public static final int motorCanId = 0;
+        public static final double kP = 0;
+        public static final double kD = 0;
+        public static final double kS = 0;
+        public static final double kG = 0;
+        public static final double kV = 0;
+        public static final Rotation2d middleGoal = Rotation2d.fromDegrees(0);
+        public static final Rotation2d upperGoal = Rotation2d.fromDegrees(0);
+        public static final Rotation2d stowed = Rotation2d.fromDegrees(0);
+        public static final double maxVelocityDegreesPerSecond = 0;
+        public static final double maxAccelerationDegreesPerSecondSq = 0;
+
+    }
+
     public static final class VisionConstants {
         // TODO: set camera name based on the actual camera name
         public static final String cameraName = "visionCam";
