@@ -4,6 +4,8 @@
 
 package frc.robot.Simulation;
 
+import java.util.function.DoubleSupplier;
+
 //#region imports
 import com.ctre.phoenix.motorcontrol.TalonFXSimCollection;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
@@ -11,9 +13,9 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.kauailabs.navx.frc.AHRS;
 import com.kauailabs.navx.frc.AHRSSim;
 
+import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
@@ -31,7 +33,7 @@ public class DriveSim {
 
     private Field2d field2d = new Field2d();
     //drive odometry object
-    private DifferentialDriveOdometry SimOdometry;
+    private DifferentialDrivePoseEstimator poseEstimator;
     //starting pose 2d (not really necessary)
     private Pose2d startPose2d = new Pose2d(5.0, 5.0, new Rotation2d(45.0));
 
@@ -42,11 +44,11 @@ Conversions conversions;
     
     private DifferentialDrivetrainSim drivetrainSim  = new DifferentialDrivetrainSim(
         DCMotor.getFalcon500(2),//2 Falcon 500s on each side of the robot
-        DriveConstants.gearRatio,//gear ratio between the wheels and the encoder on the robot
+        DriveConstants.gearRatioLow,//gear ratio between the wheels and the encoder on the robot
         2.1, //MOI? of the robot (your supposed to get it from the cad model but I just made this up)
         30,//mass of the robot (I also made this up)
         Units.inchesToMeters(3),//radius of the robot's wheels
-        0.546, //distance between the robot's wheels in meters
+        DriveConstants.trackwidthMeters, //distance between the robot's wheels in meters
         null); //standard deviation in your measurement devices
     //#endregion
 
@@ -59,7 +61,7 @@ Conversions conversions;
          * @param gyro
          * Gyro you are using
          */
-    public DriveSim(WPI_TalonFX Front_left_Motor, WPI_TalonFX Front_Right_Motor, AHRS gyro){
+    public DriveSim(WPI_TalonFX Front_left_Motor, WPI_TalonFX Front_Right_Motor, AHRS gyro, DifferentialDrivePoseEstimator poseEstimator, DoubleSupplier gearRatio) {
 
         this.leftMotor = Front_left_Motor;
         this.rightMotor = Front_Right_Motor;
@@ -69,10 +71,11 @@ Conversions conversions;
 
         this.gyro = gyro;
         this.gyroSim = new AHRSSim();
-
-        this.SimOdometry = new DifferentialDriveOdometry(gyro.getRotation2d(), 0, 0, startPose2d);
         
         field2d.setRobotPose(startPose2d);
+        conversions = new Conversions(gearRatio);
+
+        this.poseEstimator = poseEstimator;
     }
     /**
      * 
@@ -86,8 +89,7 @@ Conversions conversions;
      * runs the DrivetrainSimulation
      */
     public void run() {
-        conversions = new Conversions();
-        drivetrainSim.setInputs(-leftSim.getMotorOutputLeadVoltage(), rightSim.getMotorOutputLeadVoltage());
+        drivetrainSim.setInputs(leftSim.getMotorOutputLeadVoltage(), rightSim.getMotorOutputLeadVoltage());
 
         drivetrainSim.update(0.02);
 
@@ -106,20 +108,23 @@ Conversions conversions;
         );
         gyroSim.setYaw(drivetrainSim.getHeading().getDegrees());
 
-        SimOdometry.update(
+        poseEstimator.update(
         gyro.getRotation2d(), 
         conversions.nativeUnitsToDistanceMeters(leftMotor.getSelectedSensorPosition()), /*update distance the left side of the robot has traveled*/
         conversions.nativeUnitsToDistanceMeters(rightMotor.getSelectedSensorPosition()) /*update distance the right side of the robot has traveled*/
         );
 
-        field2d.setRobotPose(SimOdometry.getPoseMeters()); /*update robot position on the field */
-
+        field2d.setRobotPose(poseEstimator.getEstimatedPosition()); /*update robot position on the field */
         //useful date that is put on the SmartDashboard tab in NetworkTables
         SmartDashboard.putData("Field", field2d);
-        SmartDashboard.putNumber("Odometry X", SimOdometry.getPoseMeters().getX());
-        SmartDashboard.putNumber("Odometry Y", SimOdometry.getPoseMeters().getY());
-        SmartDashboard.putNumber("Rotation", gyro.getRotation2d().getDegrees());
+        SmartDashboard.putNumber("Odometry X", poseEstimator.getEstimatedPosition().getX());
+        SmartDashboard.putNumber("Odometry Y", poseEstimator.getEstimatedPosition().getY());
+        SmartDashboard.putNumber("Rotation",   poseEstimator.getEstimatedPosition().getRotation().getDegrees());
+        //poseEstimator.resetPosition(gyro.getRotation2d(), conversions.nativeUnitsToDistanceMeters(leftMotor.getSelectedSensorPosition()), conversions.nativeUnitsToDistanceMeters(rightMotor.getSelectedSensorPosition()), odometry.getPoseMeters());
     }
     
+    public Pose2d getPoseMeters() {
+        return poseEstimator.getEstimatedPosition();
+    }
 
 }
