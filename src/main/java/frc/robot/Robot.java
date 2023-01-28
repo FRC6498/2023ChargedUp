@@ -16,27 +16,39 @@ public class Robot extends TimedRobot {
 
   private RobotContainer m_robotContainer;
 
+  public Robot() {
+    System.out.println("Robot Ctor!");
+  }
+
   @Override
   public void robotInit() {
     m_robotContainer = new RobotContainer();
     addPeriodic(m_robotContainer.visionSub::run, kDefaultPeriod);
     NTHelper.sendTagLayout(VisionConstants.tagLayout);
+    System.out.println("RobotInit!");
   }
 
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
     Logger.updateEntries();
+    System.out.println("Robot Periodic!");
   }
 
   @Override
-  public void disabledInit() {}
+  public void disabledInit() {
+    System.out.println("DisabledInit!");
+  }
 
   @Override
-  public void disabledPeriodic() {}
+  public void disabledPeriodic() {
+    System.out.println("Disabled Periodic!");
+  }
 
   @Override
-  public void disabledExit() {}
+  public void disabledExit() {
+    System.out.println("Disabled Exit!");
+  }
 
   @Override
   public void autonomousInit() {
@@ -45,35 +57,50 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();
     }
+    System.out.println("Auto Init!");
   }
 
   @Override
-  public void autonomousPeriodic() {}
+  public void autonomousPeriodic() {
+    System.out.println("Auto Periodic!");
+  }
 
   @Override
-  public void autonomousExit() {}
+  public void autonomousExit() {
+    System.out.println("Auto Exit!");
+  }
 
   @Override
   public void teleopInit() {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
+    System.out.println("Teleop Init!");
   }
 
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() {
+    System.out.println("Teleop Periodic!");
+  }
 
   @Override
-  public void teleopExit() {}
+  public void teleopExit() {
+    System.out.println("Teleop Exit!");
+  }
 
   @Override
   public void testInit() {
     CommandScheduler.getInstance().cancelAll();
+    System.out.println("Test Init!");
   }
 
   @Override
-  public void testPeriodic() {}
+  public void testPeriodic() {
+    System.out.println("test Periodic!");
+  }
 
   @Override
-  public void testExit() {}
+  public void testExit() {
+    System.out.println("Test Exit!");
+  }
 }

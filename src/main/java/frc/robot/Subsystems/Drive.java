@@ -21,6 +21,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.DoubleArrayPublisher;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.Compressor;
@@ -107,15 +108,15 @@ public class Drive extends SubsystemBase implements Loggable {
     }
     ltv = new LTVDifferentialDriveController(
       LinearSystemId.identifyDrivetrainSystem(
-        0, 
-        0, 
-        0, 
-        0, 
+        0.00052047, 
+        0.00036209, 
+        0.00051414, 
+        7.7103E-05, 
         DriveConstants.trackwidthMeters
       ), 
       DriveConstants.trackwidthMeters,
       // states = x pos, y pos, angle, left speed, right speed
-      VecBuilder.fill(0, 0, 0, 0, 0),
+      VecBuilder.fill(Units.inchesToMeters(2), Units.inchesToMeters(2), Units.degreesToRadians(5), 0.5, 0.5),
       // inputs = left volts, right volts 
       VecBuilder.fill(12.0, 12.0),
       0.02
@@ -230,7 +231,7 @@ public class Drive extends SubsystemBase implements Loggable {
     if (vision.getCurrentPoseEstimate().isPresent()) {
       // if the pose is reasonably close
       if (vision.getCurrentPoseEstimate().get().estimatedPose.toPose2d().getTranslation().getDistance(poseEstimator.getEstimatedPosition().getTranslation()) < 1.5) {
-        poseEstimator.addVisionMeasurement(vision.getCurrentPoseEstimate().get().estimatedPose.toPose2d(), vision.getCurrentPoseEstimate().get().timestampSeconds);
+        //poseEstimator.addVisionMeasurement(vision.getCurrentPoseEstimate().get().estimatedPose.toPose2d(), vision.getCurrentPoseEstimate().get().timestampSeconds);
       }
     }
     posePub.set(new double[] {

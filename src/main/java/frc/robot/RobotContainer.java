@@ -12,6 +12,7 @@ import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.Commands.Autos.MoveForward3MetersAuto;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Subsystems.Drive;
@@ -26,6 +27,7 @@ public class RobotContainer implements Loggable {
   Drive driveSub = new Drive(visionSub);
 
   public RobotContainer() {
+    System.out.println("Robot Started");
     Logger.configureLoggingAndConfig(this, false);
     configureBindings();
   }
@@ -43,6 +45,6 @@ public class RobotContainer implements Loggable {
   }
 
   public Command getAutonomousCommand() {
-    return Commands.print("No autonomous command configured");
+    return new MoveForward3MetersAuto(driveSub);
   }
 }
