@@ -17,6 +17,7 @@ public class Robot extends TimedRobot {
   private RobotContainer m_robotContainer;
 
   public Robot() {
+    super();
     System.out.println("Robot Ctor!");
   }
 
@@ -80,7 +81,6 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopPeriodic() {
-    System.out.println("Teleop Periodic!");
   }
 
   @Override
@@ -96,7 +96,6 @@ public class Robot extends TimedRobot {
 
   @Override
   public void testPeriodic() {
-    System.out.println("test Periodic!");
   }
 
   @Override

@@ -6,8 +6,10 @@ package frc.robot.Subsystems;
 
 import java.util.function.DoubleSupplier;
 
+import com.ctre.phoenix.ErrorCode;
 //#region imports
 import com.ctre.phoenix.motorcontrol.InvertType;
+import com.ctre.phoenix.motorcontrol.StickyFaults;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.kauailabs.navx.frc.AHRS;
 
