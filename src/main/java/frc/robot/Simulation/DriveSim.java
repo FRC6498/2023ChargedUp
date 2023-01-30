@@ -42,14 +42,22 @@ public class DriveSim {
 Conversions conversions;
     //drivetrain sim object
     
-    private DifferentialDrivetrainSim drivetrainSim  = new DifferentialDrivetrainSim(
+    /*private DifferentialDrivetrainSim drivetrainSim  = new DifferentialDrivetrainSim(
         DCMotor.getFalcon500(2),//2 Falcon 500s on each side of the robot
         DriveConstants.gearRatioLow,//gear ratio between the wheels and the encoder on the robot
         2.1, //MOI? of the robot (your supposed to get it from the cad model but I just made this up)
         30,//mass of the robot (I also made this up)
         Units.inchesToMeters(3),//radius of the robot's wheels
         DriveConstants.trackwidthMeters, //distance between the robot's wheels in meters
-        null); //standard deviation in your measurement devices
+        null); //standard deviation in your measurement devices*/
+    private DifferentialDrivetrainSim drivetrainSim = new DifferentialDrivetrainSim(
+        DriveConstants.plant, 
+        DCMotor.getFalcon500(2), 
+        26, 
+        DriveConstants.trackwidthMeters, 
+        Units.inchesToMeters(3), 
+        null
+    );
     //#endregion
 
     /**

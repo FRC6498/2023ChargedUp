@@ -6,10 +6,8 @@ package frc.robot.Subsystems;
 
 import java.util.function.DoubleSupplier;
 
-import com.ctre.phoenix.ErrorCode;
 //#region imports
 import com.ctre.phoenix.motorcontrol.InvertType;
-import com.ctre.phoenix.motorcontrol.StickyFaults;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.kauailabs.navx.frc.AHRS;
 
@@ -21,7 +19,6 @@ import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
-import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.DoubleArrayPublisher;
@@ -63,10 +60,13 @@ public class Drive extends SubsystemBase implements Loggable {
   @Log.Field2d
   Field2d field;
   Conversions conversions = new Conversions(this::getGearRatio);
-  DifferentialDrivePoseEstimator poseEstimator = new DifferentialDrivePoseEstimator(new DifferentialDriveKinematics(DriveConstants.trackwidthMeters), new Rotation2d(), getLeftDistanceMeters(), getRightDistanceMeters(), new Pose2d(0, 0, Rotation2d.fromDegrees(0)));
+  //#region Controls/Pose/Trajectories
+  DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(DriveConstants.trackwidthMeters);
+  DifferentialDrivePoseEstimator poseEstimator = new DifferentialDrivePoseEstimator(kinematics, new Rotation2d(), getLeftDistanceMeters(), getRightDistanceMeters(), new Pose2d(0, 0, Rotation2d.fromDegrees(0)));
   DoubleArrayPublisher posePub = NetworkTableInstance.getDefault().getTable("Poses").getDoubleArrayTopic("RobotPose").publish();
   LTVDifferentialDriveController ltv;
   Timer trajectoryTimer = new Timer();
+  //#endregion
   DoubleSolenoid shifter = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, DriveConstants.Shifter_Forward_Channel, DriveConstants.Shifter_Reverse_Channel);
   @Log
   public boolean isHighGear;
@@ -75,6 +75,7 @@ public class Drive extends SubsystemBase implements Loggable {
   //Simulation Stuff
   DriveSim driveSim;
   //#endregion
+  DifferentialDriveWheelVoltages wheelVolts = new DifferentialDriveWheelVoltages();
   
   
   public Drive(Vision vision) {
@@ -98,7 +99,6 @@ public class Drive extends SubsystemBase implements Loggable {
     if (Robot.isReal()) {
       LeftMCG.setInverted(true);
     }
-    
 
     this.vision = vision;
     gyro.calibrate();
@@ -108,14 +108,9 @@ public class Drive extends SubsystemBase implements Loggable {
     for (AprilTag tag : VisionConstants.tagLayout.getTags()) {
       field.getObject("AprilTag_" + tag.ID).setPose(tag.pose.toPose2d());
     }
+
     ltv = new LTVDifferentialDriveController(
-      LinearSystemId.identifyDrivetrainSystem(
-        0.00052047, 
-        0.00036209, 
-        0.00051414, 
-        7.7103E-05, 
-        DriveConstants.trackwidthMeters
-      ), 
+      DriveConstants.plant, 
       DriveConstants.trackwidthMeters,
       // states = x pos, y pos, angle, left speed, right speed
       VecBuilder.fill(Units.inchesToMeters(2), Units.inchesToMeters(2), Units.degreesToRadians(5), 0.5, 0.5),
@@ -193,24 +188,39 @@ public class Drive extends SubsystemBase implements Loggable {
 
   public Command followTrajectory(Trajectory trajectory) {
     return runOnce(trajectoryTimer::start).andThen(
-      run(() -> 
-        setWheelVoltages(
-          ltv.calculate(
-            poseEstimator.getEstimatedPosition(), 
-            getLeftVelocityMetersPerSecond(), 
-            getRightVelocityMetersPerSecond(), 
-            trajectory.sample(trajectoryTimer.get())
-          )
-        )
-      ).until(() -> trajectoryTimer.get() >= trajectory.getTotalTimeSeconds())
-      .andThen(() -> setWheelVoltages(new DifferentialDriveWheelVoltages(0, 0)))
+      run(() -> {
+        wheelVolts = ltv.calculate(
+          poseEstimator.getEstimatedPosition(), 
+          getLeftVelocityMetersPerSecond(), 
+          getRightVelocityMetersPerSecond(), 
+          trajectory.sample(trajectoryTimer.get())
+        );
+        setWheelVoltages(wheelVolts.left, wheelVolts.right);
+      })
+      .until(() -> trajectoryTimer.get() >= trajectory.getTotalTimeSeconds())
+      .andThen(() -> setWheelVoltages(0, 0))
       .andThen(trajectoryTimer::stop).andThen(trajectoryTimer::reset)
     );
+    }
+
+  @Log
+  private double getLeftVoltage() {
+    return wheelVolts.left;
   }
 
-  private void setWheelVoltages(DifferentialDriveWheelVoltages volts) {
-    LeftMCG.setVoltage(volts.left);
-    RightMCG.setVoltage(volts.right);
+  @Log
+  private double getRightVoltage() {
+    return wheelVolts.right;
+  }
+
+  @Log
+  private double getLeftCmd() {
+    return LeftMCG.get();
+  }
+
+  private void setWheelVoltages(double leftVolts, double rightVolts) {
+    LeftMCG.setVoltage(leftVolts);
+    RightMCG.setVoltage(rightVolts);
   }
 
   public Rotation2d getGyroAngle() {

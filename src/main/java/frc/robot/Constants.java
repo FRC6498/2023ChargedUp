@@ -9,6 +9,9 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.numbers.N2;
+import edu.wpi.first.math.system.LinearSystem;
+import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.util.Units;
 
@@ -38,8 +41,8 @@ public class Constants {
        
         public static final int Shifter_Forward_Channel = 1;
         public static final int Shifter_Reverse_Channel = 1;
-        public static final TrajectoryConfig trajectoryConfig = new TrajectoryConfig(4.6, 3.5);
-
+        public static final TrajectoryConfig trajectoryConfig = new TrajectoryConfig(2.1, 2);
+        public static final LinearSystem<N2,N2,N2> plant = LinearSystemId.identifyDrivetrainSystem(5.7454, 0.00036209, 5.6756, 7.7103E-05);
     }
 
     public static final class OperatorConstants {

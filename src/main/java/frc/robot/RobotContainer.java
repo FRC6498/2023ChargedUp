@@ -10,7 +10,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Commands.Autos.MoveForward3MetersAuto;
 import frc.robot.Constants.DriveConstants;
@@ -22,12 +21,18 @@ import io.github.oblarg.oblog.Logger;
 
 public class RobotContainer implements Loggable {
   private boolean isKeyboard = true;
-  public CommandXboxController controller = new CommandXboxController(OperatorConstants.Driver_Controller_ID);
-  Vision visionSub = new Vision();
-  Drive driveSub = new Drive(visionSub);
+  public CommandXboxController controller;
+  Vision visionSub;
+  Drive driveSub;
 
   public RobotContainer() {
     System.out.println("Robot Started");
+    controller = new CommandXboxController(OperatorConstants.Driver_Controller_ID);
+    System.out.println("Controller Started");
+    visionSub = new Vision();
+    System.out.println("Vision Started");
+    driveSub = new Drive(visionSub);
+    System.out.println("Drive Started");
     Logger.configureLoggingAndConfig(this, false);
     configureBindings();
   }

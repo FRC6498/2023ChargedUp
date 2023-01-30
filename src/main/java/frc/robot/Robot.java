@@ -16,39 +16,29 @@ public class Robot extends TimedRobot {
 
   private RobotContainer m_robotContainer;
 
-  public Robot() {
-    super();
-    System.out.println("Robot Ctor!");
-  }
-
   @Override
   public void robotInit() {
     m_robotContainer = new RobotContainer();
     addPeriodic(m_robotContainer.visionSub::run, kDefaultPeriod);
     NTHelper.sendTagLayout(VisionConstants.tagLayout);
-    System.out.println("RobotInit!");
   }
 
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
     Logger.updateEntries();
-    System.out.println("Robot Periodic!");
   }
 
   @Override
   public void disabledInit() {
-    System.out.println("DisabledInit!");
   }
 
   @Override
   public void disabledPeriodic() {
-    System.out.println("Disabled Periodic!");
   }
 
   @Override
   public void disabledExit() {
-    System.out.println("Disabled Exit!");
   }
 
   @Override
@@ -58,17 +48,14 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();
     }
-    System.out.println("Auto Init!");
   }
 
   @Override
   public void autonomousPeriodic() {
-    System.out.println("Auto Periodic!");
   }
 
   @Override
   public void autonomousExit() {
-    System.out.println("Auto Exit!");
   }
 
   @Override
@@ -76,7 +63,6 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
-    System.out.println("Teleop Init!");
   }
 
   @Override
@@ -85,13 +71,11 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopExit() {
-    System.out.println("Teleop Exit!");
   }
 
   @Override
   public void testInit() {
     CommandScheduler.getInstance().cancelAll();
-    System.out.println("Test Init!");
   }
 
   @Override
@@ -100,6 +84,5 @@ public class Robot extends TimedRobot {
 
   @Override
   public void testExit() {
-    System.out.println("Test Exit!");
   }
 }
