@@ -16,10 +16,9 @@ public class Conversions {
     * @return
     * meters -> ticks
     */
-    public Conversions() {
-      
+    public Conversions() { 
     }
-    public int distanceToNativeUnits(double positionMeters){
+    public static int distanceToNativeUnits(double positionMeters){
 		double wheelRotations = positionMeters/(2 * Math.PI * Units.inchesToMeters(3));
 		double motorRotations = wheelRotations * DriveConstants.gearRatio;
 		int sensorCounts = (int)(motorRotations * DriveConstants.TalonFXCountsPerRev);
@@ -31,7 +30,7 @@ public class Conversions {
      * @return
      * velocity in m/s -> encoderTicks/s
      */
-    public int velocityToNativeUnits(double velocityMetersPerSecond){
+    public static int velocityToNativeUnits(double velocityMetersPerSecond){
 		double wheelRotationsPerSecond = velocityMetersPerSecond/(2 * Math.PI * Units.inchesToMeters(3));
 		double motorRotationsPerSecond = wheelRotationsPerSecond * DriveConstants.gearRatio;
 		double motorRotationsPer100ms = motorRotationsPerSecond / 10;
@@ -45,11 +44,24 @@ public class Conversions {
      * @return
      * encoder ticks -> meters
      */
-    public double nativeUnitsToDistanceMeters(double sensorCounts){
+    public static double nativeUnitsToDistanceMeters(double sensorCounts){
 		double motorRotations = (double)sensorCounts / DriveConstants.TalonFXCountsPerRev;
 		double wheelRotations = motorRotations / DriveConstants.gearRatio;
 		double positionMeters = wheelRotations * (2 * Math.PI * Units.inchesToMeters(3));
 		return positionMeters;
 	}
+  /**
+   * converts from degrees to Falcon500 Native encoder units
+   * @param degrees
+   * -> degrees to convert
+   * @param gearRatio
+   * -> gear ratio on the motor
+   * @return
+   * Falcon500 Native encoder units
+   */
+  public static  int DegreesToNativeUnits(double degrees, double gearRatio) {
+    double nativeUnits = degrees * ((DriveConstants.TalonFXCountsPerRev * gearRatio) /360); 
+     return (int)nativeUnits;
+  }
 
 }

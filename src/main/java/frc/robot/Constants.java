@@ -83,4 +83,8 @@ public class Constants {
         public static final int camResolutionHeight = 720;
         public static final double minTargetArea = 10;
     }
+    public static final class ArmConstants{
+        public static final int ArmTalonID = 5;
+        public static final int ArmGearRatio = 100;
+    }
 }

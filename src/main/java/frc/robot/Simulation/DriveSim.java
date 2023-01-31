@@ -37,7 +37,7 @@ public class DriveSim {
 
     private AHRS gyro;
     private AHRSSim gyroSim;
-Conversions conversions;
+
     //drivetrain sim object
     
     private DifferentialDrivetrainSim drivetrainSim  = new DifferentialDrivetrainSim(
@@ -86,30 +86,29 @@ Conversions conversions;
      * runs the DrivetrainSimulation
      */
     public void run() {
-        conversions = new Conversions();
         drivetrainSim.setInputs(-leftSim.getMotorOutputLeadVoltage(), rightSim.getMotorOutputLeadVoltage());
 
         drivetrainSim.update(0.02);
 
         leftSim.setIntegratedSensorRawPosition(
-            conversions.distanceToNativeUnits(drivetrainSim.getLeftPositionMeters())
+            Conversions.distanceToNativeUnits(drivetrainSim.getLeftPositionMeters())
         );
         leftSim.setIntegratedSensorVelocity(
-           conversions.velocityToNativeUnits(drivetrainSim.getLeftVelocityMetersPerSecond())
+           Conversions.velocityToNativeUnits(drivetrainSim.getLeftVelocityMetersPerSecond())
         );
 
         rightSim.setIntegratedSensorRawPosition(
-            conversions.distanceToNativeUnits(drivetrainSim.getRightPositionMeters())
+            Conversions.distanceToNativeUnits(drivetrainSim.getRightPositionMeters())
         );
         rightSim.setIntegratedSensorVelocity(
-            conversions.velocityToNativeUnits(drivetrainSim.getRightVelocityMetersPerSecond())
+            Conversions.velocityToNativeUnits(drivetrainSim.getRightVelocityMetersPerSecond())
         );
         gyroSim.setYaw(drivetrainSim.getHeading().getDegrees());
 
         SimOdometry.update(
         gyro.getRotation2d(), 
-        conversions.nativeUnitsToDistanceMeters(leftMotor.getSelectedSensorPosition()), /*update distance the left side of the robot has traveled*/
-        conversions.nativeUnitsToDistanceMeters(rightMotor.getSelectedSensorPosition()) /*update distance the right side of the robot has traveled*/
+        Conversions.nativeUnitsToDistanceMeters(leftMotor.getSelectedSensorPosition()), /*update distance the left side of the robot has traveled*/
+        Conversions.nativeUnitsToDistanceMeters(rightMotor.getSelectedSensorPosition()) /*update distance the right side of the robot has traveled*/
         );
 
         field2d.setRobotPose(SimOdometry.getPoseMeters()); /*update robot position on the field */
