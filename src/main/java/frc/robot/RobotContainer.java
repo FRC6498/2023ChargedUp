@@ -32,7 +32,8 @@ public class RobotContainer {
     //shifts gears
     controller.a().onTrue(driveSub.Shift());
     controller.b().onTrue(arm.moveToDegrees(50));
-    controller.x().onTrue(cowCatcher.togglePushCatcher());
+    controller.x().onTrue(cowCatcher.toggle_Full());
+    controller.y().onTrue(cowCatcher.toggle_Half());
 
   }
 

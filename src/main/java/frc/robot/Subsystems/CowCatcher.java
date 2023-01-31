@@ -14,27 +14,55 @@ import frc.robot.Constants.CowCatcherConstants;
 
 public class CowCatcher extends SubsystemBase {
   /** Creates a new CowCatcher. */
-  DoubleSolenoid pushcatcher = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, CowCatcherConstants.pushcatcherForwardID, CowCatcherConstants.pushcatcherReverseID);
- 
+  DoubleSolenoid fullExtend_Pistion = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, CowCatcherConstants.pushcatcherForwardID, CowCatcherConstants.pushcatcherReverseID);
+  DoubleSolenoid halfExtend_Pistion = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, CowCatcherConstants.pushcatcherForwardID, CowCatcherConstants.pushcatcherReverseID);
   public CowCatcher() {}
 
   /**toggles the pushcatcher */
-  private void toggle() {
-    switch(pushcatcher.get()){
+  private void toggle_FullPiston() {
+    switch(fullExtend_Pistion.get()){
       case kForward:
-      pushcatcher.set(Value.kReverse);
+      fullExtend_Pistion.set(Value.kReverse);
+      halfExtend_Pistion.set(Value.kOff);
       break;
       case kReverse:
-      pushcatcher.set(Value.kForward);
+      fullExtend_Pistion.set(Value.kForward);
+      halfExtend_Pistion.set(Value.kOff);
       break;
       default:
-      pushcatcher.set(Value.kForward);
+      fullExtend_Pistion.set(Value.kReverse);
+      halfExtend_Pistion.set(Value.kOff);
       break;
     }
   }
-
-  public Command togglePushCatcher() {
-    return runOnce(this::toggle);
+  public void toggle_HalfPiston() {
+    switch(halfExtend_Pistion.get()){
+      case kForward:
+      halfExtend_Pistion.set(Value.kReverse);
+      fullExtend_Pistion.set(Value.kOff);
+      break;
+      case kReverse:
+      halfExtend_Pistion.set(Value.kForward);
+      fullExtend_Pistion.set(Value.kOff);
+      break;
+      default:
+      halfExtend_Pistion.set(Value.kReverse);
+      fullExtend_Pistion.set(Value.kOff);
+    }
+  }
+  /**
+   * moves the cowcatcher half out or half in
+   * @return
+   */
+  public Command toggle_Half() {
+    return runOnce(this::toggle_Full);
+  }
+  /**
+   * move the cowcatcher all the way out or all the way in
+   * @return
+   */
+  public Command toggle_Full() {
+    return runOnce(this::toggle_Half);
   }
 
   @Override

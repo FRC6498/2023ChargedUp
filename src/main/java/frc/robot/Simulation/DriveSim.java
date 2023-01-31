@@ -19,7 +19,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.Constants.DriveConstants;
+import frc.robot.Constants.GlobalConstants;
 import frc.robot.Subsystems.Drive;
 import frc.robot.Subsystems.Vision;
 import frc.robot.Utility.Conversions;
@@ -46,7 +46,7 @@ public class DriveSim {
     
     private DifferentialDrivetrainSim drivetrainSim  = new DifferentialDrivetrainSim(
         DCMotor.getFalcon500(2),//2 Falcon 500s on each side of the robot
-        DriveConstants.gearRatio,//gear ratio between the wheels and the encoder on the robot
+        GlobalConstants.gearRatio,//gear ratio between the wheels and the encoder on the robot
         2.1, //MOI? of the robot (your supposed to get it from the cad model but I just made this up)
         30,//mass of the robot (I also made this up)
         Units.inchesToMeters(3),//radius of the robot's wheels
