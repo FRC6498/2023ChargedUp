@@ -161,6 +161,7 @@ public class Drive extends SubsystemBase implements Loggable {
       diffDrive.arcadeDrive(throttle.getAsDouble(), turn.getAsDouble());
     });
   }
+  
   /**
    * @return
    * command that shifts the gears on the robot
@@ -176,6 +177,7 @@ public class Drive extends SubsystemBase implements Loggable {
        }
     });
   }
+
   /**
    * gets the distance that the right side of the robot traveled in meters 
    * @return
@@ -185,6 +187,7 @@ public class Drive extends SubsystemBase implements Loggable {
   private double getLeftDistanceMeters() {
     return conversions.nativeUnitsToDistanceMeters(Left_Front.getSelectedSensorPosition());
   }
+
   /**
    * gets the distance that the right side of the robot traveled in meters 
    * @return
@@ -218,7 +221,7 @@ public class Drive extends SubsystemBase implements Loggable {
       .andThen(() -> setWheelVoltages(0, 0))
       .andThen(trajectoryTimer::stop).andThen(trajectoryTimer::reset)
     );
-    }
+  }
 
   @Log
   private double getLeftVoltage() {
@@ -267,6 +270,7 @@ public class Drive extends SubsystemBase implements Loggable {
     });
     field.setRobotPose(poseEstimator.getEstimatedPosition());
   }
+
   //#region Simulation
   public void simulationPeriodic() {
     runSim();
