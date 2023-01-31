@@ -26,13 +26,9 @@ public class RobotContainer implements Loggable {
   Drive driveSub;
 
   public RobotContainer() {
-    System.out.println("Robot Started");
     controller = new CommandXboxController(OperatorConstants.Driver_Controller_ID);
-    System.out.println("Controller Started");
     visionSub = new Vision();
-    System.out.println("Vision Started");
     driveSub = new Drive(visionSub);
-    System.out.println("Drive Started");
     Logger.configureLoggingAndConfig(this, false);
     configureBindings();
   }
