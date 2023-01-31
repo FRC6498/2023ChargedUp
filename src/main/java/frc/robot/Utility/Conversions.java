@@ -26,10 +26,17 @@ public class Conversions {
     * meters -> ticks
     */
     public int distanceToNativeUnits(double positionMeters){
-      double wheelRotations = positionMeters/(2 * Math.PI * Units.inchesToMeters(3));
-      double motorRotations = wheelRotations * gearRatio.getAsDouble();
-      int sensorCounts = (int)(motorRotations * DriveConstants.TalonFXCountsPerRev);
-		  return sensorCounts;
+      // meters -> wheel rotations
+      double wheelRevs = positionMeters / (Math.PI * DriveConstants.wheelDiameterMeters);
+      // wheel revs = motor revs / 26, so motor revs = wheel revs * 26
+      double motorRevs = wheelRevs * 26.0;
+      // sensor units = motor revs * 2048
+      int ticks = (int)(motorRevs * 2048);
+
+      //double wheelRotations = positionMeters/(2 * Math.PI * Units.inchesToMeters(3));
+      //double motorRotations = wheelRotations * gearRatio.getAsDouble();
+      //int sensorCounts = (int)(motorRotations * DriveConstants.TalonFXCountsPerRev);
+		  return ticks;
 	  }
 
     /**

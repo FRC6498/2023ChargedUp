@@ -161,7 +161,7 @@ public class Drive extends SubsystemBase implements Loggable {
       diffDrive.arcadeDrive(throttle.getAsDouble(), turn.getAsDouble());
     });
   }
-  
+
   /**
    * @return
    * command that shifts the gears on the robot
@@ -255,6 +255,7 @@ public class Drive extends SubsystemBase implements Loggable {
   @Override
   public void periodic() {
     poseEstimator.update(gyro.getRotation2d(), getLeftDistanceMeters(), getRightDistanceMeters());
+    double vel = getLeftVelocityMetersPerSecond();
     vision.setReferencePose(poseEstimator.getEstimatedPosition());
     // if we see targets
     if (vision.getCurrentPoseEstimate().isPresent()) {
