@@ -4,15 +4,9 @@
 
 package frc.robot;
 
-import java.util.List;
-
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.Commands.Autos.MoveForward3MetersAuto;
-import frc.robot.Constants.DriveConstants;
+import frc.robot.Commands.Autos.MoveForward1MeterAndLeft1MeterAuto;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Subsystems.Drive;
 import frc.robot.Subsystems.Vision;
@@ -42,10 +36,9 @@ public class RobotContainer implements Loggable {
     } else if(isKeyboard) {
       driveSub.setDefaultCommand(driveSub.ArcadeDrive(controller::getLeftY, controller::getLeftX));
     }
-    controller.x().onTrue(driveSub.followTrajectory(TrajectoryGenerator.generateTrajectory(List.of(new Pose2d(), new Pose2d(1, 0, new Rotation2d())), DriveConstants.trajectoryConfig)));
   }
 
   public Command getAutonomousCommand() {
-    return new MoveForward3MetersAuto(driveSub);
+    return driveSub.ArcadeDrive(() -> 0, () -> 0.5);//new MoveForward1MeterAndLeft1MeterAuto(driveSub);//MoveForward3MetersAuto(driveSub);
   }
 }

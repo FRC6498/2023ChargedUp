@@ -35,6 +35,21 @@
     },
     "windows": {
       "/SmartDashboard/Field": {
+        "AprilTag_7": {
+          "arrowColor": [
+            1.0,
+            1.0,
+            1.0,
+            255.0
+          ],
+          "color": [
+            1.0,
+            1.0,
+            1.0,
+            255.0
+          ],
+          "style": "Box/Image"
+        },
         "units": "meters",
         "window": {
           "name": "field",
@@ -59,6 +74,9 @@
       },
       "Shuffleboard": {
         "Drive": {
+          "field": {
+            "open": true
+          },
           "open": true
         },
         "RobotContainer": {
