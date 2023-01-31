@@ -31,11 +31,11 @@ public class RobotContainer implements Loggable {
     //shifts gears
     controller.a().onTrue(driveSub.Shift());
     // drives
-    if (Robot.isReal() || !isKeyboard) {
+    // if (Robot.isReal() || !isKeyboard) {
       driveSub.setDefaultCommand(driveSub.ArcadeDrive(() -> controller.getRightTriggerAxis() - controller.getLeftTriggerAxis(), controller::getLeftX));
-    } else if(isKeyboard) {
-      driveSub.setDefaultCommand(driveSub.ArcadeDrive(controller::getLeftY, controller::getLeftX));
-    }
+    // } else if(isKeyboard) {
+    //   driveSub.setDefaultCommand(driveSub.ArcadeDrive(controller::getLeftY, controller::getLeftX));
+    // }
   }
 
   public Command getAutonomousCommand() {

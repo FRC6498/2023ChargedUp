@@ -11,7 +11,7 @@ import com.ctre.phoenix.motorcontrol.InvertType;
 import com.ctre.phoenix.motorcontrol.TalonFXSimCollection;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.kauailabs.navx.frc.AHRS;
-
+import com.kauailabs.navx.frc.AHRSSim;
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.hal.SimDouble;
 import edu.wpi.first.hal.simulation.SimDeviceDataJNI;
@@ -61,6 +61,8 @@ public class Drive extends SubsystemBase implements Loggable {
   DifferentialDrive diffDrive;
   
   AHRS gyro = new AHRS();
+  AHRSSim simgyro = new AHRSSim();
+  
 
   @Log.Field2d
   Field2d field;
@@ -286,7 +288,7 @@ public class Drive extends SubsystemBase implements Loggable {
      */
     public void runSim() {
       driveSim.setInputs(leftSim.getMotorOutputLeadVoltage(), rightSim.getMotorOutputLeadVoltage());
-
+      
       driveSim.update(0.02);
 
       leftSim.setIntegratedSensorRawPosition(
@@ -297,12 +299,12 @@ public class Drive extends SubsystemBase implements Loggable {
       );
 
       rightSim.setIntegratedSensorRawPosition(
-          conversions.distanceToNativeUnits(driveSim.getRightPositionMeters())
+        conversions.distanceToNativeUnits(driveSim.getRightPositionMeters())
       );
       rightSim.setIntegratedSensorVelocity(
           conversions.velocityToNativeUnits(driveSim.getRightVelocityMetersPerSecond())
       );
-      simYaw.set(driveSim.getHeading().getDegrees());
+      simgyro.setYaw(driveSim.getHeading().getDegrees());
   }
   //#endregion
 }
