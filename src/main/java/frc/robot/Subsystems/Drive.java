@@ -14,12 +14,15 @@ import com.kauailabs.navx.frc.AHRS;
 import com.kauailabs.navx.frc.AHRSSim;
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.controller.DifferentialDriveFeedforward;
 import edu.wpi.first.math.controller.DifferentialDriveWheelVoltages;
 import edu.wpi.first.math.controller.LTVDifferentialDriveController;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.util.Units;
@@ -31,6 +34,7 @@ import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.drive.DifferentialDrive.WheelSpeeds;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -66,9 +70,12 @@ public class Drive extends SubsystemBase implements Loggable {
   Conversions conversions = new Conversions(this::getGearRatio);
   //#region Controls/Pose/Trajectories
   DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(DriveConstants.trackwidthMeters);
-  DifferentialDrivePoseEstimator poseEstimator = new DifferentialDrivePoseEstimator(kinematics, new Rotation2d(), getLeftDistanceMeters(), getRightDistanceMeters(), new Pose2d(1, 1, Rotation2d.fromDegrees(0)));
+  DifferentialDrivePoseEstimator poseEstimator = new DifferentialDrivePoseEstimator(kinematics, new Rotation2d(), getLeftDistanceMeters(), getRightDistanceMeters(), new Pose2d(0, 0, Rotation2d.fromDegrees(0)));
   DoubleArrayPublisher posePub = NetworkTableInstance.getDefault().getTable("Poses").getDoubleArrayTopic("RobotPose").publish();
   LTVDifferentialDriveController ltv;
+  DifferentialDriveFeedforward dtff;
+  DifferentialDriveWheelVoltages wheelVolts = new DifferentialDriveWheelVoltages();
+  //DifferentialDriveWheelSpeeds currentDesiredWheelSpeeds = new DifferentialDriveWheelSpeeds();
   Timer trajectoryTimer = new Timer();
   //#endregion
   DoubleSolenoid shifter = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, DriveConstants.Shifter_Forward_Channel, DriveConstants.Shifter_Reverse_Channel);
@@ -80,7 +87,7 @@ public class Drive extends SubsystemBase implements Loggable {
   TalonFXSimCollection leftSim, rightSim;
   DifferentialDrivetrainSim driveSim;
   //#endregion
-  DifferentialDriveWheelVoltages wheelVolts = new DifferentialDriveWheelVoltages();
+  
   
   
   public Drive(Vision vision) {
@@ -111,7 +118,7 @@ public class Drive extends SubsystemBase implements Loggable {
     for (AprilTag tag : VisionConstants.tagLayout.getTags()) {
       //field.getObject("AprilTag_" + tag.ID).setPose(tag.pose.toPose2d());
     }
-    System.out.println("LTV Start");
+    dtff = new DifferentialDriveFeedforward(DriveConstants.kVLinear, DriveConstants.kALinear, DriveConstants.kVAngular, DriveConstants.kAAngular);
     ltv = new LTVDifferentialDriveController(
       DriveConstants.plant, 
       DriveConstants.trackwidthMeters,
@@ -121,7 +128,6 @@ public class Drive extends SubsystemBase implements Loggable {
       VecBuilder.fill(12.0, 12.0),
       0.02
     );
-    System.out.println("LTV End");
     leftSim = Left_Front.getSimCollection();
     rightSim = Right_Front.getSimCollection();
     driveSim = new DifferentialDrivetrainSim(
@@ -195,6 +201,20 @@ public class Drive extends SubsystemBase implements Loggable {
     return conversions.nativeUnitsToDistanceMeters(Right_Front.getSelectedSensorPosition());
   }
 
+  /*@Log
+  private double getLeftWheelSpeedFF() {
+    return currentDesiredWheelSpeeds.leftMetersPerSecond;
+  }
+
+  @Log
+  private double getRightWheelSpeedFF() {
+    return currentDesiredWheelSpeeds.rightMetersPerSecond;
+  }*/
+  @Log(name = "TrajectoryLinearVelocity")
+  private double trajVel = 0;
+  @Log(name = "TrajectoryCurvature")
+  private double trajCurve = 0;
+
   private double getLeftVelocityMetersPerSecond() {
     return conversions.nativeUnitsToVelocityMetersPerSecond(Left_Front.getSelectedSensorVelocity());
   }
@@ -203,16 +223,33 @@ public class Drive extends SubsystemBase implements Loggable {
     return conversions.nativeUnitsToVelocityMetersPerSecond(Right_Front.getSelectedSensorVelocity());
   }
 
+  private double getAngularVelocityRadsPerSecond(double linearVel, double curvature) {
+    trajVel = linearVel;
+    trajCurve = curvature;
+    return linearVel * curvature;
+  }
+
   public Command followTrajectory(Trajectory trajectory) {
     return runOnce(trajectoryTimer::start).andThen(
       run(() -> {
-        wheelVolts = ltv.calculate(
-          poseEstimator.getEstimatedPosition(), 
-          getLeftVelocityMetersPerSecond(), 
-          getRightVelocityMetersPerSecond(), 
-          trajectory.sample(trajectoryTimer.get())
+        Trajectory.State trajState = trajectory.sample(trajectoryTimer.get());
+        var currentDesiredWheelSpeeds = kinematics.toWheelSpeeds(new ChassisSpeeds(trajState.velocityMetersPerSecond, 0, getAngularVelocityRadsPerSecond(trajState.velocityMetersPerSecond, trajState.curvatureRadPerMeter)));
+        var nextState = trajectory.sample(trajectoryTimer.get()+0.02);
+        var nextWheelSpeeds = kinematics.toWheelSpeeds(new ChassisSpeeds(nextState.velocityMetersPerSecond, 0, getAngularVelocityRadsPerSecond(nextState.velocityMetersPerSecond, nextState.curvatureRadPerMeter)));
+        var ffVolts = dtff.calculate( 
+          currentDesiredWheelSpeeds.leftMetersPerSecond,
+          nextWheelSpeeds.leftMetersPerSecond,
+          currentDesiredWheelSpeeds.rightMetersPerSecond, 
+          nextWheelSpeeds.rightMetersPerSecond,
+          0.02
         );
-        setWheelVoltages(wheelVolts.left, wheelVolts.right);
+        var ltvVolts = ltv.calculate(
+          poseEstimator.getEstimatedPosition(), 
+          currentDesiredWheelSpeeds.leftMetersPerSecond, 
+          currentDesiredWheelSpeeds.rightMetersPerSecond, 
+          trajState
+        );
+        setWheelVoltages(-(ffVolts.left), ffVolts.right);
       })
       .until(() -> trajectoryTimer.get() >= trajectory.getTotalTimeSeconds())
       .andThen(() -> setWheelVoltages(0, 0))

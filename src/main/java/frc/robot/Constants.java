@@ -19,6 +19,7 @@ import edu.wpi.first.math.util.Units;
 
 public class Constants {
     public static final class DriveConstants {
+        
         public static final int Left_Front_ID = 1;
         public static final int Right_Front_ID = 3;
         public static final int Left_Back_ID = 2;
@@ -41,13 +42,17 @@ public class Constants {
         public static final double trackwidthMeters = Units.inchesToMeters(28.5);       
         public static final int Shifter_Forward_Channel = 1;
         public static final int Shifter_Reverse_Channel = 1;
-        public static final TrajectoryConfig trajectoryConfig = new TrajectoryConfig(2.1, 2);
+        public static final TrajectoryConfig trajectoryConfig = new TrajectoryConfig(2.5, 2);
+        public static final double kVLinear = 5.7454;
+        public static final double kALinear = 1.0;
+        public static final double kVAngular = 5.6756;
+        public static final double kAAngular = 1.0;
         public static final LinearSystem<N2,N2,N2> plant = //LinearSystemId.createDrivetrainVelocitySystem(DCMotor.getFalcon500(2), 70, wheelDiameterMeters/2, trackwidthMeters/2, 5, DriveConstants.gearRatioLow);
         LinearSystemId.identifyDrivetrainSystem(
-            5.7454, 
-            1, 
-            5.6756, 
-            1
+            kVLinear, 
+            kALinear, 
+            kVAngular, 
+            kAAngular
         );
     }
 

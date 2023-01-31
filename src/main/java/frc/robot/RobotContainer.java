@@ -7,6 +7,7 @@ package frc.robot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Commands.Autos.MoveForward1MeterAndLeft1MeterAuto;
+import frc.robot.Commands.Autos.MoveForward3MetersAuto;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Subsystems.Drive;
 import frc.robot.Subsystems.Vision;
@@ -40,6 +41,6 @@ public class RobotContainer implements Loggable {
   }
 
   public Command getAutonomousCommand() {
-    return new MoveForward1MeterAndLeft1MeterAuto(driveSub);//MoveForward3MetersAuto(driveSub);
+    return new MoveForward1MeterAndLeft1MeterAuto(driveSub);//new MoveForward3MetersAuto(driveSub);
   }
 }
