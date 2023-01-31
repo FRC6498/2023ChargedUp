@@ -8,10 +8,13 @@ import java.util.function.DoubleSupplier;
 
 //#region imports
 import com.ctre.phoenix.motorcontrol.InvertType;
+import com.ctre.phoenix.motorcontrol.TalonFXSimCollection;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.kauailabs.navx.frc.AHRS;
 
 import edu.wpi.first.apriltag.AprilTag;
+import edu.wpi.first.hal.SimDouble;
+import edu.wpi.first.hal.simulation.SimDeviceDataJNI;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.DifferentialDriveWheelVoltages;
 import edu.wpi.first.math.controller.LTVDifferentialDriveController;
@@ -19,6 +22,7 @@ import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.DoubleArrayPublisher;
@@ -30,13 +34,13 @@ import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
+import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.VisionConstants;
-import frc.robot.Simulation.DriveSim;
 import frc.robot.Utility.Conversions;
 import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.annotations.Log;
@@ -45,6 +49,8 @@ import io.github.oblarg.oblog.annotations.Log;
 public class Drive extends SubsystemBase implements Loggable {
   /** Creates a new Drive. */
   //#region declarations
+  Vision vision;
+
   WPI_TalonFX Left_Front = new WPI_TalonFX(DriveConstants.Left_Front_ID);
   WPI_TalonFX Right_Front = new WPI_TalonFX(DriveConstants.Right_Front_ID);
   WPI_TalonFX Left_Back = new WPI_TalonFX(DriveConstants.Left_Back_ID);
@@ -52,17 +58,15 @@ public class Drive extends SubsystemBase implements Loggable {
   MotorControllerGroup LeftMCG = new MotorControllerGroup(Left_Front, Left_Back);
   MotorControllerGroup RightMCG = new MotorControllerGroup(Right_Front, Right_Back);
   DifferentialDrive diffDrive = new DifferentialDrive(LeftMCG, RightMCG);
-
+  
   AHRS gyro = new AHRS();
-
-  Vision vision;
 
   @Log.Field2d
   Field2d field;
   Conversions conversions = new Conversions(this::getGearRatio);
   //#region Controls/Pose/Trajectories
   DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(DriveConstants.trackwidthMeters);
-  DifferentialDrivePoseEstimator poseEstimator = new DifferentialDrivePoseEstimator(kinematics, new Rotation2d(), getLeftDistanceMeters(), getRightDistanceMeters(), new Pose2d(0, 0, Rotation2d.fromDegrees(0)));
+  DifferentialDrivePoseEstimator poseEstimator = new DifferentialDrivePoseEstimator(kinematics, new Rotation2d(), getLeftDistanceMeters(), getRightDistanceMeters(), new Pose2d(1, 1, Rotation2d.fromDegrees(0)));
   DoubleArrayPublisher posePub = NetworkTableInstance.getDefault().getTable("Poses").getDoubleArrayTopic("RobotPose").publish();
   LTVDifferentialDriveController ltv;
   Timer trajectoryTimer = new Timer();
@@ -73,7 +77,10 @@ public class Drive extends SubsystemBase implements Loggable {
   Compressor compressor = new Compressor(PneumaticsModuleType.CTREPCM);
 
   //Simulation Stuff
-  DriveSim driveSim;
+  TalonFXSimCollection leftSim, rightSim;
+  DifferentialDrivetrainSim driveSim;
+  private int gyroHandle = SimDeviceDataJNI.getSimDeviceHandle("navX-Sensor[0]");
+  private SimDouble simYaw = new SimDouble(SimDeviceDataJNI.getSimValueHandle(gyroHandle, "yaw"));
   //#endregion
   DifferentialDriveWheelVoltages wheelVolts = new DifferentialDriveWheelVoltages();
   
@@ -103,7 +110,6 @@ public class Drive extends SubsystemBase implements Loggable {
     this.vision = vision;
     gyro.calibrate();
 
-    driveSim = new DriveSim(Left_Front, Right_Front, gyro, poseEstimator, this::getGearRatio);
     field = new Field2d();
     for (AprilTag tag : VisionConstants.tagLayout.getTags()) {
       field.getObject("AprilTag_" + tag.ID).setPose(tag.pose.toPose2d());
@@ -117,6 +123,17 @@ public class Drive extends SubsystemBase implements Loggable {
       // inputs = left volts, right volts 
       VecBuilder.fill(12.0, 12.0),
       0.02
+    );
+
+    leftSim = Left_Front.getSimCollection();
+    rightSim = Right_Front.getSimCollection();
+    driveSim = new DifferentialDrivetrainSim(
+      DriveConstants.plant, 
+      DCMotor.getFalcon500(2), 
+      DriveConstants.gearRatioLow, 
+      DriveConstants.trackwidthMeters, 
+      DriveConstants.wheelDiameterMeters / 2.0, 
+      null
     );
   }
 
@@ -223,8 +240,9 @@ public class Drive extends SubsystemBase implements Loggable {
     RightMCG.setVoltage(rightVolts);
   }
 
-  public Rotation2d getGyroAngle() {
-    return gyro.getRotation2d();
+  @Log
+  public double getGyroAngle() {
+    return gyro.getRotation2d().getDegrees();
   }
 
   public Pose2d getPose2d() {
@@ -233,11 +251,7 @@ public class Drive extends SubsystemBase implements Loggable {
 
   @Override
   public void periodic() {
-    if (Robot.isReal()) {
-      poseEstimator.update(gyro.getRotation2d(), -getLeftDistanceMeters(), getRightDistanceMeters());
-    } else {
-      poseEstimator.update(gyro.getRotation2d(), getLeftDistanceMeters(), getRightDistanceMeters());
-    }
+    poseEstimator.update(gyro.getRotation2d(), getLeftDistanceMeters(), getRightDistanceMeters());
     vision.setReferencePose(poseEstimator.getEstimatedPosition());
     // if we see targets
     if (vision.getCurrentPoseEstimate().isPresent()) {
@@ -253,11 +267,35 @@ public class Drive extends SubsystemBase implements Loggable {
     });
     field.setRobotPose(poseEstimator.getEstimatedPosition());
   }
-
+  //#region Simulation
   public void simulationPeriodic() {
-    driveSim.run();
-    poseEstimator.resetPosition(getGyroAngle(), getLeftDistanceMeters(), getRightDistanceMeters(), driveSim.getPoseMeters());
-    vision.setSimPose(poseEstimator.getEstimatedPosition());
+    runSim();
+    //poseEstimator.resetPosition(gyro.getRotation2d(), getLeftDistanceMeters(), getRightDistanceMeters(), driveSim.getPoseMeters());
+    //vision.setSimPose(poseEstimator.getEstimatedPosition());
   }
-  
+
+  /**
+     * runs the DrivetrainSimulation
+     */
+    public void runSim() {
+      driveSim.setInputs(leftSim.getMotorOutputLeadVoltage(), rightSim.getMotorOutputLeadVoltage());
+
+      driveSim.update(0.02);
+
+      leftSim.setIntegratedSensorRawPosition(
+          conversions.distanceToNativeUnits(driveSim.getLeftPositionMeters())
+      );
+      leftSim.setIntegratedSensorVelocity(
+         conversions.velocityToNativeUnits(driveSim.getLeftVelocityMetersPerSecond())
+      );
+
+      rightSim.setIntegratedSensorRawPosition(
+          conversions.distanceToNativeUnits(driveSim.getRightPositionMeters())
+      );
+      rightSim.setIntegratedSensorVelocity(
+          conversions.velocityToNativeUnits(driveSim.getRightVelocityMetersPerSecond())
+      );
+      simYaw.set(driveSim.getHeading().getDegrees());
+  }
+  //#endregion
 }
