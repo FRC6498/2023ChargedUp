@@ -38,18 +38,17 @@ public class Constants {
         
         public static final double distancePerTickMetersLowGear = (Math.PI * wheelDiameterMeters) / (2048 * gearRatioLow);
         public static final double distancePerTickMetersHighGear = (Math.PI * wheelDiameterMeters) / (2048 * gearRatioHigh);
-        public static final double trackwidthMeters = 0.014367;
-       
+        public static final double trackwidthMeters = Units.inchesToMeters(28.5);       
         public static final int Shifter_Forward_Channel = 1;
         public static final int Shifter_Reverse_Channel = 1;
         public static final TrajectoryConfig trajectoryConfig = new TrajectoryConfig(2.1, 2);
-        public static final LinearSystem<N2,N2,N2> plant = LinearSystemId.createDrivetrainVelocitySystem(DCMotor.getFalcon500(2), 30, wheelDiameterMeters/2, trackwidthMeters/2, 2.1, 26);
-        /*LinearSystemId.identifyDrivetrainSystem(
+        public static final LinearSystem<N2,N2,N2> plant = //LinearSystemId.createDrivetrainVelocitySystem(DCMotor.getFalcon500(2), 70, wheelDiameterMeters/2, trackwidthMeters/2, 5, DriveConstants.gearRatioLow);
+        LinearSystemId.identifyDrivetrainSystem(
             5.7454, 
-            0.00036209, 
+            1, 
             5.6756, 
-            7.7103E-05
-        );*/
+            1
+        );
     }
 
     public static final class OperatorConstants {

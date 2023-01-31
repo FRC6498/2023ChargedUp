@@ -20,6 +20,7 @@ public class RobotContainer implements Loggable {
   Drive driveSub;
 
   public RobotContainer() {
+    System.out.println("Robot Start");
     controller = new CommandXboxController(OperatorConstants.Driver_Controller_ID);
     visionSub = new Vision();
     driveSub = new Drive(visionSub);
@@ -31,14 +32,14 @@ public class RobotContainer implements Loggable {
     //shifts gears
     controller.a().onTrue(driveSub.Shift());
     // drives
-    // if (Robot.isReal() || !isKeyboard) {
+    if (Robot.isReal() || !isKeyboard) {
       driveSub.setDefaultCommand(driveSub.ArcadeDrive(() -> controller.getRightTriggerAxis() - controller.getLeftTriggerAxis(), controller::getLeftX));
-    // } else if(isKeyboard) {
-    //   driveSub.setDefaultCommand(driveSub.ArcadeDrive(controller::getLeftY, controller::getLeftX));
-    // }
+    } else if(isKeyboard) {
+      driveSub.setDefaultCommand(driveSub.ArcadeDrive(controller::getLeftY, controller::getLeftX));
+     }
   }
 
   public Command getAutonomousCommand() {
-    return driveSub.ArcadeDrive(() -> 0, () -> 0.5);//new MoveForward1MeterAndLeft1MeterAuto(driveSub);//MoveForward3MetersAuto(driveSub);
+    return new MoveForward1MeterAndLeft1MeterAuto(driveSub);//MoveForward3MetersAuto(driveSub);
   }
 }

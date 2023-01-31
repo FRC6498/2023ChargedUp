@@ -13,8 +13,6 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.kauailabs.navx.frc.AHRS;
 import com.kauailabs.navx.frc.AHRSSim;
 import edu.wpi.first.apriltag.AprilTag;
-import edu.wpi.first.hal.SimDouble;
-import edu.wpi.first.hal.simulation.SimDeviceDataJNI;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.DifferentialDriveWheelVoltages;
 import edu.wpi.first.math.controller.LTVDifferentialDriveController;
@@ -39,7 +37,6 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Robot;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.Utility.Conversions;
@@ -82,8 +79,6 @@ public class Drive extends SubsystemBase implements Loggable {
   //Simulation Stuff
   TalonFXSimCollection leftSim, rightSim;
   DifferentialDrivetrainSim driveSim;
-  private int gyroHandle = SimDeviceDataJNI.getSimDeviceHandle("navX-Sensor[0]");
-  private SimDouble simYaw = new SimDouble(SimDeviceDataJNI.getSimValueHandle(gyroHandle, "yaw"));
   //#endregion
   DifferentialDriveWheelVoltages wheelVolts = new DifferentialDriveWheelVoltages();
   
@@ -116,7 +111,7 @@ public class Drive extends SubsystemBase implements Loggable {
     for (AprilTag tag : VisionConstants.tagLayout.getTags()) {
       //field.getObject("AprilTag_" + tag.ID).setPose(tag.pose.toPose2d());
     }
-
+    System.out.println("LTV Start");
     ltv = new LTVDifferentialDriveController(
       DriveConstants.plant, 
       DriveConstants.trackwidthMeters,
@@ -126,7 +121,7 @@ public class Drive extends SubsystemBase implements Loggable {
       VecBuilder.fill(12.0, 12.0),
       0.02
     );
-
+    System.out.println("LTV End");
     leftSim = Left_Front.getSimCollection();
     rightSim = Right_Front.getSimCollection();
     driveSim = new DifferentialDrivetrainSim(
