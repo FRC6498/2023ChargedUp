@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Subsystems.Arm;
+import frc.robot.Subsystems.CowCatcher;
 import frc.robot.Subsystems.Drive;
 import frc.robot.Subsystems.Vision;
 import io.github.oblarg.oblog.Logger;
@@ -19,6 +20,7 @@ public class RobotContainer {
   Vision visionSub = new Vision();
   Drive driveSub = new Drive(visionSub);
   Arm arm = new Arm();
+  CowCatcher cowCatcher = new CowCatcher();
 
   public RobotContainer() {
     Logger.configureLoggingAndConfig(this, false);
@@ -30,6 +32,7 @@ public class RobotContainer {
     //shifts gears
     controller.a().onTrue(driveSub.Shift());
     controller.b().onTrue(arm.moveToDegrees(50));
+    controller.x().onTrue(cowCatcher.togglePushCatcher());
 
   }
 

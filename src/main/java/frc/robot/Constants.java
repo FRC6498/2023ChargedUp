@@ -87,4 +87,8 @@ public class Constants {
         public static final int ArmTalonID = 5;
         public static final int ArmGearRatio = 100;
     }
+    public static final class CowCatcherConstants{
+        public static final int pushcatcherForwardID = 1;
+        public static final int pushcatcherReverseID = 2;
+    }
 }

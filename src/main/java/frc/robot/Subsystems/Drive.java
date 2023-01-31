@@ -30,8 +30,8 @@ public class Drive extends SubsystemBase {
   /** Creates a new Drive. */
 
   //#region declarations
-  public  WPI_TalonFX Left_Front = new WPI_TalonFX(DriveConstants.Left_Front_ID);
-  WPI_TalonFX Right_Front = new WPI_TalonFX(DriveConstants.Right_Front_ID);
+  public static  WPI_TalonFX Left_Front = new WPI_TalonFX(DriveConstants.Left_Front_ID);
+  public static WPI_TalonFX Right_Front = new WPI_TalonFX(DriveConstants.Right_Front_ID);
   WPI_TalonFX Left_Back = new WPI_TalonFX(DriveConstants.Left_Back_ID);
   WPI_TalonFX Right_Back = new WPI_TalonFX(DriveConstants.Right_Back_ID);
   MotorControllerGroup LeftMCG = new MotorControllerGroup(Left_Front, Left_Back);
@@ -42,7 +42,7 @@ public class Drive extends SubsystemBase {
 
   Vision vision;
 
-  DifferentialDrivePoseEstimator poseEstimator = new DifferentialDrivePoseEstimator(new DifferentialDriveKinematics(DriveConstants.trackwidthMeters), new Rotation2d(), getLeftDistanceMeters(), getRightDistanceMeters(), new Pose2d());
+  public static DifferentialDrivePoseEstimator poseEstimator = new DifferentialDrivePoseEstimator(new DifferentialDriveKinematics(DriveConstants.trackwidthMeters), new Rotation2d(), getLeftDistanceMeters(), getRightDistanceMeters(), new Pose2d());
   DoubleArrayPublisher posePub = NetworkTableInstance.getDefault().getTable("Poses").getDoubleArrayTopic("RobotPose").publish();
 
   DoubleSolenoid shifter = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, DriveConstants.Shifter_Forward_Channel, DriveConstants.Shifter_Reverse_Channel);
@@ -107,7 +107,7 @@ public class Drive extends SubsystemBase {
    * @return
    * the distance the right side of the robot has traveled
    */
-  private double getLeftDistanceMeters() {
+  private static double getLeftDistanceMeters() {
     return Left_Front.getSelectedSensorPosition() * DriveConstants.distancePerTickMeters;
   }
   /**
@@ -115,7 +115,7 @@ public class Drive extends SubsystemBase {
    * @return
    * the distance the right side of the robot has traveled
    */
-  private double getRightDistanceMeters() {
+  private static double getRightDistanceMeters() {
     return Right_Front.getSelectedSensorPosition() * DriveConstants.distancePerTickMeters;
   }
 

@@ -61,7 +61,7 @@ public class Conversions {
    */
   public static  int DegreesToNativeUnits(double degrees, double gearRatio) {
     double nativeUnits = degrees * ((DriveConstants.TalonFXCountsPerRev * gearRatio) /360); 
-     return (int)nativeUnits;
+     return (int) nativeUnits;
   }
 
 }

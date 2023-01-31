@@ -20,6 +20,8 @@ import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.DriveConstants;
+import frc.robot.Subsystems.Drive;
+import frc.robot.Subsystems.Vision;
 import frc.robot.Utility.Conversions;
 
 
@@ -37,7 +39,9 @@ public class DriveSim {
 
     private AHRS gyro;
     private AHRSSim gyroSim;
-
+    Vision vision = new Vision();
+    Drive drive = new Drive(vision);
+   
     //drivetrain sim object
     
     private DifferentialDrivetrainSim drivetrainSim  = new DifferentialDrivetrainSim(
@@ -60,7 +64,7 @@ public class DriveSim {
          * Gyro you are using
          */
     public DriveSim(WPI_TalonFX Front_left_Motor, WPI_TalonFX Front_Right_Motor, AHRS gyro){
-
+       
         this.leftMotor = Front_left_Motor;
         this.rightMotor = Front_Right_Motor;
         
