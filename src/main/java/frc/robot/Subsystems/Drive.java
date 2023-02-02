@@ -12,7 +12,8 @@ import com.ctre.phoenix.motorcontrol.TalonFXSimCollection;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.kauailabs.navx.frc.AHRS;
 import com.kauailabs.navx.frc.AHRSSim;
-import edu.wpi.first.apriltag.AprilTag;
+import com.pathplanner.lib.server.PathPlannerServer;
+
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.DifferentialDriveWheelVoltages;
 import edu.wpi.first.math.controller.LTVDifferentialDriveController;
@@ -40,7 +41,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DriveConstants;
-import frc.robot.Constants.VisionConstants;
 import frc.robot.Utility.Conversions;
 import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.annotations.Log;
@@ -111,9 +111,9 @@ public class Drive extends SubsystemBase implements Loggable {
     gyro.calibrate();
 
     field = new Field2d();
-    for (AprilTag tag : VisionConstants.tagLayout.getTags()) {
+    //for (AprilTag tag : VisionConstants.tagLayout.getTags()) {
       //field.getObject("AprilTag_" + tag.ID).setPose(tag.pose.toPose2d());
-    }
+    //}
     ltv = new LTVDifferentialDriveController(
       DriveConstants.plant, 
       DriveConstants.trackwidthMeters,
@@ -221,11 +221,13 @@ public class Drive extends SubsystemBase implements Loggable {
     return linearVel * curvature;
   }
   public Command followTrajectory(Trajectory trajectory) {
+    PathPlannerServer.sendActivePath(trajectory.getStates());
     Pose2d endPose = trajectory.sample(trajectory.getTotalTimeSeconds()).poseMeters;
     return runOnce(() -> poseEstimator.resetPosition(getRotation2d(), getLeftDistanceMeters(), getRightDistanceMeters(), trajectory.getInitialPose())).andThen(runOnce(trajectoryTimer::start)).andThen(
       run(() -> {
         field.getObject("traj").setTrajectory(trajectory);
         Trajectory.State trajState = trajectory.sample(trajectoryTimer.get());
+        PathPlannerServer.sendPathFollowingData(trajState.poseMeters, poseEstimator.getEstimatedPosition());
         currentDesiredWheelSpeeds = DriveConstants.kinematics.toWheelSpeeds(new ChassisSpeeds(trajState.velocityMetersPerSecond, 0, getAngularVelocityRadsPerSecond(trajState.velocityMetersPerSecond, trajState.curvatureRadPerMeter)));
         var nextState = trajectory.sample(trajectoryTimer.get()+0.02);
         var nextWheelSpeeds = DriveConstants.kinematics.toWheelSpeeds(new ChassisSpeeds(nextState.velocityMetersPerSecond, 0, getAngularVelocityRadsPerSecond(nextState.velocityMetersPerSecond, nextState.curvatureRadPerMeter)));
