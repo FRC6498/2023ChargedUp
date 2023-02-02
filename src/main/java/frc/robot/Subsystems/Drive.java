@@ -60,7 +60,7 @@ public class Drive extends SubsystemBase implements Loggable {
   DifferentialDrive diffDrive;
   
   AHRS gyro = new AHRS();
-  AHRSSim simgyro = new AHRSSim();
+  
   
 
   @Log.Field2d
@@ -83,6 +83,7 @@ public class Drive extends SubsystemBase implements Loggable {
   //Simulation Stuff
   TalonFXSimCollection leftSim, rightSim;
   DifferentialDrivetrainSim driveSim;
+  AHRSSim simgyro = new AHRSSim();
   //#endregion
   
   
@@ -223,7 +224,7 @@ public class Drive extends SubsystemBase implements Loggable {
   public Command followTrajectory(Trajectory trajectory) {
     PathPlannerServer.sendActivePath(trajectory.getStates());
     Pose2d endPose = trajectory.sample(trajectory.getTotalTimeSeconds()).poseMeters;
-    return runOnce(() -> poseEstimator.resetPosition(getRotation2d(), getLeftDistanceMeters(), getRightDistanceMeters(), trajectory.getInitialPose())).andThen(runOnce(trajectoryTimer::start)).andThen(
+    return /*runOnce(() -> poseEstimator.resetPosition(getRotation2d(), getLeftDistanceMeters(), getRightDistanceMeters(), trajectory.getInitialPose())).andThen(*/runOnce(trajectoryTimer::start)/*)*/.andThen(
       run(() -> {
         field.getObject("traj").setTrajectory(trajectory);
         Trajectory.State trajState = trajectory.sample(trajectoryTimer.get());
@@ -251,6 +252,7 @@ public class Drive extends SubsystemBase implements Loggable {
         SmartDashboard.putBoolean("LTV AtRef", ltv.atReference());
         SmartDashboard.putBoolean("Trajectory Time Reached", trajectoryTimer.get() >= trajectory.getTotalTimeSeconds());
         setWheelVoltages(ffVolts.left+ltvVolts.left, ffVolts.right+ltvVolts.right);
+        diffDrive.feed();
         //setWheelVoltages(ffVolts.left, ffVolts.right);
       })
       .until(() -> ltv.atReference())
@@ -317,7 +319,6 @@ public class Drive extends SubsystemBase implements Loggable {
   //#region Simulation
   public void simulationPeriodic() {
     runSim();
-    //poseEstimator.resetPosition(gyro.getRotation2d(), getLeftDistanceMeters(), getRightDistanceMeters(), driveSim.getPoseMeters());
     //vision.setSimPose(poseEstimator.getEstimatedPosition());
   }
 

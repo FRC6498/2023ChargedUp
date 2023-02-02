@@ -6,6 +6,10 @@ package frc.robot.Commands.Autos;
 
 import java.util.List;
 
+import com.pathplanner.lib.PathConstraints;
+import com.pathplanner.lib.PathPlanner;
+import com.pathplanner.lib.PathPoint;
+
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -13,20 +17,16 @@ import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Subsystems.Drive;
-import frc.robot.Utility.GeneratorUtil;
 
 /** Add your docs here. */
 public class Autos {
 
     public static Command Forward3Meters(Drive drive) {
         return drive.followTrajectory(
-            GeneratorUtil.generateTrajectory(
-                drive.getPose2d(), 
-                List.of(
-                    new Translation2d(3, new Rotation2d())
-                ), 
-                Rotation2d.fromDegrees(0)
-            )
+            PathPlanner.generatePath(DriveConstants.pathConfig, List.of(
+                new PathPoint(drive.getPose2d().getTranslation(), drive.getPose2d().getRotation()),
+                new PathPoint(drive.getPose2d().getTranslation().plus(new Translation2d(3, 0)), Rotation2d.fromDegrees(0))
+            ))
         );
     }
 

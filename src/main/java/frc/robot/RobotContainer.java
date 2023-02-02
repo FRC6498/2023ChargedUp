@@ -8,6 +8,7 @@ import com.pathplanner.lib.PathConstraints;
 import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.server.PathPlannerServer;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.OperatorConstants;
@@ -38,7 +39,7 @@ public class RobotContainer implements Loggable {
     // drives
     if (Robot.isReal() || !isKeyboard) {
       driveSub.setDefaultCommand(driveSub.ArcadeDrive(() -> controller.getRightTriggerAxis() - controller.getLeftTriggerAxis(), controller::getLeftX));
-    } else if(isKeyboard) {
+    } else if (isKeyboard) {
       driveSub.setDefaultCommand(driveSub.ArcadeDrive(controller::getLeftY, controller::getLeftX));
      }
   }
@@ -46,6 +47,6 @@ public class RobotContainer implements Loggable {
   public Command getAutonomousCommand() {
     
     //return Autos.QuarterTurnRadius2Meters(driveSub);
-    return driveSub.followTrajectory(PathPlanner.loadPath("TestPath", new PathConstraints(2.4, 1.5)));
+    return driveSub.followTrajectory(PathPlanner.loadPath("TestPath", new PathConstraints(2.4, 2)));
   }
 }
