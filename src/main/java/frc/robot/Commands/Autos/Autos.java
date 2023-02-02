@@ -1,0 +1,43 @@
+// Copyright (c) FIRST and other WPILib contributors.
+// Open Source Software; you can modify and/or share it under the terms of
+// the WPILib BSD license file in the root directory of this project.
+
+package frc.robot.Commands.Autos;
+
+import java.util.List;
+
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.trajectory.TrajectoryGenerator;
+import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Constants.DriveConstants;
+import frc.robot.Subsystems.Drive;
+import frc.robot.Utility.GeneratorUtil;
+
+/** Add your docs here. */
+public class Autos {
+
+    public static Command Forward3Meters(Drive drive) {
+        return drive.followTrajectory(
+            GeneratorUtil.generateTrajectory(
+                drive.getPose2d(), 
+                List.of(
+                    new Translation2d(3, new Rotation2d())
+                ), 
+                Rotation2d.fromDegrees(0)
+            )
+        );
+    }
+
+    public static Command QuarterTurnRadius2Meters(Drive drive) {
+        return drive.followTrajectory(
+            TrajectoryGenerator.generateTrajectory(
+                drive.getPose2d(), 
+                List.of(), 
+                drive.getPose2d().transformBy(new Transform2d(new Translation2d(2, 2), Rotation2d.fromDegrees(90))), 
+                DriveConstants.trajectoryConfig
+            )
+        );
+    }
+}

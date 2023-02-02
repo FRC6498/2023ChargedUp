@@ -5,13 +5,14 @@ import java.util.List;
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.controller.DifferentialDriveFeedforward;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.system.LinearSystem;
-import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.util.Units;
@@ -42,11 +43,13 @@ public class Constants {
         public static final double trackwidthMeters = Units.inchesToMeters(28.5);       
         public static final int Shifter_Forward_Channel = 1;
         public static final int Shifter_Reverse_Channel = 1;
-        public static final TrajectoryConfig trajectoryConfig = new TrajectoryConfig(2.5, 2);
-        public static final double kVLinear = 5.7454;
-        public static final double kALinear = 1.0;
-        public static final double kVAngular = 5.6756;
-        public static final double kAAngular = 1.0;
+        public static final double kVLinear = 5;//5.7454;
+        public static final double kALinear = 0.1;
+        public static final double kVAngular = 5;//5.6756;
+        public static final double kAAngular = 0.1;
+        public static final DifferentialDriveFeedforward dtff = new DifferentialDriveFeedforward(kVLinear, kALinear, kVAngular, kAAngular);
+        public static final DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(trackwidthMeters);
+        public static final TrajectoryConfig trajectoryConfig = new TrajectoryConfig(2.4, 1.5).setKinematics(kinematics);//.addConstraint(new DifferentialDriveVoltageConstraint(new SimpleMotorFeedforward(0, 0, 0), kinematics, 12));
         public static final LinearSystem<N2,N2,N2> plant = //LinearSystemId.createDrivetrainVelocitySystem(DCMotor.getFalcon500(2), 70, wheelDiameterMeters/2, trackwidthMeters/2, 5, DriveConstants.gearRatioLow);
         LinearSystemId.identifyDrivetrainSystem(
             kVLinear, 

@@ -50,6 +50,21 @@
           ],
           "style": "Box/Image"
         },
+        "Robot": {
+          "arrowColor": [
+            1.0,
+            1.0,
+            1.0,
+            255.0
+          ],
+          "color": [
+            0.018038397654891014,
+            0.9740740656852722,
+            0.8890929222106934,
+            255.0
+          ],
+          "style": "Box/Image"
+        },
         "units": "meters",
         "window": {
           "name": "field",
@@ -118,16 +133,7 @@
                 0.6901960968971252,
                 1.0
               ],
-              "id": "NT:/Shuffleboard/Drive/getLeftWheelSpeedFF"
-            },
-            {
-              "color": [
-                0.8666667342185974,
-                0.5176470875740051,
-                0.32156863808631897,
-                1.0
-              ],
-              "id": "NT:/Shuffleboard/Drive/getRightWheelSpeedFF"
+              "id": "NT:/Shuffleboard/Drive/getGyroAngle"
             }
           ]
         }
@@ -136,7 +142,7 @@
     "Plot <1>": {
       "plots": [
         {
-          "height": 342,
+          "height": -49,
           "series": [
             {
               "color": [

@@ -4,10 +4,15 @@
 
 package frc.robot;
 
+import java.io.IOException;
+
+import edu.wpi.first.math.trajectory.TrajectoryUtil;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.Commands.Autos.MoveForward1MeterAndLeft1MeterAuto;
-import frc.robot.Commands.Autos.MoveForward3MetersAuto;
+import frc.robot.Commands.Autos.Autos;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Subsystems.Drive;
 import frc.robot.Subsystems.Vision;
@@ -41,6 +46,13 @@ public class RobotContainer implements Loggable {
   }
 
   public Command getAutonomousCommand() {
-    return new MoveForward1MeterAndLeft1MeterAuto(driveSub);//new MoveForward3MetersAuto(driveSub);
+    
+    //return Autos.QuarterTurnRadius2Meters(driveSub);
+    try {
+      return driveSub.followTrajectory(TrajectoryUtil.fromPathweaverJson(Filesystem.getDeployDirectory().toPath().resolve("Coopertition.wpilib.json")));
+    } catch (IOException e) {
+      DriverStation.reportError(e.getMessage(), true);
+      return Commands.print("No Valid JSON");
+    }
   }
 }
