@@ -40,6 +40,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Robot;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Utility.Conversions;
 import io.github.oblarg.oblog.Loggable;
@@ -103,7 +104,9 @@ public class Drive extends SubsystemBase implements Loggable {
 
     Left_Back.follow(Left_Front);
     Right_Back.follow(Right_Front);
-    //Left_Front.setInverted(true);
+    if (Robot.isReal()) {
+      RightMCG.setInverted(true);
+    }
     Left_Back.setInverted(InvertType.FollowMaster);
     Right_Back.setInverted(InvertType.FollowMaster);
     diffDrive = new DifferentialDrive(LeftMCG, RightMCG);
@@ -157,6 +160,10 @@ public class Drive extends SubsystemBase implements Loggable {
    */
   public Command ArcadeDrive(DoubleSupplier throttle, DoubleSupplier turn) {
     return run(()-> {
+      //Left_Front.set(ControlMode.PercentOutput, throttle.getAsDouble());
+      //Right_Front.set(ControlMode.PercentOutput, throttle.getAsDouble());
+      //Left_Back.set(ControlMode.PercentOutput, throttle.getAsDouble());
+      //Right_Back.set(ControlMode.PercentOutput, throttle.getAsDouble());
       diffDrive.arcadeDrive(throttle.getAsDouble(), turn.getAsDouble());
     });
   }
@@ -194,9 +201,8 @@ public class Drive extends SubsystemBase implements Loggable {
    */
   @Log
   private double getRightDistanceMeters() {
-    return conversions.nativeUnitsToDistanceMeters(Right_Front.getSelectedSensorPosition());
+    return -conversions.nativeUnitsToDistanceMeters(Right_Front.getSelectedSensorPosition());
   }
-  
 
   @Log
   private double getLeftWheelSpeedFF() {
@@ -215,7 +221,7 @@ public class Drive extends SubsystemBase implements Loggable {
 
   @Log
   private double getRightVelocityMetersPerSecond() {
-    return conversions.nativeUnitsToVelocityMetersPerSecond(Right_Front.getSelectedSensorVelocity());
+    return -conversions.nativeUnitsToVelocityMetersPerSecond(Right_Front.getSelectedSensorVelocity());
   }
 
   private double getAngularVelocityRadsPerSecond(double linearVel, double curvature) {
@@ -242,7 +248,7 @@ public class Drive extends SubsystemBase implements Loggable {
         var ltvVolts = ltv.calculate(
           poseEstimator.getEstimatedPosition(), 
           currentDesiredWheelSpeeds.leftMetersPerSecond, 
-          currentDesiredWheelSpeeds.rightMetersPerSecond, 
+          -currentDesiredWheelSpeeds.rightMetersPerSecond, 
           trajState
         );
         // get translation from current pose to final pose
@@ -251,9 +257,9 @@ public class Drive extends SubsystemBase implements Loggable {
         SmartDashboard.putNumber("LTV Y Error", poseError.getY());
         SmartDashboard.putBoolean("LTV AtRef", ltv.atReference());
         SmartDashboard.putBoolean("Trajectory Time Reached", trajectoryTimer.get() >= trajectory.getTotalTimeSeconds());
-        setWheelVoltages(ffVolts.left+ltvVolts.left, ffVolts.right+ltvVolts.right);
+        //setWheelVoltages(ffVolts.left+ltvVolts.left, ffVolts.right+ltvVolts.right);
         diffDrive.feed();
-        //setWheelVoltages(ffVolts.left, ffVolts.right);
+        setWheelVoltages(ffVolts.left, -ffVolts.right);
       })
       .until(() -> ltv.atReference())
       .andThen(() -> setWheelVoltages(0, 0))
@@ -331,17 +337,17 @@ public class Drive extends SubsystemBase implements Loggable {
       driveSim.update(0.02);
 
       leftSim.setIntegratedSensorRawPosition(
-          conversions.distanceToNativeUnits(driveSim.getLeftPositionMeters())
+        conversions.distanceToNativeUnits(driveSim.getLeftPositionMeters())
       );
       leftSim.setIntegratedSensorVelocity(
-         conversions.velocityToNativeUnits(driveSim.getLeftVelocityMetersPerSecond())
+        conversions.velocityToNativeUnits(driveSim.getLeftVelocityMetersPerSecond())
       );
 
       rightSim.setIntegratedSensorRawPosition(
         conversions.distanceToNativeUnits(driveSim.getRightPositionMeters())
       );
       rightSim.setIntegratedSensorVelocity(
-          conversions.velocityToNativeUnits(driveSim.getRightVelocityMetersPerSecond())
+        conversions.velocityToNativeUnits(driveSim.getRightVelocityMetersPerSecond())
       );
       simgyro.setYaw(driveSim.getHeading().getDegrees());
   }

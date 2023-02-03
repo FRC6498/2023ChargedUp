@@ -45,10 +45,10 @@ public class Constants {
         public static final double trackwidthMeters = Units.inchesToMeters(28.5);       
         public static final int Shifter_Forward_Channel = 1;
         public static final int Shifter_Reverse_Channel = 1;
-        public static final double kVLinear = 5;//5.7454;
-        public static final double kALinear = 0.1;
-        public static final double kVAngular = 5;//5.6756;
-        public static final double kAAngular = 0.1;
+        public static final double kVLinear = 0.69821;//5.7454;
+        public static final double kALinear = 0.052306;
+        public static final double kVAngular = 0.71675;//5.6756;
+        public static final double kAAngular = 0.0253352337;
         public static final DifferentialDriveFeedforward dtff = new DifferentialDriveFeedforward(kVLinear, kALinear, kVAngular, kAAngular);
         public static final DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(trackwidthMeters);
         public static final TrajectoryConfig trajectoryConfig = new TrajectoryConfig(2.4, 1.5).setKinematics(kinematics);//.addConstraint(new DifferentialDriveVoltageConstraint(new SimpleMotorFeedforward(0, 0, 0), kinematics, 12));

@@ -4,13 +4,12 @@
 
 package frc.robot;
 
-import com.pathplanner.lib.PathConstraints;
 import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.server.PathPlannerServer;
 
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.Commands.Autos.Autos;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Subsystems.Drive;
 import frc.robot.Subsystems.Vision;
@@ -38,15 +37,15 @@ public class RobotContainer implements Loggable {
     controller.a().onTrue(driveSub.Shift());
     // drives
     if (Robot.isReal() || !isKeyboard) {
-      driveSub.setDefaultCommand(driveSub.ArcadeDrive(() -> controller.getRightTriggerAxis() - controller.getLeftTriggerAxis(), controller::getLeftX));
+      driveSub.setDefaultCommand(driveSub.ArcadeDrive(() -> controller.getLeftY(), controller::getLeftX));
     } else if (isKeyboard) {
       driveSub.setDefaultCommand(driveSub.ArcadeDrive(controller::getLeftY, controller::getLeftX));
      }
   }
 
   public Command getAutonomousCommand() {
-    
-    //return Autos.QuarterTurnRadius2Meters(driveSub);
-    return driveSub.followTrajectory(PathPlanner.loadPath("TestPath", new PathConstraints(2.4, 2)));
+    return driveSub.ArcadeDrive(() -> 0.5, () -> 0);
+    //return Autos.Forward3Meters(driveSub);
+    //return driveSub.followTrajectory(PathPlanner.loadPath("TestPath", new PathConstraints(2.4, 2)));
   }
 }
