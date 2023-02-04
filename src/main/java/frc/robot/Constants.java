@@ -49,7 +49,7 @@ public class Constants {
         public static final double kALinear = 0.052306;
         public static final double kVAngular = 0.71675;//5.6756;
         public static final double kAAngular = 0.0253352337;
-        public static final DifferentialDriveFeedforward dtff = new DifferentialDriveFeedforward(kVLinear, kALinear, kVAngular, kAAngular);
+        public static final DifferentialDriveFeedforward drivetrainFeedforward = new DifferentialDriveFeedforward(kVLinear, kALinear, kVAngular, kAAngular);
         public static final DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(trackwidthMeters);
         public static final TrajectoryConfig trajectoryConfig = new TrajectoryConfig(2.4, 1.5).setKinematics(kinematics);//.addConstraint(new DifferentialDriveVoltageConstraint(new SimpleMotorFeedforward(0, 0, 0), kinematics, 12));
         public static final PathConstraints pathConfig = new PathConstraints(2.4, 2);

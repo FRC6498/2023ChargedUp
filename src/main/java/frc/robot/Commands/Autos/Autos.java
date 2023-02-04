@@ -39,4 +39,8 @@ public class Autos {
             )
         );
     }
+
+    public static Command DevPath(Drive drive, String pathName) {
+        return drive.followTrajectory(PathPlanner.loadPath(pathName, DriveConstants.pathConfig));
+    }
 }

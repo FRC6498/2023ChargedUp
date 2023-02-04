@@ -4,7 +4,6 @@
 
 package frc.robot;
 
-import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.server.PathPlannerServer;
 
 import edu.wpi.first.wpilibj2.command.Command;
@@ -37,15 +36,13 @@ public class RobotContainer implements Loggable {
     controller.a().onTrue(driveSub.Shift());
     // drives
     if (Robot.isReal() || !isKeyboard) {
-      driveSub.setDefaultCommand(driveSub.ArcadeDrive(() -> controller.getLeftY(), controller::getLeftX));
+      driveSub.setDefaultCommand(driveSub.ArcadeDrive(() -> controller.getRightTriggerAxis() - controller.getLeftTriggerAxis(), controller::getLeftX));
     } else if (isKeyboard) {
       driveSub.setDefaultCommand(driveSub.ArcadeDrive(controller::getLeftY, controller::getLeftX));
      }
   }
 
   public Command getAutonomousCommand() {
-    return driveSub.ArcadeDrive(() -> 0.5, () -> 0);
-    //return Autos.Forward3Meters(driveSub);
-    //return driveSub.followTrajectory(PathPlanner.loadPath("TestPath", new PathConstraints(2.4, 2)));
+    return Autos.DevPath(driveSub, "TestPath");
   }
 }
