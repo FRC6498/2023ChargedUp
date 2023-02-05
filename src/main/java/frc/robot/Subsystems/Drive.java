@@ -6,6 +6,8 @@ package frc.robot.Subsystems;
 
 import java.util.function.DoubleSupplier;
 
+import org.photonvision.EstimatedRobotPose;
+
 //#region imports
 import com.ctre.phoenix.motorcontrol.InvertType;
 import com.ctre.phoenix.motorcontrol.TalonFXSimCollection;
@@ -20,6 +22,7 @@ import edu.wpi.first.math.controller.LTVDifferentialDriveController;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -58,10 +61,7 @@ public class Drive extends SubsystemBase implements Loggable {
   MotorControllerGroup LeftMCG = new MotorControllerGroup(Left_Front, Left_Back);
   MotorControllerGroup RightMCG = new MotorControllerGroup(Right_Front, Right_Back);
   DifferentialDrive diffDrive;
-  
   AHRS gyro = new AHRS();
-  
-  
 
   @Log.Field2d
   Field2d field;
@@ -70,13 +70,17 @@ public class Drive extends SubsystemBase implements Loggable {
   DifferentialDrivePoseEstimator poseEstimator = new DifferentialDrivePoseEstimator(DriveConstants.kinematics, new Rotation2d(), getLeftDistanceMeters(), getRightDistanceMeters(), new Pose2d(1, 1, Rotation2d.fromDegrees(0)));
   DoubleArrayPublisher posePub = NetworkTableInstance.getDefault().getTable("Poses").getDoubleArrayTopic("RobotPose").publish();
   LTVDifferentialDriveController ltv;
-  
+
+  @Log(name = "Distance to HP Station (ft.)", tabName = "Driver")
+  double distanceToSubstation = -1;
+  //TODO: add substation translation
+  Translation2d hpStation = new Translation2d(0, 0);
   DifferentialDriveWheelVoltages wheelVolts = new DifferentialDriveWheelVoltages();
   DifferentialDriveWheelSpeeds currentDesiredWheelSpeeds = new DifferentialDriveWheelSpeeds();
   Timer trajectoryTimer = new Timer();
   //#endregion
   DoubleSolenoid shifter = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, DriveConstants.Shifter_Forward_Channel, DriveConstants.Shifter_Reverse_Channel);
-  @Log
+  @Log.BooleanBox
   public boolean isHighGear;
   Compressor compressor = new Compressor(PneumaticsModuleType.CTREPCM);
 
@@ -85,9 +89,7 @@ public class Drive extends SubsystemBase implements Loggable {
   DifferentialDrivetrainSim driveSim;
   AHRSSim simgyro = new AHRSSim();
   //#endregion
-  
-  
-  
+
   public Drive(Vision vision) {
     compressor.enableDigital();
     isHighGear = false;
@@ -111,12 +113,8 @@ public class Drive extends SubsystemBase implements Loggable {
     diffDrive = new DifferentialDrive(LeftMCG, RightMCG);
 
     this.vision = vision;
-    //gyro.reset();
     gyro.setAngleAdjustment(0);
     field = new Field2d();
-    //for (AprilTag tag : VisionConstants.tagLayout.getTags()) {
-      //field.getObject("AprilTag_" + tag.ID).setPose(tag.pose.toPose2d());
-    //}
     ltv = new LTVDifferentialDriveController(
       DriveConstants.plant, 
       DriveConstants.trackwidthMeters,
@@ -159,10 +157,6 @@ public class Drive extends SubsystemBase implements Loggable {
    */
   public Command ArcadeDrive(DoubleSupplier throttle, DoubleSupplier turn) {
     return run(()-> {
-      //Left_Front.set(ControlMode.PercentOutput, throttle.getAsDouble());
-      //Right_Front.set(ControlMode.PercentOutput, throttle.getAsDouble());
-      //Left_Back.set(ControlMode.PercentOutput, throttle.getAsDouble());
-      //Right_Back.set(ControlMode.PercentOutput, throttle.getAsDouble());
       diffDrive.arcadeDrive(throttle.getAsDouble(), turn.getAsDouble());
     });
   }
@@ -294,22 +288,20 @@ public class Drive extends SubsystemBase implements Loggable {
   }
 
   public Pose2d getPose2d() {
-    Pose2d estPose = poseEstimator.getEstimatedPosition();
-    SmartDashboard.putNumber("Pose X", estPose.getX());
-    SmartDashboard.putNumber("Pose Y", estPose.getY());
-    SmartDashboard.putNumber("Pose Rotation", estPose.getRotation().getDegrees());
-    return estPose;
+    return poseEstimator.getEstimatedPosition();
   }
 
   @Override
   public void periodic() {
     poseEstimator.update(getRotation2d(), getLeftDistanceMeters(), getRightDistanceMeters());
+    distanceToSubstation = Units.metersToFeet(poseEstimator.getEstimatedPosition().getTranslation().getDistance(hpStation));
     vision.setReferencePose(poseEstimator.getEstimatedPosition());
     // if we see targets
     if (vision.getCurrentPoseEstimate().isPresent()) {
       // if the pose is reasonably close
       if (vision.getCurrentPoseEstimate().get().estimatedPose.toPose2d().getTranslation().getDistance(poseEstimator.getEstimatedPosition().getTranslation()) < 1.5) {
-        //poseEstimator.addVisionMeasurement(vision.getCurrentPoseEstimate().get().estimatedPose.toPose2d(), vision.getCurrentPoseEstimate().get().timestampSeconds);
+        EstimatedRobotPose estPose = vision.getCurrentPoseEstimate().get();
+        poseEstimator.addVisionMeasurement(estPose.estimatedPose.toPose2d(), estPose.timestampSeconds);
       }
     }
     posePub.set(new double[] {
