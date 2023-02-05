@@ -2,18 +2,27 @@ package frc.robot;
 
 import java.util.List;
 
+import com.pathplanner.lib.PathConstraints;
+
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.controller.DifferentialDriveFeedforward;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.math.numbers.N2;
+import edu.wpi.first.math.system.LinearSystem;
+import edu.wpi.first.math.system.plant.LinearSystemId;
+import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.util.Units;
 
 
 public class Constants {
     public static final class DriveConstants {
+        
         public static final int Left_Front_ID = 1;
         public static final int Right_Front_ID = 3;
         public static final int Left_Back_ID = 2;
@@ -21,7 +30,6 @@ public class Constants {
 
         public static final int TalonFXCountsPerRev = 2048;
         
-
         // 1 motor rev = 2048 ticks
         // gearRatio motor revs = 1 wheel rev
         // 1 wheel rev = 1 wheel circumference travelled
@@ -34,11 +42,24 @@ public class Constants {
         
         public static final double distancePerTickMetersLowGear = (Math.PI * wheelDiameterMeters) / (2048 * gearRatioLow);
         public static final double distancePerTickMetersHighGear = (Math.PI * wheelDiameterMeters) / (2048 * gearRatioHigh);
-        public static final double trackwidthMeters = Units.inchesToMeters(28.625);
-       
+        public static final double trackwidthMeters = Units.inchesToMeters(28.5);       
         public static final int Shifter_Forward_Channel = 1;
         public static final int Shifter_Reverse_Channel = 1;
-
+        public static final double kVLinear = 0.69821;//5.7454;
+        public static final double kALinear = 0.052306;
+        public static final double kVAngular = 0.71675;//5.6756;
+        public static final double kAAngular = 0.0253352337;
+        public static final DifferentialDriveFeedforward drivetrainFeedforward = new DifferentialDriveFeedforward(kVLinear, kALinear, kVAngular, kAAngular);
+        public static final DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(trackwidthMeters);
+        public static final TrajectoryConfig trajectoryConfig = new TrajectoryConfig(2.4, 1.5).setKinematics(kinematics);//.addConstraint(new DifferentialDriveVoltageConstraint(new SimpleMotorFeedforward(0, 0, 0), kinematics, 12));
+        public static final PathConstraints pathConfig = new PathConstraints(2.4, 2);
+        public static final LinearSystem<N2,N2,N2> plant = //LinearSystemId.createDrivetrainVelocitySystem(DCMotor.getFalcon500(2), 70, wheelDiameterMeters/2, trackwidthMeters/2, 5, DriveConstants.gearRatioLow);
+        LinearSystemId.identifyDrivetrainSystem(
+            kVLinear, 
+            kALinear, 
+            kVAngular, 
+            kAAngular
+        );
     }
 
     public static final class OperatorConstants {
@@ -52,7 +73,7 @@ public class Constants {
         private static final double fieldLength = Units.inchesToMeters((54*12) + 3.25);
         private static final double fieldWidth = Units.inchesToMeters((26*12) + 3.5);
         
-        // TODO: handle alliance switching
+        // TODO: handle alliance switching (mirror trajectories)
 
         static double archeryWallY = Units.inchesToMeters(351);
         static double bleacherY = Units.inchesToMeters(97);

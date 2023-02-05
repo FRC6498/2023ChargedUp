@@ -9,24 +9,33 @@ import java.util.Optional;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
+import org.photonvision.SimVisionSystem;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import frc.robot.Robot;
 import frc.robot.Constants.VisionConstants;
-import frc.robot.Simulation.VisionSim;
 
 public class Vision {
   private PhotonCamera camera;
   private PhotonPoseEstimator poseEstimator;
   private Optional<EstimatedRobotPose> currentFieldPose;
-  private VisionSim visionSim;
+  private SimVisionSystem visionSystem;
 
   public Vision() {
     camera = new PhotonCamera(VisionConstants.cameraName);
     poseEstimator = new PhotonPoseEstimator(VisionConstants.tagLayout, PoseStrategy.CLOSEST_TO_REFERENCE_POSE, camera, VisionConstants.robotToCamera);
-    visionSim = new VisionSim();
     currentFieldPose = Optional.empty();
+
+    visionSystem = new SimVisionSystem(
+            VisionConstants.cameraName, 
+            VisionConstants.camDiagFOV, 
+            VisionConstants.robotToCamera, 
+            0,
+            VisionConstants.camResolutionWidth,
+            VisionConstants.camResolutionHeight,
+            VisionConstants.minTargetArea
+        );
   }
 
   /**
@@ -35,14 +44,6 @@ public class Vision {
    */
   public Optional<EstimatedRobotPose> getCurrentPoseEstimate() {
     return currentFieldPose;
-  }
-
-  /**
-   * Sets the robot pose in simulation
-   * @param pose the robot's pose2d as calculated by the drivetrain
-   */
-  public void setSimPose(Pose2d pose) {
-    visionSim.setRobotPose(pose);
   }
 
   /**
@@ -61,7 +62,7 @@ public class Vision {
       currentFieldPose = Optional.empty();
     }
     if (Robot.isSimulation()) {
-      visionSim.run();
+      visionSystem.processFrame(poseEstimator.getReferencePose().toPose2d());
     }
   }
 }
