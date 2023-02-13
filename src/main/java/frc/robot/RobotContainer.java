@@ -10,16 +10,21 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Commands.Autos.Autos;
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.Subsystems.Arm;
+import frc.robot.Subsystems.CowCatcher;
 import frc.robot.Subsystems.Drive;
 import frc.robot.Subsystems.Vision;
 import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.Logger;
 
 public class RobotContainer implements Loggable {
+
+  public CommandXboxController controller = new CommandXboxController(OperatorConstants.Driver_Controller_ID);
+  Vision visionSub = new Vision();
+  Drive driveSub = new Drive(visionSub);
+  Arm arm = new Arm();
+  CowCatcher cowCatcher = new CowCatcher();
   private boolean isKeyboard = true;
-  public CommandXboxController controller;
-  Vision visionSub;
-  Drive driveSub;
 
   public RobotContainer() {
     PathPlannerServer.startServer(5811);
@@ -33,6 +38,11 @@ public class RobotContainer implements Loggable {
 
   private void configureBindings() {
     //shifts gears
+    controller.x().onTrue(cowCatcher.toggle_Full());
+    controller.y().onTrue(cowCatcher.toggle_Half());
+
+    controller.a().onTrue(driveSub.Shift());
+
     controller.rightBumper().onTrue(driveSub.Shift());
     // drives
     if (Robot.isReal() || !isKeyboard) {

@@ -12,10 +12,10 @@ import frc.robot.Constants.DriveConstants;
 /** Add your docs here. */
 public class Conversions {
     
-    DoubleSupplier gearRatio;
+    static DoubleSupplier gearRatio;
 
     public Conversions(DoubleSupplier gearRatio) {
-      this.gearRatio = gearRatio;
+      Conversions.gearRatio = gearRatio;
     }
 
     /**
@@ -25,7 +25,7 @@ public class Conversions {
     * @return
     * meters -> ticks
     */
-    public int distanceToNativeUnits(double positionMeters){
+    public static int distanceToNativeUnits(double positionMeters){
       // meters -> wheel rotations
       double wheelRevs = positionMeters / (Math.PI * DriveConstants.wheelDiameterMeters);
       // wheel revs = motor revs / 26, so motor revs = wheel revs * 26
@@ -45,7 +45,7 @@ public class Conversions {
      * @return
      * velocity in m/s -> encoderTicks/s
      */
-    public int velocityToNativeUnits(double velocityMetersPerSecond) {
+    public static int velocityToNativeUnits(double velocityMetersPerSecond) {
       double wheelRotationsPerSecond = velocityMetersPerSecond/(2 * Math.PI * Units.inchesToMeters(3));
       double motorRotationsPerSecond = wheelRotationsPerSecond * gearRatio.getAsDouble();
       double motorRotationsPer100ms = motorRotationsPerSecond / 10;
@@ -53,7 +53,7 @@ public class Conversions {
       return sensorCountsPer100ms;
 	  }
 
-    public double nativeUnitsToVelocityMetersPerSecond(double nativeUnits) {
+    public static double nativeUnitsToVelocityMetersPerSecond(double nativeUnits) {
       // encoder ticks per 100ms
       // encoder ticks per 1000ms
       nativeUnits *= 10;
@@ -68,7 +68,7 @@ public class Conversions {
      * @return
      * encoder ticks -> meters
      */
-    public double nativeUnitsToDistanceMeters(double sensorCounts) {
+    public static double nativeUnitsToDistanceMeters(double sensorCounts) {
 		  if (gearRatio.getAsDouble() > 20) { // low gear
         return sensorCounts * DriveConstants.distancePerTickMetersLowGear;
       } else return sensorCounts * DriveConstants.distancePerTickMetersHighGear;

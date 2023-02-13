@@ -184,7 +184,7 @@ public class Drive extends SubsystemBase implements Loggable {
    */
   @Log
   private double getLeftDistanceMeters() {
-    return -conversions.nativeUnitsToDistanceMeters(Left_Front.getSelectedSensorPosition());
+    return -Conversions.nativeUnitsToDistanceMeters(Left_Front.getSelectedSensorPosition());
   }
 
   /**
@@ -194,7 +194,7 @@ public class Drive extends SubsystemBase implements Loggable {
    */
   @Log
   private double getRightDistanceMeters() {
-    return conversions.nativeUnitsToDistanceMeters(Right_Front.getSelectedSensorPosition());
+    return Conversions.nativeUnitsToDistanceMeters(Right_Front.getSelectedSensorPosition());
   }
 
   /*@Log
@@ -209,12 +209,12 @@ public class Drive extends SubsystemBase implements Loggable {
 
   @Log
   private double getLeftVelocityMetersPerSecond() {
-    return -conversions.nativeUnitsToVelocityMetersPerSecond(Left_Front.getSelectedSensorVelocity());
+    return -Conversions.nativeUnitsToVelocityMetersPerSecond(Left_Front.getSelectedSensorVelocity());
   }
 
   @Log
   private double getRightVelocityMetersPerSecond() {
-    return conversions.nativeUnitsToVelocityMetersPerSecond(Right_Front.getSelectedSensorVelocity());
+    return Conversions.nativeUnitsToVelocityMetersPerSecond(Right_Front.getSelectedSensorVelocity());
   }
 
   private double getAngularVelocityRadsPerSecond(double linearVel, double curvature) {
@@ -287,6 +287,11 @@ public class Drive extends SubsystemBase implements Loggable {
     return Rotation2d.fromDegrees(-gyro.getAngle());
   }
 
+  @Log
+  public double getPitch() {
+    return gyro.getPitch();
+  }
+
   public Pose2d getPose2d() {
     return poseEstimator.getEstimatedPosition();
   }
@@ -328,17 +333,17 @@ public class Drive extends SubsystemBase implements Loggable {
       driveSim.update(0.02);
 
       leftSim.setIntegratedSensorRawPosition(
-        conversions.distanceToNativeUnits(driveSim.getLeftPositionMeters())
+        Conversions.distanceToNativeUnits(driveSim.getLeftPositionMeters())
       );
       leftSim.setIntegratedSensorVelocity(
-        conversions.velocityToNativeUnits(driveSim.getLeftVelocityMetersPerSecond())
+        Conversions.velocityToNativeUnits(driveSim.getLeftVelocityMetersPerSecond())
       );
 
       rightSim.setIntegratedSensorRawPosition(
-        conversions.distanceToNativeUnits(driveSim.getRightPositionMeters())
+        Conversions.distanceToNativeUnits(driveSim.getRightPositionMeters())
       );
       rightSim.setIntegratedSensorVelocity(
-        conversions.velocityToNativeUnits(driveSim.getRightVelocityMetersPerSecond())
+        Conversions.velocityToNativeUnits(driveSim.getRightVelocityMetersPerSecond())
       );
       simgyro.setYaw(driveSim.getHeading().getDegrees());
   }

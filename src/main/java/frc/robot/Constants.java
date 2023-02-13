@@ -18,6 +18,8 @@ import edu.wpi.first.math.system.LinearSystem;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 
 
 public class Constants {
@@ -64,19 +66,17 @@ public class Constants {
 
     public static final class OperatorConstants {
         public static final int Driver_Controller_ID = 0; //note that controller ID's are not the same as can ID's
-    }
-
+    } 
     public static final class VisionConstants {
         // TODO: set camera name based on the actual camera name
         public static final String cameraName = "aprilCam";
-
-        private static final double fieldLength = Units.inchesToMeters((54*12) + 3.25);
-        private static final double fieldWidth = Units.inchesToMeters((26*12) + 3.5);
         
         // TODO: handle alliance switching (mirror trajectories)
 
         static double archeryWallY = Units.inchesToMeters(351);
         static double bleacherY = Units.inchesToMeters(97);
+        private static final double fieldLength = Units.inchesToMeters((54*12) + 3.25);
+        private static final double fieldWidth = Units.inchesToMeters((26*12) + 3.5);
         public static final AprilTagFieldLayout tagLayout = new AprilTagFieldLayout(
             List.of(
                 // X axis = long axis, y axis = short axis
@@ -89,7 +89,7 @@ public class Constants {
                 new AprilTag(5, new Pose3d(Units.inchesToMeters(208.125), archeryWallY, Units.inchesToMeters(44), new Rotation3d(VecBuilder.fill(0, 0, 1), Units.degreesToRadians(270)))),
                 //new AprilTag(6, new Pose3d(0, 0, Units.inchesToMeters(57.0625), new Rotation3d(VecBuilder.fill(0, 0, 1), Units.degreesToRadians(90)))),
                 new AprilTag(7, new Pose3d(Units.inchesToMeters(30.5), archeryWallY, Units.inchesToMeters(43), new Rotation3d(VecBuilder.fill(0, 0, 1), Units.degreesToRadians(270))))
-            ), VisionConstants.fieldLength, VisionConstants.fieldWidth
+            ), fieldLength, fieldWidth
         );
 
         // TODO: fill out robotToCamera transform once robot is designed
@@ -106,5 +106,18 @@ public class Constants {
         public static final int camResolutionWidth = 1280;
         public static final int camResolutionHeight = 720;
         public static final double minTargetArea = 10;
+    }
+    public static final class ArmConstants{
+        public static final int ArmTalonID = 5;
+        public static final int ArmGearRatio = 100;
+        public static final int IntakeSpark_ID = 6;
+        public static final int ArmPDHPortID = 1;
+        public static final int xAxisMotorID = 7;
+        public static final int yAxisMotorID = 8;
+        public static final PowerDistribution pdh = new PowerDistribution(0, ModuleType.kRev);
+    }
+    public static final class CowCatcherConstants{
+        public static final int pushcatcherForwardID = 1;
+        public static final int pushcatcherReverseID = 2;
     }
 }
