@@ -4,12 +4,21 @@
 
 package frc.robot.Utility;
 
+import java.util.function.DoubleSupplier;
+
 import edu.wpi.first.math.util.Units;
 import frc.robot.Constants.DriveConstants;
 
 
 /** Add your docs here. */
 public class Conversions {
+    
+    DoubleSupplier gearRatio;
+
+    public Conversions(DoubleSupplier gearRatio) {
+      this.gearRatio = gearRatio;
+    }
+
     /**
     * converts from meters to falon500 integrated encoder ticks
     * @param positionMeters

@@ -4,27 +4,35 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.server.PathPlannerServer;
+
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.Commands.Autos.Autos;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Subsystems.Arm;
 import frc.robot.Subsystems.CowCatcher;
 import frc.robot.Subsystems.Drive;
 import frc.robot.Subsystems.Vision;
+import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.Logger;
 
-public class RobotContainer {
+public class RobotContainer implements Loggable {
 
   public CommandXboxController controller = new CommandXboxController(OperatorConstants.Driver_Controller_ID);
   Vision visionSub = new Vision();
   Drive driveSub = new Drive(visionSub);
   Arm arm = new Arm();
   CowCatcher cowCatcher = new CowCatcher();
+  private boolean isKeyboard = true;
 
   public RobotContainer() {
+    PathPlannerServer.startServer(5811);
+    System.out.println("Robot Start");
+    controller = new CommandXboxController(OperatorConstants.Driver_Controller_ID);
+    visionSub = new Vision();
+    driveSub = new Drive(visionSub);
     Logger.configureLoggingAndConfig(this, false);
-    driveSub.setDefaultCommand(driveSub.ArcadeDrive(-controller.getLeftX(), controller.getRightTriggerAxis() - controller.getLeftTriggerAxis()));
     configureBindings();
   }
 
@@ -33,9 +41,16 @@ public class RobotContainer {
     controller.x().onTrue(cowCatcher.toggle_Full());
     controller.y().onTrue(cowCatcher.toggle_Half());
 
+    controller.a().onTrue(driveSub.Shift());
+    // drives
+    if (Robot.isReal() || !isKeyboard) {
+      driveSub.setDefaultCommand(driveSub.ArcadeDrive(() -> controller.getRightTriggerAxis() - controller.getLeftTriggerAxis(), controller::getLeftX));
+    } else if (isKeyboard) {
+      driveSub.setDefaultCommand(driveSub.ArcadeDrive(controller::getLeftY, controller::getLeftX));
+     }
   }
 
   public Command getAutonomousCommand() {
-    return Commands.print("No autonomous command configured");
+    return Autos.DevPath(driveSub, "TestPath");
   }
 }
