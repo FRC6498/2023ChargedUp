@@ -33,7 +33,7 @@ public class RobotContainer implements Loggable {
 
   private void configureBindings() {
     //shifts gears
-    controller.a().onTrue(driveSub.Shift());
+    controller.rightBumper().onTrue(driveSub.Shift());
     // drives
     if (Robot.isReal() || !isKeyboard) {
       driveSub.setDefaultCommand(driveSub.ArcadeDrive(() -> controller.getRightTriggerAxis() - controller.getLeftTriggerAxis(), controller::getLeftX));
