@@ -9,14 +9,13 @@ import java.util.function.DoubleSupplier;
 import edu.wpi.first.math.util.Units;
 import frc.robot.Constants.DriveConstants;
 
-
 /** Add your docs here. */
 public class Conversions {
     
-    DoubleSupplier gearRatio;
+    static DoubleSupplier gearRatio;
 
     public Conversions(DoubleSupplier gearRatio) {
-      this.gearRatio = gearRatio;
+      Conversions.gearRatio = gearRatio;
     }
 
     /**
@@ -26,27 +25,42 @@ public class Conversions {
     * @return
     * meters -> ticks
     */
-    public Conversions() { 
-    }
     public static int distanceToNativeUnits(double positionMeters){
-		double wheelRotations = positionMeters/(2 * Math.PI * Units.inchesToMeters(3));
-		double motorRotations = wheelRotations * DriveConstants.gearRatio;
-		int sensorCounts = (int)(motorRotations * DriveConstants.TalonFXCountsPerRev);
-		return sensorCounts;
-	}
+      // meters -> wheel rotations
+      double wheelRevs = positionMeters / (Math.PI * DriveConstants.wheelDiameterMeters);
+      // wheel revs = motor revs / 26, so motor revs = wheel revs * 26
+      double motorRevs = wheelRevs * 26.0;
+      // sensor units = motor revs * 2048
+      int ticks = (int)(motorRevs * 2048);
+
+      //double wheelRotations = positionMeters/(2 * Math.PI * Units.inchesToMeters(3));
+      //double motorRotations = wheelRotations * gearRatio.getAsDouble();
+      //int sensorCounts = (int)(motorRotations * DriveConstants.TalonFXCountsPerRev);
+		  return ticks;
+	  }
+
     /**
      * converts from velocity in m/s to encoderTicks/s
      * @param velocityMetersPerSecond
      * @return
      * velocity in m/s -> encoderTicks/s
      */
-    public static int velocityToNativeUnits(double velocityMetersPerSecond){
-		double wheelRotationsPerSecond = velocityMetersPerSecond/(2 * Math.PI * Units.inchesToMeters(3));
-		double motorRotationsPerSecond = wheelRotationsPerSecond * DriveConstants.gearRatio;
-		double motorRotationsPer100ms = motorRotationsPerSecond / 10;
-		int sensorCountsPer100ms = (int)(motorRotationsPer100ms * DriveConstants.TalonFXCountsPerRev);
-		return sensorCountsPer100ms;
-	}
+    public static int velocityToNativeUnits(double velocityMetersPerSecond) {
+      double wheelRotationsPerSecond = velocityMetersPerSecond/(2 * Math.PI * Units.inchesToMeters(3));
+      double motorRotationsPerSecond = wheelRotationsPerSecond * gearRatio.getAsDouble();
+      double motorRotationsPer100ms = motorRotationsPerSecond / 10;
+      int sensorCountsPer100ms = (int)(motorRotationsPer100ms * DriveConstants.TalonFXCountsPerRev);
+      return sensorCountsPer100ms;
+	  }
+
+    public static double nativeUnitsToVelocityMetersPerSecond(double nativeUnits) {
+      // encoder ticks per 100ms
+      // encoder ticks per 1000ms
+      nativeUnits *= 10;
+      // meters per second
+      return nativeUnitsToDistanceMeters(nativeUnits);
+    }
+
     /**
      * converts from Falcon500 integrated encoder ticks to meters
      * @param sensorCounts
@@ -54,24 +68,10 @@ public class Conversions {
      * @return
      * encoder ticks -> meters
      */
-    public static double nativeUnitsToDistanceMeters(double sensorCounts){
-		double motorRotations = (double)sensorCounts / DriveConstants.TalonFXCountsPerRev;
-		double wheelRotations = motorRotations / DriveConstants.gearRatio;
-		double positionMeters = wheelRotations * (2 * Math.PI * Units.inchesToMeters(3));
-		return positionMeters;
-	}
-  /**
-   * converts from degrees to Falcon500 Native encoder units
-   * @param degrees
-   * -> degrees to convert
-   * @param gearRatio
-   * -> gear ratio on the motor
-   * @return
-   * Falcon500 Native encoder units
-   */
-  public static  int DegreesToNativeUnits(double degrees, double gearRatio) {
-    double nativeUnits = degrees * ((DriveConstants.TalonFXCountsPerRev * gearRatio) /360); 
-     return (int) nativeUnits;
-  }
+    public static double nativeUnitsToDistanceMeters(double sensorCounts) {
+		  if (gearRatio.getAsDouble() > 20) { // low gear
+        return sensorCounts * DriveConstants.distancePerTickMetersLowGear;
+      } else return sensorCounts * DriveConstants.distancePerTickMetersHighGear;
+	  }
 
 }

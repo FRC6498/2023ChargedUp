@@ -70,9 +70,6 @@ public class Constants {
     public static final class VisionConstants {
         // TODO: set camera name based on the actual camera name
         public static final String cameraName = "aprilCam";
-
-        private static final double fieldLength = Units.inchesToMeters((54*12) + 3.25);
-        private static final double fieldWidth = Units.inchesToMeters((26*12) + 3.5);
         
         // TODO: handle alliance switching (mirror trajectories)
 
