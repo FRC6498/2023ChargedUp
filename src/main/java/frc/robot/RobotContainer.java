@@ -42,6 +42,8 @@ public class RobotContainer implements Loggable {
     controller.y().onTrue(cowCatcher.toggle_Half());
 
     controller.a().onTrue(driveSub.Shift());
+
+    controller.rightBumper().onTrue(driveSub.Shift());
     // drives
     if (Robot.isReal() || !isKeyboard) {
       driveSub.setDefaultCommand(driveSub.ArcadeDrive(() -> controller.getRightTriggerAxis() - controller.getLeftTriggerAxis(), controller::getLeftX));
