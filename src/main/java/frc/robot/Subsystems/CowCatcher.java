@@ -18,7 +18,7 @@ public class CowCatcher extends SubsystemBase {
   DoubleSolenoid halfExtend_Pistion = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, CowCatcherConstants.pushcatcherForwardID, CowCatcherConstants.pushcatcherReverseID);
   public CowCatcher() {}
 
-  /**toggles the pushcatcher */
+  /**extends the cowcatcher fully*/
   private void toggle_FullPiston() {
     switch(fullExtend_Pistion.get()){
       case kForward:
@@ -35,6 +35,7 @@ public class CowCatcher extends SubsystemBase {
       break;
     }
   }
+  /**extends the cowcatcher halfway */
   public void toggle_HalfPiston() {
     switch(halfExtend_Pistion.get()){
       case kForward:
@@ -51,15 +52,15 @@ public class CowCatcher extends SubsystemBase {
     }
   }
   /**
-   * moves the cowcatcher half out or half in
-   * @return
+   * moves the cowcatcher half out
+   * 
    */
   public Command toggle_Half() {
     return runOnce(this::toggle_Full);
   }
   /**
-   * move the cowcatcher all the way out or all the way in
-   * @return
+   * move the cowcatcher all the way out
+   * 
    */
   public Command toggle_Full() {
     return runOnce(this::toggle_Half);

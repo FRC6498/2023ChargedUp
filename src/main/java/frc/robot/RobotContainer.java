@@ -30,8 +30,6 @@ public class RobotContainer {
 
   private void configureBindings() {
     //shifts gears
-    controller.a().onTrue(driveSub.Shift());
-    controller.b().onTrue(arm.moveToDegrees(50));
     controller.x().onTrue(cowCatcher.toggle_Full());
     controller.y().onTrue(cowCatcher.toggle_Half());
 

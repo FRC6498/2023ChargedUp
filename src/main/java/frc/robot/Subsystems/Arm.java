@@ -6,9 +6,11 @@ package frc.robot.Subsystems;
 
 import java.util.function.BooleanSupplier;
 import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.NeutralMode;
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
+import com.ctre.phoenix.motorcontrol.can.TalonFX;
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ArmConstants;
@@ -17,43 +19,43 @@ import frc.robot.Utility.Conversions;
 
 
 public class Arm extends SubsystemBase {
-
-  WPI_TalonFX armTalonFX = new WPI_TalonFX(ArmConstants.ArmTalonID);
   // ArmFeedforward armFeedforward = new ArmFeedforward(0, 0, 0);
-  WPI_TalonSRX intake = new WPI_TalonSRX(ArmConstants.IntakeSRX_ID);
+  CANSparkMax intake = new CANSparkMax(ArmConstants.IntakeSRX_ID, MotorType.kBrushless);
+  TalonFX xAxisMotor = new TalonFX(ArmConstants.xAxisMotorID);
+  TalonFX yAxisMotor = new TalonFX(ArmConstants.yAxisMotorID);
+  
+  /** functions as limit switch for intake */
   BooleanSupplier currentLimit = new BooleanSupplier() {
     public boolean getAsBoolean() {
-      if (GlobalConstants.pdh.getCurrent(ArmConstants.ArmPDHPortID)>20) {
+      if (GlobalConstants.pdh.getCurrent(ArmConstants.ArmPDHPortID) > 10) {
         return true;
-      }else{
-        return false; 
-       }
+      } else {
+        return false;
+      }
+    };
   };
-};
 
   public Arm() {
-    armTalonFX.configFactoryDefault();
-    intake.configFactoryDefault();
-    armTalonFX.config_kP(0, 0.5);
-    armTalonFX.config_kD(0, 0.2);
-    armTalonFX.setNeutralMode(NeutralMode.Brake);
-  }
-  /**
-   * moves the arm to the given setpoint in degrees
-   * @param setpoint
-   * in degrees
-   */
-  public Command moveToDegrees(double setpoint) {
-   return run(()->armTalonFX.set(ControlMode.Position, Conversions.DegreesToNativeUnits(setpoint, ArmConstants.ArmGearRatio)));
+
   }
 
+  /** Runs the intake on the arm */
   public Command runIntake() {
-    return run(()-> this.runIntake()).until(currentLimit);
+    return run(() -> intake.set(0.5)).until(currentLimit);
   }
 
+  /** Centering Command */
+  public Command centerOnTarget(Transform2d robotToTarget) {
+    return run(() -> moveToTransform(robotToTarget));
+  }
 
+  /** Centers the robot on a Target given the transform from the robot to the target */
+  public void moveToTransform(Transform2d transfrom) {
+    xAxisMotor.set(ControlMode.Position, Conversions.distanceToNativeUnits(transfrom.getX()));
+    yAxisMotor.set(ControlMode.Position, Conversions.distanceToNativeUnits(transfrom.getY()));
+  }
 
-@Override
+  @Override
   public void periodic() {
     // This method will be called once per scheduler run
   }
