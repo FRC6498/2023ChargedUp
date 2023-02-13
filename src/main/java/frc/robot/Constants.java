@@ -15,18 +15,6 @@ import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 
 
 public class Constants {
-
-    public static final class GlobalConstants{
-        public static final int TalonFXCountsPerRev = 2048;
-        public static final double gearRatio = 26.0;
-        public static final double wheelDiameterMeters = Units.inchesToMeters(6);
-        public static final double distancePerTickMeters = 2048.0 * gearRatio * Math.PI * wheelDiameterMeters;
-        public static final double trackwidthMeters = 1.0;
-        private static final double fieldLength = Units.inchesToMeters((54*12) + 3.25);
-        private static final double fieldWidth = Units.inchesToMeters((26*12) + 3.5);
-        public static final PowerDistribution pdh = new PowerDistribution(0, ModuleType.kRev);
-    
-    }
     public static final class DriveConstants {
         public static final int Left_Front_ID = 1;
         public static final int Right_Front_ID = 3;
@@ -34,6 +22,11 @@ public class Constants {
         public static final int Right_Back_ID = 4;
         public static final int Shifter_Forward_Channel = 1;
         public static final int Shifter_Reverse_Channel = 1;
+        public static final double gearRatio = 26.0;
+        public static final double wheelDiameterMeters = Units.inchesToMeters(6);
+        public static final double distancePerTickMeters = 2048.0 * DriveConstants.gearRatio * Math.PI * wheelDiameterMeters;
+        public static final double trackwidthMeters = 1.0;
+        public static final int TalonFXCountsPerRev = 2048;
     }
 
     public static final class OperatorConstants {
@@ -46,6 +39,8 @@ public class Constants {
 
         static double archeryWallY = Units.inchesToMeters(351);
         static double bleacherY = Units.inchesToMeters(97);
+        private static final double fieldLength = Units.inchesToMeters((54*12) + 3.25);
+        private static final double fieldWidth = Units.inchesToMeters((26*12) + 3.5);
         public static final AprilTagFieldLayout tagLayout = new AprilTagFieldLayout(
             List.of(
                 // X axis = long axis, y axis = short axis
@@ -58,7 +53,7 @@ public class Constants {
                 new AprilTag(5, new Pose3d(Units.inchesToMeters(208.125), archeryWallY, Units.inchesToMeters(44), new Rotation3d(VecBuilder.fill(0, 0, 1), Units.degreesToRadians(270)))),
                 //new AprilTag(6, new Pose3d(0, 0, Units.inchesToMeters(57.0625), new Rotation3d(VecBuilder.fill(0, 0, 1), Units.degreesToRadians(90)))),
                 new AprilTag(7, new Pose3d(Units.inchesToMeters(30.5), archeryWallY, Units.inchesToMeters(43), new Rotation3d(VecBuilder.fill(0, 0, 1), Units.degreesToRadians(270))))
-            ), GlobalConstants.fieldLength, GlobalConstants.fieldWidth
+            ), fieldLength, fieldWidth
         );
 
         // TODO: fill out robotToCamera transform once robot is designed
@@ -79,10 +74,11 @@ public class Constants {
     public static final class ArmConstants{
         public static final int ArmTalonID = 5;
         public static final int ArmGearRatio = 100;
-        public static final int IntakeSRX_ID = 6;
+        public static final int IntakeSpark_ID = 6;
         public static final int ArmPDHPortID = 1;
         public static final int xAxisMotorID = 7;
         public static final int yAxisMotorID = 8;
+        public static final PowerDistribution pdh = new PowerDistribution(0, ModuleType.kRev);
     }
     public static final class CowCatcherConstants{
         public static final int pushcatcherForwardID = 1;

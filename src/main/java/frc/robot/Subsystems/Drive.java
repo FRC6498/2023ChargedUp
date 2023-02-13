@@ -24,7 +24,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DriveConstants;
-import frc.robot.Constants.GlobalConstants;
 import frc.robot.Simulation.DriveSim;
 //#endregion
 public class Drive extends SubsystemBase {
@@ -43,7 +42,7 @@ public class Drive extends SubsystemBase {
 
   Vision vision;
 
-  public static DifferentialDrivePoseEstimator poseEstimator = new DifferentialDrivePoseEstimator(new DifferentialDriveKinematics(GlobalConstants.trackwidthMeters), new Rotation2d(), getLeftDistanceMeters(), getRightDistanceMeters(), new Pose2d());
+  public static DifferentialDrivePoseEstimator poseEstimator = new DifferentialDrivePoseEstimator(new DifferentialDriveKinematics(DriveConstants.trackwidthMeters), new Rotation2d(), getLeftDistanceMeters(), getRightDistanceMeters(), new Pose2d());
   DoubleArrayPublisher posePub = NetworkTableInstance.getDefault().getTable("Poses").getDoubleArrayTopic("RobotPose").publish();
 
   DoubleSolenoid shifter = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, DriveConstants.Shifter_Forward_Channel, DriveConstants.Shifter_Reverse_Channel);
@@ -109,7 +108,7 @@ public class Drive extends SubsystemBase {
    * the distance the right side of the robot has traveled
    */
   private static double getLeftDistanceMeters() {
-    return Left_Front.getSelectedSensorPosition() * GlobalConstants.distancePerTickMeters;
+    return Left_Front.getSelectedSensorPosition() * DriveConstants.distancePerTickMeters;
   }
   /**
    * gets the distance that the right side of the robot traveled in meters 
@@ -117,7 +116,7 @@ public class Drive extends SubsystemBase {
    * the distance the right side of the robot has traveled
    */
   private static double getRightDistanceMeters() {
-    return Right_Front.getSelectedSensorPosition() * GlobalConstants.distancePerTickMeters;
+    return Right_Front.getSelectedSensorPosition() * DriveConstants.distancePerTickMeters;
   }
 
   public Rotation2d getGyroAngle() {

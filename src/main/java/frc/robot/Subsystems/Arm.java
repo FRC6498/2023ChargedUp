@@ -10,24 +10,22 @@ import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ArmConstants;
-import frc.robot.Constants.GlobalConstants;
 import frc.robot.Utility.Conversions;
 
 
 public class Arm extends SubsystemBase {
   // ArmFeedforward armFeedforward = new ArmFeedforward(0, 0, 0);
-  CANSparkMax intake = new CANSparkMax(ArmConstants.IntakeSRX_ID, MotorType.kBrushless);
+  CANSparkMax intake = new CANSparkMax(ArmConstants.IntakeSpark_ID, MotorType.kBrushless);
   TalonFX xAxisMotor = new TalonFX(ArmConstants.xAxisMotorID);
   TalonFX yAxisMotor = new TalonFX(ArmConstants.yAxisMotorID);
-  
+
   /** functions as limit switch for intake */
   BooleanSupplier currentLimit = new BooleanSupplier() {
     public boolean getAsBoolean() {
-      if (GlobalConstants.pdh.getCurrent(ArmConstants.ArmPDHPortID) > 10) {
+      if (ArmConstants.pdh.getCurrent(ArmConstants.ArmPDHPortID) > 10) {
         return true;
       } else {
         return false;

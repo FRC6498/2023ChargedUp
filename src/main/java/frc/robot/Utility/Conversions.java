@@ -5,7 +5,8 @@
 package frc.robot.Utility;
 
 import edu.wpi.first.math.util.Units;
-import frc.robot.Constants.GlobalConstants;
+import frc.robot.Constants.DriveConstants;
+
 
 /** Add your docs here. */
 public class Conversions {
@@ -20,8 +21,8 @@ public class Conversions {
     }
     public static int distanceToNativeUnits(double positionMeters){
 		double wheelRotations = positionMeters/(2 * Math.PI * Units.inchesToMeters(3));
-		double motorRotations = wheelRotations * GlobalConstants.gearRatio;
-		int sensorCounts = (int)(motorRotations * GlobalConstants.TalonFXCountsPerRev);
+		double motorRotations = wheelRotations * DriveConstants.gearRatio;
+		int sensorCounts = (int)(motorRotations * DriveConstants.TalonFXCountsPerRev);
 		return sensorCounts;
 	}
     /**
@@ -32,9 +33,9 @@ public class Conversions {
      */
     public static int velocityToNativeUnits(double velocityMetersPerSecond){
 		double wheelRotationsPerSecond = velocityMetersPerSecond/(2 * Math.PI * Units.inchesToMeters(3));
-		double motorRotationsPerSecond = wheelRotationsPerSecond * GlobalConstants.gearRatio;
+		double motorRotationsPerSecond = wheelRotationsPerSecond * DriveConstants.gearRatio;
 		double motorRotationsPer100ms = motorRotationsPerSecond / 10;
-		int sensorCountsPer100ms = (int)(motorRotationsPer100ms * GlobalConstants.TalonFXCountsPerRev);
+		int sensorCountsPer100ms = (int)(motorRotationsPer100ms * DriveConstants.TalonFXCountsPerRev);
 		return sensorCountsPer100ms;
 	}
     /**
@@ -45,8 +46,8 @@ public class Conversions {
      * encoder ticks -> meters
      */
     public static double nativeUnitsToDistanceMeters(double sensorCounts){
-		double motorRotations = (double)sensorCounts / GlobalConstants.TalonFXCountsPerRev;
-		double wheelRotations = motorRotations / GlobalConstants.gearRatio;
+		double motorRotations = (double)sensorCounts / DriveConstants.TalonFXCountsPerRev;
+		double wheelRotations = motorRotations / DriveConstants.gearRatio;
 		double positionMeters = wheelRotations * (2 * Math.PI * Units.inchesToMeters(3));
 		return positionMeters;
 	}
@@ -60,7 +61,7 @@ public class Conversions {
    * Falcon500 Native encoder units
    */
   public static  int DegreesToNativeUnits(double degrees, double gearRatio) {
-    double nativeUnits = degrees * ((GlobalConstants.TalonFXCountsPerRev * gearRatio) /360); 
+    double nativeUnits = degrees * ((DriveConstants.TalonFXCountsPerRev * gearRatio) /360); 
      return (int) nativeUnits;
   }
 
