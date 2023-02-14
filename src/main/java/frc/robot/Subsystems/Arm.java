@@ -12,34 +12,102 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.ArmConstants;
 import frc.robot.Utility.Conversions;
 
 
 public class Arm extends SubsystemBase {
   // ArmFeedforward armFeedforward = new ArmFeedforward(0, 0, 0);
-  CANSparkMax intake = new CANSparkMax(ArmConstants.IntakeSpark_ID, MotorType.kBrushless);
-  TalonFX xAxisMotor = new TalonFX(ArmConstants.xAxisMotorID);
-  TalonFX yAxisMotor = new TalonFX(ArmConstants.yAxisMotorID);
+  CANSparkMax intake;
+  TalonFX xAxisMotor, yAxisMotor;
+  /** Trigger for limit switch on the arm */
+  Trigger xAxisforwardLimitSwitch, xAxisreverseLimitSwitch, yAxisforwardLimitSwitch, yAxisreverseLimitSwitch;
 
-  /** functions as limit switch for intake */
-  BooleanSupplier currentLimit = new BooleanSupplier() {
-    public boolean getAsBoolean() {
-      if (ArmConstants.pdh.getCurrent(ArmConstants.ArmPDHPortID) > 10) {
-        return true;
-      } else {
-        return false;
-      }
-    };
+  boolean intakeRunning;
+  /** Max distance the arm motors can travel in a given direction*/
+  double xAxisMotorLeftMax, xAxisMotorRightMax, yAxisMotorLeftMax, yAxisMotorRightMax;
+
+  boolean xHomingComplete, yHomingComplete;
+
+  /** Current-based limit switch for intake motors*/
+  BooleanSupplier currentLimit = () -> {
+    if (ArmConstants.pdh.getCurrent(ArmConstants.ArmPDHPortID) > 10) {
+      return true;
+    } else {
+      return false;
+    }
   };
 
-  public Arm() {
 
+  public Arm() {
+    yAxisMotor = new TalonFX(ArmConstants.yAxisMotorID);
+    xAxisMotor = new TalonFX(ArmConstants.xAxisMotorID);
+    intake = new CANSparkMax(ArmConstants.IntakeSpark_ID, MotorType.kBrushless);
+
+    xAxisforwardLimitSwitch = new Trigger(this::getForwardLimitX);
+    xAxisreverseLimitSwitch = new Trigger(this::getForwardLimitY);
+    yAxisforwardLimitSwitch = new Trigger(this::getForwardLimitY);
+    yAxisreverseLimitSwitch= new Trigger(this::getReverseLimitY);
+
+
+    intakeRunning = false;
   }
+
+ //#region getters for limit switches
+  public void ToggleIntakeRunning(BooleanSupplier currentlimit) {
+    if (intakeRunning && currentLimit.getAsBoolean()){
+      intake.set(0.5);
+      intakeRunning = true;
+    }else {
+      intake.set(0);
+      intakeRunning = false;
+    }
+  }
+
+  public boolean getForwardLimitX() {
+    if (xAxisMotor.isFwdLimitSwitchClosed() == 1 ) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  public boolean getReverseLimitX() {
+    if (xAxisMotor.isRevLimitSwitchClosed() == 1 ) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  public boolean getForwardLimitY() {
+    if (yAxisMotor.isFwdLimitSwitchClosed() == 1 ) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  public boolean getReverseLimitY() {
+    if (yAxisMotor.isRevLimitSwitchClosed() == 1 ) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+  //#endregion
+
+  public void moveToTransform(Transform2d transfrom) {
+    xAxisMotor.set(ControlMode.Position, Conversions.distanceToNativeUnits(transfrom.getX()));
+    yAxisMotor.set(ControlMode.Position, Conversions.distanceToNativeUnits(transfrom.getY()));
+  }
+
+
 
   /** Runs the intake on the arm */
   public Command runIntake() {
-    return run(() -> intake.set(0.5)).until(currentLimit);
+    return run(() -> ToggleIntakeRunning(currentLimit));
   }
 
   /** Centering Command */
@@ -47,11 +115,45 @@ public class Arm extends SubsystemBase {
     return run(() -> moveToTransform(robotToTarget));
   }
 
-  /** Centers the robot on a Target given the transform from the robot to the target */
-  public void moveToTransform(Transform2d transfrom) {
-    xAxisMotor.set(ControlMode.Position, Conversions.distanceToNativeUnits(transfrom.getX()));
-    yAxisMotor.set(ControlMode.Position, Conversions.distanceToNativeUnits(transfrom.getY()));
+//#region Homing Commands
+  public Command homeArmX() {
+    return
+    run(
+        ()-> xAxisMotor.set(ControlMode.PercentOutput, 0.1)
+    ).until(xAxisforwardLimitSwitch)
+    .andThen(
+        () -> xAxisMotorLeftMax = xAxisMotor.getSelectedSensorPosition()
+    )
+    .andThen(
+        run(() -> xAxisMotor.set(ControlMode.PercentOutput, -0.1))
+    ).until(xAxisreverseLimitSwitch)
+    .andThen(
+        ()-> xAxisMotorRightMax = xAxisMotor.getSelectedSensorPosition()
+    )
+    .andThen(()->xHomingComplete = true);
   }
+  public Command homeArmY() {
+    return
+    run(
+        ()-> yAxisMotor.set(ControlMode.PercentOutput, 0.1)
+    ).until(yAxisforwardLimitSwitch)
+    .andThen(
+        () -> yAxisMotorLeftMax = yAxisMotor.getSelectedSensorPosition()
+    )
+    .andThen(
+        run(() -> yAxisMotor.set(ControlMode.PercentOutput, -0.1))
+    ).until(yAxisreverseLimitSwitch)
+    .andThen(
+        ()-> yAxisMotorRightMax = yAxisMotor.getSelectedSensorPosition()
+    )
+    .andThen(()->yHomingComplete = true);
+  }
+
+  public Command homeArm() {
+    return run(this::homeArmX).andThen(this::homeArmX);
+  }
+  //#endregion
+
 
   @Override
   public void periodic() {
