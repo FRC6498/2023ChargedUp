@@ -53,17 +53,17 @@ public class CowCatcher extends SubsystemBase {
   }
   /**
    * moves the cowcatcher half out
-   * 
+   *
    */
   public Command toggle_Half() {
-    return runOnce(this::toggle_Full);
+    return runOnce(this::toggle_FullPiston);
   }
   /**
    * move the cowcatcher all the way out
-   * 
+   *
    */
   public Command toggle_Full() {
-    return runOnce(this::toggle_Half);
+    return runOnce(this::toggle_HalfPiston);
   }
 
   @Override

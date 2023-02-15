@@ -66,7 +66,7 @@ public class Drive extends SubsystemBase implements Loggable {
   @Log.Field2d
   Field2d field;
   Conversions conversions = new Conversions(this::getGearRatio);
-  //#region Controls/Pose/Trajectories  
+  //#region Controls/Pose/Trajectories
   DifferentialDrivePoseEstimator poseEstimator = new DifferentialDrivePoseEstimator(DriveConstants.kinematics, new Rotation2d(), getLeftDistanceMeters(), getRightDistanceMeters(), new Pose2d(1, 1, Rotation2d.fromDegrees(0)));
   DoubleArrayPublisher posePub = NetworkTableInstance.getDefault().getTable("Poses").getDoubleArrayTopic("RobotPose").publish();
   LTVDifferentialDriveController ltv;
@@ -116,22 +116,22 @@ public class Drive extends SubsystemBase implements Loggable {
     gyro.setAngleAdjustment(0);
     field = new Field2d();
     ltv = new LTVDifferentialDriveController(
-      DriveConstants.plant, 
+      DriveConstants.plant,
       DriveConstants.trackwidthMeters,
       // states = x pos, y pos, angle, left speed, right speed
       VecBuilder.fill(Units.inchesToMeters(2), Units.inchesToMeters(2), Units.degreesToRadians(0.5), 0.1, 0.1),
-      // inputs = left volts, right volts 
+      // inputs = left volts, right volts
       VecBuilder.fill(12.0, 12.0),
       0.02
     );
     leftSim = Left_Front.getSimCollection();
     rightSim = Right_Front.getSimCollection();
     driveSim = new DifferentialDrivetrainSim(
-      DriveConstants.plant, 
-      DCMotor.getFalcon500(2), 
-      DriveConstants.gearRatioLow, 
-      DriveConstants.trackwidthMeters, 
-      DriveConstants.wheelDiameterMeters / 2.0, 
+      DriveConstants.plant,
+      DCMotor.getFalcon500(2),
+      DriveConstants.gearRatioLow,
+      DriveConstants.trackwidthMeters,
+      DriveConstants.wheelDiameterMeters / 2.0,
       null
     );
   }
@@ -145,7 +145,7 @@ public class Drive extends SubsystemBase implements Loggable {
       return DriveConstants.gearRatioHigh;
     } else return DriveConstants.gearRatioLow;
   }
-  
+
   /**
    * Command to drive the robot
    * @param throttle
@@ -178,7 +178,7 @@ public class Drive extends SubsystemBase implements Loggable {
   }
 
   /**
-   * gets the distance that the right side of the robot traveled in meters 
+   * gets the distance that the right side of the robot traveled in meters
    * @return
    * the distance the right side of the robot has traveled
    */
@@ -188,7 +188,7 @@ public class Drive extends SubsystemBase implements Loggable {
   }
 
   /**
-   * gets the distance that the right side of the robot traveled in meters 
+   * gets the distance that the right side of the robot traveled in meters
    * @return
    * the distance the right side of the robot has traveled
    */
@@ -223,7 +223,7 @@ public class Drive extends SubsystemBase implements Loggable {
   public Command followTrajectory(Trajectory trajectory) {
     PathPlannerServer.sendActivePath(trajectory.getStates());
     return runOnce(
-      () -> { 
+      () -> {
         poseEstimator.resetPosition(Rotation2d.fromDegrees(-gyro.getAngle()), getLeftDistanceMeters(), getRightDistanceMeters(), trajectory.getInitialPose());
         trajectoryTimer.start();
       }).andThen(
@@ -234,17 +234,17 @@ public class Drive extends SubsystemBase implements Loggable {
           currentDesiredWheelSpeeds = DriveConstants.kinematics.toWheelSpeeds(new ChassisSpeeds(trajState.velocityMetersPerSecond, 0, getAngularVelocityRadsPerSecond(trajState.velocityMetersPerSecond, trajState.curvatureRadPerMeter)));
           var nextState = trajectory.sample(trajectoryTimer.get()+0.02);
           var nextWheelSpeeds = DriveConstants.kinematics.toWheelSpeeds(new ChassisSpeeds(nextState.velocityMetersPerSecond, 0, getAngularVelocityRadsPerSecond(nextState.velocityMetersPerSecond, nextState.curvatureRadPerMeter)));
-          var ffVolts = DriveConstants.drivetrainFeedforward.calculate( 
+          var ffVolts = DriveConstants.drivetrainFeedforward.calculate(
             currentDesiredWheelSpeeds.leftMetersPerSecond,
             nextWheelSpeeds.leftMetersPerSecond,
-            currentDesiredWheelSpeeds.rightMetersPerSecond, 
+            currentDesiredWheelSpeeds.rightMetersPerSecond,
             nextWheelSpeeds.rightMetersPerSecond,
             0.02
           );
           var ltvVolts = ltv.calculate(
-            poseEstimator.getEstimatedPosition(), 
-            currentDesiredWheelSpeeds.leftMetersPerSecond, 
-            currentDesiredWheelSpeeds.rightMetersPerSecond, 
+            poseEstimator.getEstimatedPosition(),
+            currentDesiredWheelSpeeds.leftMetersPerSecond,
+            currentDesiredWheelSpeeds.rightMetersPerSecond,
             trajState
           );
           setWheelVoltages(ffVolts.left+ltvVolts.left, ffVolts.right+ltvVolts.right);
@@ -329,7 +329,7 @@ public class Drive extends SubsystemBase implements Loggable {
      */
     public void runSim() {
       driveSim.setInputs(leftSim.getMotorOutputLeadVoltage(), rightSim.getMotorOutputLeadVoltage());
-      
+
       driveSim.update(0.02);
 
       leftSim.setIntegratedSensorRawPosition(
