@@ -16,22 +16,25 @@ public class CowCatcher extends SubsystemBase {
   /** Creates a new CowCatcher. */
   DoubleSolenoid fullExtend_Pistion = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, CowCatcherConstants.pushcatcherForwardID, CowCatcherConstants.pushcatcherReverseID);
   DoubleSolenoid halfExtend_Pistion = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, CowCatcherConstants.pushcatcherForwardID, CowCatcherConstants.pushcatcherReverseID);
-  public CowCatcher() {}
+  public CowCatcher() {
+    fullExtend_Pistion.set(Value.kReverse);
+    halfExtend_Pistion.set(Value.kReverse);
+  }
 
   /**extends the cowcatcher fully*/
   private void toggle_FullPiston() {
     switch(fullExtend_Pistion.get()){
       case kForward:
       fullExtend_Pistion.set(Value.kReverse);
-      halfExtend_Pistion.set(Value.kOff);
+      halfExtend_Pistion.set(Value.kReverse);
       break;
       case kReverse:
       fullExtend_Pistion.set(Value.kForward);
-      halfExtend_Pistion.set(Value.kOff);
+      halfExtend_Pistion.set(Value.kForward);
       break;
       default:
       fullExtend_Pistion.set(Value.kReverse);
-      halfExtend_Pistion.set(Value.kOff);
+      halfExtend_Pistion.set(Value.kReverse);
       break;
     }
   }
@@ -40,30 +43,30 @@ public class CowCatcher extends SubsystemBase {
     switch(halfExtend_Pistion.get()){
       case kForward:
       halfExtend_Pistion.set(Value.kReverse);
-      fullExtend_Pistion.set(Value.kOff);
+      fullExtend_Pistion.set(Value.kReverse);
       break;
       case kReverse:
       halfExtend_Pistion.set(Value.kForward);
-      fullExtend_Pistion.set(Value.kOff);
+      fullExtend_Pistion.set(Value.kReverse);
       break;
       default:
       halfExtend_Pistion.set(Value.kReverse);
-      fullExtend_Pistion.set(Value.kOff);
+      fullExtend_Pistion.set(Value.kReverse);
     }
   }
   /**
    * moves the cowcatcher half out
-   * 
+   *
    */
-  public Command toggle_Half() {
-    return runOnce(this::toggle_Full);
+  public Command toggle_Half_Command() {
+    return runOnce(this::toggle_HalfPiston);
   }
   /**
    * move the cowcatcher all the way out
-   * 
+   *
    */
-  public Command toggle_Full() {
-    return runOnce(this::toggle_Half);
+  public Command toggle_Full_Command() {
+    return runOnce(this::toggle_FullPiston);
   }
 
   @Override
@@ -71,4 +74,3 @@ public class CowCatcher extends SubsystemBase {
     // This method will be called once per scheduler run
   }
 }
-
