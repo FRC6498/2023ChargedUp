@@ -111,12 +111,12 @@ public class Drive extends SubsystemBase implements Loggable {
     leftSim = Left_Front.getSimCollection();
     rightSim = Right_Front.getSimCollection();
 
-    compressor = new Compressor(PneumaticsModuleType.CTREPCM);
+    compressor = new Compressor(PneumaticsModuleType.REVPH);
     shifter = new DoubleSolenoid(
-      PneumaticsModuleType.CTREPCM,
+      PneumaticsModuleType.REVPH,
       DriveConstants.Shifter_Forward_Channel,
       DriveConstants.Shifter_Reverse_Channel);
-
+    
     gyro = new AHRS();
     simgyro = new AHRSSim();
 

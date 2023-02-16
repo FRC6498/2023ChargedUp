@@ -8,14 +8,15 @@ import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.CowCatcherConstants;
 
 
 public class CowCatcher extends SubsystemBase {
   /** Creates a new CowCatcher. */
-  DoubleSolenoid fullExtend_Pistion = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, CowCatcherConstants.pushcatcherForwardID, CowCatcherConstants.pushcatcherReverseID);
-  DoubleSolenoid halfExtend_Pistion = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, CowCatcherConstants.pushcatcherForwardID, CowCatcherConstants.pushcatcherReverseID);
+  DoubleSolenoid fullExtend_Pistion = new DoubleSolenoid(PneumaticsModuleType.REVPH, CowCatcherConstants.pushcatcherFullForwardID, CowCatcherConstants.pushcatcherFullReverseID);
+  DoubleSolenoid halfExtend_Pistion = new DoubleSolenoid(PneumaticsModuleType.REVPH, CowCatcherConstants.pushcatcherHalfForwardID, CowCatcherConstants.pushcatcherHalfReverseID);
   public CowCatcher() {
     fullExtend_Pistion.set(Value.kReverse);
     halfExtend_Pistion.set(Value.kReverse);
@@ -23,35 +24,34 @@ public class CowCatcher extends SubsystemBase {
 
   /**extends the cowcatcher fully*/
   private void toggle_FullPiston() {
-    switch(fullExtend_Pistion.get()){
-      case kForward:
-      fullExtend_Pistion.set(Value.kReverse);
+    switch(halfExtend_Pistion.get()){
+      case kOff:
       halfExtend_Pistion.set(Value.kReverse);
+      fullExtend_Pistion.set(Value.kReverse);
       break;
-      case kReverse:
-      fullExtend_Pistion.set(Value.kForward);
-      halfExtend_Pistion.set(Value.kForward);
+      case kForward:
+      halfExtend_Pistion.set(Value.kOff);
+      fullExtend_Pistion.set(Value.kOff);
       break;
       default:
-      fullExtend_Pistion.set(Value.kReverse);
-      halfExtend_Pistion.set(Value.kReverse);
-      break;
+      halfExtend_Pistion.set(Value.kOff);
+      fullExtend_Pistion.set(Value.kOff);
     }
   }
   /**extends the cowcatcher halfway */
   public void toggle_HalfPiston() {
     switch(halfExtend_Pistion.get()){
-      case kForward:
+      case kOff:
       halfExtend_Pistion.set(Value.kReverse);
-      fullExtend_Pistion.set(Value.kReverse);
+      fullExtend_Pistion.set(Value.kOff);
       break;
-      case kReverse:
-      halfExtend_Pistion.set(Value.kForward);
-      fullExtend_Pistion.set(Value.kReverse);
+      case kForward:
+      halfExtend_Pistion.set(Value.kOff);
+      fullExtend_Pistion.set(Value.kOff);
       break;
       default:
-      halfExtend_Pistion.set(Value.kReverse);
-      fullExtend_Pistion.set(Value.kReverse);
+      halfExtend_Pistion.set(Value.kOff);
+      fullExtend_Pistion.set(Value.kOff);
     }
   }
   /**

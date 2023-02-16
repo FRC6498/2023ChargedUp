@@ -34,7 +34,7 @@ public class Arm extends SubsystemBase {
   };
 
   public Arm() {
-
+    
   }
 
   /** Runs the intake on the arm */

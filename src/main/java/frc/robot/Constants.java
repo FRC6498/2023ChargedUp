@@ -45,8 +45,8 @@ public class Constants {
         public static final double distancePerTickMetersLowGear = (Math.PI * wheelDiameterMeters) / (2048 * gearRatioLow);
         public static final double distancePerTickMetersHighGear = (Math.PI * wheelDiameterMeters) / (2048 * gearRatioHigh);
         public static final double trackwidthMeters = Units.inchesToMeters(28.5);       
-        public static final int Shifter_Forward_Channel = 1;
-        public static final int Shifter_Reverse_Channel = 1;
+        public static final int Shifter_Forward_Channel = 0;
+        public static final int Shifter_Reverse_Channel = 0;
         public static final double kVLinear = 0.69821;//5.7454;
         public static final double kALinear = 0.052306;
         public static final double kVAngular = 0.71675;//5.6756;
@@ -108,16 +108,17 @@ public class Constants {
         public static final double minTargetArea = 10;
     }
     public static final class ArmConstants{
-        public static final int ArmTalonID = 5;
         public static final int ArmGearRatio = 100;
         public static final int IntakeSpark_ID = 6;
         public static final int ArmPDHPortID = 1;
-        public static final int xAxisMotorID = 7;
+        public static final int xAxisMotorID = 5;
         public static final int yAxisMotorID = 8;
         public static final PowerDistribution pdh = new PowerDistribution(0, ModuleType.kRev);
     }
     public static final class CowCatcherConstants{
-        public static final int pushcatcherForwardID = 1;
-        public static final int pushcatcherReverseID = 2;
+        public static final int pushcatcherFullForwardID = 1;
+        public static final int pushcatcherFullReverseID = 1;
+        public static final int pushcatcherHalfForwardID = 2;
+        public static final int pushcatcherHalfReverseID = 2;
     }
 }
