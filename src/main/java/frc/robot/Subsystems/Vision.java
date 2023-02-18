@@ -24,7 +24,7 @@ public class Vision {
 
   public Vision() {
     camera = new PhotonCamera(VisionConstants.cameraName);
-    poseEstimator = new PhotonPoseEstimator(VisionConstants.tagLayout, PoseStrategy.CLOSEST_TO_REFERENCE_POSE, camera, VisionConstants.robotToCamera);
+    poseEstimator = new PhotonPoseEstimator(VisionConstants.tagLayout, PoseStrategy.MULTI_TAG_PNP, camera, VisionConstants.robotToCamera);
     currentFieldPose = Optional.empty();
 
     visionSystem = new SimVisionSystem(
