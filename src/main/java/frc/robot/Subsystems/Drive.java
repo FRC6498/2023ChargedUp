@@ -192,7 +192,7 @@ public class Drive extends SubsystemBase implements Loggable {
    */
   public Command ArcadeDrive(DoubleSupplier throttle, DoubleSupplier turn) {
     return run(()-> {
-      diffDrive.arcadeDrive(throttle.getAsDouble(), turn.getAsDouble());
+      diffDrive.arcadeDrive(throttle.getAsDouble(), -turn.getAsDouble(), true);
     });
   }
 

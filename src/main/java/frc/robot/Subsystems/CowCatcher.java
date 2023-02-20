@@ -18,8 +18,8 @@ public class CowCatcher extends SubsystemBase {
   DoubleSolenoid fullExtend_Pistion = new DoubleSolenoid(PneumaticsModuleType.REVPH, CowCatcherConstants.pushcatcherFullForwardID, CowCatcherConstants.pushcatcherFullReverseID);
   DoubleSolenoid halfExtend_Pistion = new DoubleSolenoid(PneumaticsModuleType.REVPH, CowCatcherConstants.pushcatcherHalfForwardID, CowCatcherConstants.pushcatcherHalfReverseID);
   public CowCatcher() {
-    fullExtend_Pistion.set(Value.kReverse);
-    halfExtend_Pistion.set(Value.kReverse);
+    //fullExtend_Pistion.set(Value.kReverse);
+    //halfExtend_Pistion.set(Value.kReverse);
   }
 
   /**extends the cowcatcher fully*/
@@ -54,6 +54,14 @@ public class CowCatcher extends SubsystemBase {
       fullExtend_Pistion.set(Value.kOff);
     }
   }
+  public Command moveToHalf() {
+    return run(()-> {
+      halfExtend_Pistion.set(Value.kReverse);
+    fullExtend_Pistion.set(Value.kOff);
+  });
+    
+  }
+
   /**
    * moves the cowcatcher half out
    *
