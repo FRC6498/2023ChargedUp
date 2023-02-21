@@ -19,10 +19,10 @@ import io.github.oblarg.oblog.Logger;
 public class RobotContainer implements Loggable {
 
   public CommandXboxController controller = new CommandXboxController(OperatorConstants.Driver_Controller_ID);
-  Vision visionSub = new Vision();
-  Drive driveSub = new Drive(visionSub);
-  Arm arm = new Arm();
-  CowCatcher cowCatcher = new CowCatcher();
+  Vision visionSub;
+  Drive driveSub;
+  Arm arm;
+  CowCatcher cowCatcher;
   private boolean isKeyboard = true;
 
   public RobotContainer() {
@@ -31,6 +31,7 @@ public class RobotContainer implements Loggable {
     controller = new CommandXboxController(OperatorConstants.Driver_Controller_ID);
     visionSub = new Vision();
     driveSub = new Drive(visionSub);
+    cowCatcher = new CowCatcher();
     Logger.configureLoggingAndConfig(this, false);
     configureBindings();
   }
@@ -39,7 +40,7 @@ public class RobotContainer implements Loggable {
     //shifts gears
     controller.x().onTrue(cowCatcher.toggle_Full());
     controller.y().onTrue(cowCatcher.toggle_Half());
-
+    controller.b().onTrue(arm.homeArmX());
     controller.a().onTrue(driveSub.Shift());
 
     controller.rightBumper().onTrue(driveSub.Shift());

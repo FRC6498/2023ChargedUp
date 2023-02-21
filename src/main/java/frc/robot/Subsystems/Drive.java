@@ -79,7 +79,7 @@ public class Drive extends SubsystemBase implements Loggable {
   DifferentialDriveWheelSpeeds currentDesiredWheelSpeeds = new DifferentialDriveWheelSpeeds();
   Timer trajectoryTimer = new Timer();
   //#endregion
-  DoubleSolenoid shifter = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, DriveConstants.Shifter_Forward_Channel, DriveConstants.Shifter_Reverse_Channel);
+  DoubleSolenoid shifter = new DoubleSolenoid(PneumaticsModuleType.REVPH, DriveConstants.Shifter_Forward_Channel, DriveConstants.Shifter_Reverse_Channel);
   @Log.BooleanBox
   public boolean isHighGear;
   Compressor compressor = new Compressor(PneumaticsModuleType.CTREPCM);

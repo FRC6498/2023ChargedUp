@@ -14,8 +14,8 @@ import frc.robot.Constants.CowCatcherConstants;
 
 public class CowCatcher extends SubsystemBase {
   /** Creates a new CowCatcher. */
-  DoubleSolenoid fullExtend_Pistion = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, CowCatcherConstants.pushcatcherForwardID, CowCatcherConstants.pushcatcherReverseID);
-  DoubleSolenoid halfExtend_Pistion = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, CowCatcherConstants.pushcatcherForwardID, CowCatcherConstants.pushcatcherReverseID);
+  DoubleSolenoid fullExtend_Pistion = new DoubleSolenoid(PneumaticsModuleType.REVPH, CowCatcherConstants.pushcatcherForwardID, CowCatcherConstants.pushcatcherReverseID);
+  DoubleSolenoid halfExtend_Pistion = new DoubleSolenoid(PneumaticsModuleType.REVPH, CowCatcherConstants.pushcatcherForwardID, CowCatcherConstants.pushcatcherReverseID);
   public CowCatcher() {}
 
   /**extends the cowcatcher fully*/
