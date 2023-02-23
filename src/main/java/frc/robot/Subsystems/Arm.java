@@ -41,6 +41,7 @@ public class Arm extends SubsystemBase {
   };
 
   public Arm() {
+
     yAxisMotor = new TalonFX(ArmConstants.yAxisMotorID);
     xAxisMotor = new TalonFX(ArmConstants.xAxisMotorID);
     intake = new CANSparkMax(ArmConstants.IntakeSpark_ID, MotorType.kBrushless);
@@ -127,7 +128,7 @@ public class Arm extends SubsystemBase {
   }
 
   public Command homeArm() {
-    return run(this::homeArmX).andThen(this::homeArmX);
+    return run(this::homeArmX).andThen(this::homeArmY);
   }
 
   // #endregion

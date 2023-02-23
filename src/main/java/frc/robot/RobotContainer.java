@@ -18,34 +18,43 @@ import io.github.oblarg.oblog.Logger;
 
 public class RobotContainer implements Loggable {
 
-  public CommandXboxController controller = new CommandXboxController(OperatorConstants.Driver_Controller_ID);
+
+  public CommandXboxController controller;
+
   Vision visionSub;
   Drive driveSub;
   Arm arm;
   CowCatcher cowCatcher;
-  private boolean isKeyboard = true;
+
+  private boolean isKeyboard = false;
 
   public RobotContainer() {
     PathPlannerServer.startServer(5811);
     System.out.println("Robot Start");
+
     controller = new CommandXboxController(OperatorConstants.Driver_Controller_ID);
     visionSub = new Vision();
     driveSub = new Drive(visionSub);
     cowCatcher = new CowCatcher();
     arm = new Arm();
+
     Logger.configureLoggingAndConfig(this, false);
     configureBindings();
   }
 
   private void configureBindings() {
+    //moves cowcatcher
+    controller.x().onTrue(cowCatcher.toggle_Full_Command());
+    controller.y().onTrue(cowCatcher.toggle_Half_Command());
+    controller.a().onTrue(cowCatcher.moveToHalf());
     //shifts gears
+
     controller.x().onTrue(cowCatcher.toggle_Full());
     controller.y().onTrue(cowCatcher.toggle_Half());
     controller.b().onTrue(arm.homeArmX());
     controller.a().onTrue(driveSub.Shift());
 
-    controller.rightBumper().onTrue(driveSub.Shift());
-    // drives
+    // sets weather to use keyboard or controller
     if (Robot.isReal() || !isKeyboard) {
       driveSub.setDefaultCommand(driveSub.ArcadeDrive(() -> controller.getRightTriggerAxis() - controller.getLeftTriggerAxis(), controller::getLeftX));
     } else if (isKeyboard) {
