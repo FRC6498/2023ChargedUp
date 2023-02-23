@@ -49,8 +49,8 @@ public class RobotContainer implements Loggable {
     controller.a().onTrue(cowCatcher.moveToHalf());
     //shifts gears
 
-    controller.x().onTrue(cowCatcher.toggle_Full());
-    controller.y().onTrue(cowCatcher.toggle_Half());
+    controller.x().onTrue(cowCatcher.toggle_Full_Command());
+    controller.y().onTrue(cowCatcher.toggle_Half_Command());
     controller.b().onTrue(arm.homeArmX());
     controller.a().onTrue(driveSub.Shift());
 
