@@ -24,29 +24,31 @@ import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 
 public class Constants {
     public static final class DriveConstants {
-        
+
         public static final int Left_Front_ID = 1;
         public static final int Right_Front_ID = 3;
         public static final int Left_Back_ID = 2;
         public static final int Right_Back_ID = 4;
 
         public static final int TalonFXCountsPerRev = 2048;
-        
+
         // 1 motor rev = 2048 ticks
         // gearRatio motor revs = 1 wheel rev
         // 1 wheel rev = 1 wheel circumference travelled
         // 1 wheel circumference = pi*wheel diameter
-        
+
         public static final double gearRatioLow = 26.0;
         public static final double gearRatioHigh = 10.71;
         // 0.1524
         public static final double wheelDiameterMeters = Units.inchesToMeters(6);
-        
+
         public static final double distancePerTickMetersLowGear = (Math.PI * wheelDiameterMeters) / (2048 * gearRatioLow);
         public static final double distancePerTickMetersHighGear = (Math.PI * wheelDiameterMeters) / (2048 * gearRatioHigh);
+
         public static final double trackwidthMeters = Units.inchesToMeters(28.5);       
         public static final int Shifter_Forward_Channel = 0;
         public static final int Shifter_Reverse_Channel = 0;
+
         public static final double kVLinear = 0.69821;//5.7454;
         public static final double kALinear = 0.052306;
         public static final double kVAngular = 0.71675;//5.6756;
@@ -57,20 +59,20 @@ public class Constants {
         public static final PathConstraints pathConfig = new PathConstraints(2.4, 2);
         public static final LinearSystem<N2,N2,N2> plant = //LinearSystemId.createDrivetrainVelocitySystem(DCMotor.getFalcon500(2), 70, wheelDiameterMeters/2, trackwidthMeters/2, 5, DriveConstants.gearRatioLow);
         LinearSystemId.identifyDrivetrainSystem(
-            kVLinear, 
-            kALinear, 
-            kVAngular, 
+            kVLinear,
+            kALinear,
+            kVAngular,
             kAAngular
         );
     }
 
     public static final class OperatorConstants {
         public static final int Driver_Controller_ID = 0; //note that controller ID's are not the same as can ID's
-    } 
+    }
     public static final class VisionConstants {
         // TODO: set camera name based on the actual camera name
         public static final String cameraName = "USB_webcam";
-        
+
         // TODO: handle alliance switching (mirror trajectories)
 
         static double archeryWallY = Units.inchesToMeters(351);
@@ -95,10 +97,10 @@ public class Constants {
         // TODO: fill out robotToCamera transform once robot is designed
 
         public static final Transform3d robotToCamera = new Transform3d(
-            new Translation3d(Units.inchesToMeters(13.125), 0, Units.inchesToMeters(6.125)), 
+            new Translation3d(Units.inchesToMeters(13.125), 0, Units.inchesToMeters(6.125)),
             new Rotation3d(0, 0, 0)
         );
-        
+
         public static final double camDiagFOV = 95.0;
         public static final double camPitch = robotToCamera.getRotation().getX();
         public static final double camHeight = robotToCamera.getTranslation().getZ();

@@ -5,7 +5,6 @@
 package frc.robot;
 
 import com.pathplanner.lib.server.PathPlannerServer;
-
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Commands.Autos.Autos;
@@ -19,11 +18,14 @@ import io.github.oblarg.oblog.Logger;
 
 public class RobotContainer implements Loggable {
 
+
   public CommandXboxController controller;
+
   Vision visionSub;
   Drive driveSub;
   Arm arm;
   CowCatcher cowCatcher;
+
   private boolean isKeyboard = false;
 
   public RobotContainer() {
@@ -34,7 +36,7 @@ public class RobotContainer implements Loggable {
     visionSub = new Vision();
     driveSub = new Drive(visionSub);
     cowCatcher = new CowCatcher();
-    arm  = new Arm();
+    arm = new Arm();
 
     Logger.configureLoggingAndConfig(this, false);
     configureBindings();
@@ -46,7 +48,11 @@ public class RobotContainer implements Loggable {
     controller.y().onTrue(cowCatcher.toggle_Half_Command());
     controller.a().onTrue(cowCatcher.moveToHalf());
     //shifts gears
-    controller.rightBumper().onTrue(driveSub.Shift());
+
+    controller.x().onTrue(cowCatcher.toggle_Full_Command());
+    controller.y().onTrue(cowCatcher.toggle_Half_Command());
+    controller.b().onTrue(arm.homeArmX());
+    controller.a().onTrue(driveSub.Shift());
 
     // sets weather to use keyboard or controller
     if (Robot.isReal() || !isKeyboard) {
