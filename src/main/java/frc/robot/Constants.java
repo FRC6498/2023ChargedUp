@@ -108,11 +108,10 @@ public class Constants {
         public static final double minTargetArea = 10;
     }
     public static final class ArmConstants{
-        public static final int ArmTalonID = 5;
         public static final int ArmGearRatio = 100;
         public static final int IntakeSpark_ID = 6;
         public static final int ArmPDHPortID = 1;
-        public static final int xAxisMotorID = 7;
+        public static final int xAxisMotorID = 5;
         public static final int yAxisMotorID = 8;
         public static final PowerDistribution pdh = new PowerDistribution(0, ModuleType.kRev);
     }

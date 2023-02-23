@@ -6,10 +6,12 @@ package frc.robot.Subsystems;
 
 import java.util.function.BooleanSupplier;
 import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -44,11 +46,15 @@ public class Arm extends SubsystemBase {
     intake = new CANSparkMax(ArmConstants.IntakeSpark_ID, MotorType.kBrushless);
 
     xAxisforwardLimitSwitch = new Trigger(this::getForwardLimitX);
-    xAxisreverseLimitSwitch = new Trigger(this::getForwardLimitY);
+    xAxisreverseLimitSwitch = new Trigger(this::getReverseLimitX);
     yAxisTopLimitSwitch = new Trigger(this::getForwardLimitY);
     yAxisBottomLimitSwitch = new Trigger(this::getReverseLimitY);
-
+    xAxisMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor);
     intakeRunning = false;
+    
+    xAxisMotor.config_kP(0, 0.2);
+    xAxisMotor.config_kD(0, 0.1);
+    
   }
 
   public void moveXAxis(double position) {
@@ -58,6 +64,7 @@ public class Arm extends SubsystemBase {
   public void moveYAxis(double position) {
     xAxisMotor.set(ControlMode.Position, position);
   }
+
 
   public void moveToTransform(Transform2d transfrom) {
     xAxisMotor.set(ControlMode.Position, Conversions.distanceToNativeUnits(transfrom.getX()));
@@ -73,6 +80,9 @@ public class Arm extends SubsystemBase {
   public Command centerOnTarget(Transform2d robotToTarget) {
     return run(() -> moveToTransform(robotToTarget));
   }
+  public Command percentCommand(double percent) {
+    return run( ()-> xAxisMotor.set(ControlMode.PercentOutput, percent));
+  }
 
   @Override
   public void periodic() {
@@ -84,18 +94,20 @@ public class Arm extends SubsystemBase {
   // arm y = up -> down
   public Command homeArmX() {
     return run(
-        () -> xAxisMotor.set(ControlMode.PercentOutput, 0.1)).until(xAxisforwardLimitSwitch) // x has hit left limit
-        .andThen(
-            () -> xAxisMotor.setSelectedSensorPosition(0) // zero motor on left side
-        )
-        .andThen(
-            run(() -> xAxisMotor.set(ControlMode.PercentOutput, -0.1)))
-        .until(xAxisreverseLimitSwitch) // x has hit right limit
-        .andThen(
-            () -> xAxisMotorMax = xAxisMotor.getSelectedSensorPosition() // get max value on the right side
-        )
-        .andThen(() -> moveXAxis(xAxisMotorMax / 2))
-        .andThen(() -> xHomingComplete = true);
+    () -> xAxisMotor.set(ControlMode.PercentOutput, 0.1))
+    .until(() -> xAxisforwardLimitSwitch.getAsBoolean() == true) // x has hit left limit
+      .andThen(
+        runOnce(()-> SmartDashboard.putNumber("X axis pos", xAxisMotor.getSelectedSensorPosition())),
+        runOnce(()->xAxisMotor.setSelectedSensorPosition(0)), // zero motor on left side
+        run(() -> xAxisMotor.set(ControlMode.PercentOutput, -0.1))
+        .until(() -> xAxisreverseLimitSwitch.getAsBoolean() == true),
+        // x has hit right limit
+        runOnce(() -> xAxisMotorMax = xAxisMotor.getSelectedSensorPosition()), // get max value on the right side
+        runOnce(()->SmartDashboard.putNumber("X Axis Max", xAxisMotorMax)),
+        run(() -> moveXAxis(xAxisMotorMax / 2))
+           );
+        
+        
   }
 
   public Command homeArmY() {
@@ -141,9 +153,10 @@ public class Arm extends SubsystemBase {
   public boolean getReverseLimitX() {
     if (xAxisMotor.isRevLimitSwitchClosed() == 1) {
       return true;
-    } else {
+    } else if (xAxisMotor.isRevLimitSwitchClosed() == 0) {
       return false;
     }
+    return false;
   }
 
   public boolean getForwardLimitY() {

@@ -32,6 +32,7 @@ public class RobotContainer implements Loggable {
     visionSub = new Vision();
     driveSub = new Drive(visionSub);
     cowCatcher = new CowCatcher();
+    arm = new Arm();
     Logger.configureLoggingAndConfig(this, false);
     configureBindings();
   }
