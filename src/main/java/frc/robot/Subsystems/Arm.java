@@ -18,7 +18,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Robot;
 import frc.robot.Constants.ArmConstants;
 import frc.robot.Utility.Conversions;
 
@@ -120,12 +119,7 @@ public class Arm extends SubsystemBase {
     return run(() -> moveToTransform(robotToTarget));
   }
 
-  @Override
-  public void periodic() {
-    // This method will be called once per scheduler run
-  }
-
-  // #region Homing Commands
+  // #region arm Commands
   // arm x = left -> right
   // arm y = up -> down
   public Command homeArmX() {
@@ -160,7 +154,7 @@ public class Arm extends SubsystemBase {
 
   }
   // #endregion
-  // #region getters for limit switches
+  
   public void ToggleIntakeRunning() {
     if (intakeRunning == true) {
       intake.set(0);
@@ -171,6 +165,13 @@ public class Arm extends SubsystemBase {
     }
   }
 
+  @Override
+  public void periodic() {
+    // This method will be called once per scheduler run
+  }
+
+  
+// #region getters for limit switches
   public boolean getForwardLimitX() {
     if (xAxisMotor.isFwdLimitSwitchClosed() == 1) {
       return true;

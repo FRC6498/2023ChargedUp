@@ -71,7 +71,6 @@ public class Constants {
         public static final int Operator_Controller_ID =1;
     }
     public static final class VisionConstants {
-        // TODO: set camera name based on the actual camera name
         public static final String cameraName = "USB_webcam";
 
         // TODO: handle alliance switching (mirror trajectories)
