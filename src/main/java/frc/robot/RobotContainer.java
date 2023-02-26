@@ -49,14 +49,14 @@ public class RobotContainer implements Loggable {
     driveController.b().onTrue(cowCatcher.toggle_Half_Command());
     driveController.a().onTrue(cowCatcher.toggle_Full_Command());
     //toggle breaks
-    driveController.x().onTrue(driveSub.toggleBreak());
+    driveController.leftBumper().onTrue(driveSub.toggleBreak());
     //shift
     driveController.rightBumper().onTrue(driveSub.Shift());
+    //center robot
+    driveController.rightStick().onTrue(driveSub.centerDrive());
     //arm Commands
     operatorController.a().onTrue(arm.DeployArm());
     operatorController.b().onTrue(arm.RetractArm());
-    //center robot
-    operatorController.rightStick().onTrue(driveSub.centerDrive());
     //intake commands
     operatorController.rightBumper().onTrue(arm.stopIntake());
     operatorController.povUp().onTrue(arm.setIntakeSpeed1());
