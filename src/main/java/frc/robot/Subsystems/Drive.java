@@ -32,6 +32,7 @@ import edu.wpi.first.networktables.DoubleArrayPublisher;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.PWM;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Timer;
@@ -95,10 +96,13 @@ public class Drive extends SubsystemBase implements Loggable {
   TalonFXSimCollection leftSim, rightSim;
   DifferentialDrivetrainSim driveSim;
   AHRSSim simgyro;
+  static int ledcolor = 0;
+
+  PWM leds = new PWM(0);
 
   public Drive(Vision vision) {
     this.vision = vision;
-
+    
     Left_Front = new WPI_TalonFX(DriveConstants.Left_Front_ID);
     Right_Front = new WPI_TalonFX(DriveConstants.Right_Front_ID);
     Left_Back = new WPI_TalonFX(DriveConstants.Left_Back_ID);
@@ -171,7 +175,14 @@ public class Drive extends SubsystemBase implements Loggable {
       DriveConstants.wheelDiameterMeters / 2.0,
       null
     );
+
+    leds.setRaw(10);
   }
+
+  public void loopLEDs() {
+      leds.setRaw(ledcolor);
+      ledcolor ++;
+    }
 
   public boolean getGear() {
     return isHighGear;
@@ -345,6 +356,7 @@ public class Drive extends SubsystemBase implements Loggable {
         EstimatedRobotPose estPose = vision.getCurrentPoseEstimate().get();
         poseEstimator.addVisionMeasurement(estPose.estimatedPose.toPose2d(), estPose.timestampSeconds);
       }
+      loopLEDs();
     }
     posePub.set(new double[] {
       poseEstimator.getEstimatedPosition().getX(),

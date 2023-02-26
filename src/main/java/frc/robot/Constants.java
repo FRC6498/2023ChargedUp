@@ -68,6 +68,7 @@ public class Constants {
 
     public static final class OperatorConstants {
         public static final int Driver_Controller_ID = 0; //note that controller ID's are not the same as can ID's
+        public static final int Operator_Controller_ID =1;
     }
     public static final class VisionConstants {
         // TODO: set camera name based on the actual camera name
@@ -112,10 +113,10 @@ public class Constants {
     public static final class ArmConstants{
         public static final int ArmGearRatio = 100;
         public static final int IntakeSpark_ID = 6;
-        public static final int ArmPDHPortID = 1;
+        public static final int ArmPDHPortID = 7;
         public static final int xAxisMotorID = 5;
-        public static final int yAxisMotorID = 8;
-        public static final PowerDistribution pdh = new PowerDistribution(0, ModuleType.kRev);
+        public static final int yAxisMotorID = 7;
+        public static final PowerDistribution pdh = new PowerDistribution(1, ModuleType.kRev);
     }
     public static final class CowCatcherConstants{
         public static final int pushcatcherFullForwardID = 1;

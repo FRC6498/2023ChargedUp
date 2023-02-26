@@ -19,7 +19,7 @@ import io.github.oblarg.oblog.Logger;
 public class RobotContainer implements Loggable {
 
 
-  public CommandXboxController controller;
+  public CommandXboxController driveController, operatorController;
 
   Vision visionSub;
   Drive driveSub;
@@ -32,7 +32,8 @@ public class RobotContainer implements Loggable {
     PathPlannerServer.startServer(5811);
     System.out.println("Robot Start");
 
-    controller = new CommandXboxController(OperatorConstants.Driver_Controller_ID);
+    driveController = new CommandXboxController(OperatorConstants.Driver_Controller_ID);
+    operatorController = new CommandXboxController(OperatorConstants.Operator_Controller_ID);
     visionSub = new Vision();
     driveSub = new Drive(visionSub);
     cowCatcher = new CowCatcher();
@@ -44,21 +45,21 @@ public class RobotContainer implements Loggable {
 
   private void configureBindings() {
     //moves cowcatcher
-    controller.x().onTrue(cowCatcher.toggle_Full_Command());
-    controller.y().onTrue(cowCatcher.toggle_Half_Command());
-    controller.a().onTrue(cowCatcher.moveToHalf());
     //shifts gears
 
-    controller.x().onTrue(cowCatcher.toggle_Full_Command());
-    controller.y().onTrue(cowCatcher.toggle_Half_Command());
-    controller.b().onTrue(arm.homeArmX());
-    controller.a().onTrue(driveSub.Shift());
+    driveController.b().onTrue(cowCatcher.toggle_Half_Command());
+    driveController.a().onTrue(cowCatcher.toggle_Full_Command());
+//TODO: add brake toggle to drivetrain
+driveController.rightBumper().onTrue(driveSub.Shift());
+    //TODO:make the CHarge Station balancer
+    operatorController.a().onTrue(arm.homeArmY());
+//TODO: make 4 different intake speeds
 
     // sets weather to use keyboard or controller
     if (Robot.isReal() || !isKeyboard) {
-      driveSub.setDefaultCommand(driveSub.ArcadeDrive(() -> controller.getRightTriggerAxis() - controller.getLeftTriggerAxis(), controller::getLeftX));
+      driveSub.setDefaultCommand(driveSub.ArcadeDrive(() -> driveController.getRightTriggerAxis() - driveController.getLeftTriggerAxis(), driveController::getLeftX));
     } else if (isKeyboard) {
-      driveSub.setDefaultCommand(driveSub.ArcadeDrive(controller::getLeftY, controller::getLeftX));
+      driveSub.setDefaultCommand(driveSub.ArcadeDrive(driveController::getLeftY, driveController::getLeftX));
      }
   }
 
