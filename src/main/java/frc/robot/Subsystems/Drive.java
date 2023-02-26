@@ -10,6 +10,7 @@ import org.photonvision.EstimatedRobotPose;
 
 //#region imports
 import com.ctre.phoenix.motorcontrol.InvertType;
+import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.TalonFXSimCollection;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.kauailabs.navx.frc.AHRS;
@@ -17,6 +18,7 @@ import com.kauailabs.navx.frc.AHRSSim;
 import com.pathplanner.lib.server.PathPlannerServer;
 
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.controller.BangBangController;
 import edu.wpi.first.math.controller.DifferentialDriveWheelVoltages;
 import edu.wpi.first.math.controller.LTVDifferentialDriveController;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
@@ -66,6 +68,7 @@ public class Drive extends SubsystemBase implements Loggable {
   MotorControllerGroup RightMCG;
   DifferentialDrive diffDrive;
   AHRS gyro;
+  static boolean breaking = false;
 
 
   //Drive Control
@@ -74,6 +77,7 @@ public class Drive extends SubsystemBase implements Loggable {
   DifferentialDrivePoseEstimator poseEstimator;
 
   LTVDifferentialDriveController ltv;
+  BangBangController chargeStationController;
 
   //TODO: add substation translation
   Translation2d hpStation = new Translation2d(0, 0);
@@ -96,8 +100,8 @@ public class Drive extends SubsystemBase implements Loggable {
   TalonFXSimCollection leftSim, rightSim;
   DifferentialDrivetrainSim driveSim;
   AHRSSim simgyro;
-  static int ledcolor = 0;
 
+  static int ledcolor = 0;
   PWM leds = new PWM(0);
 
   public Drive(Vision vision) {
@@ -175,13 +179,28 @@ public class Drive extends SubsystemBase implements Loggable {
       DriveConstants.wheelDiameterMeters / 2.0,
       null
     );
-
+    chargeStationController = new BangBangController(5);
     leds.setRaw(10);
   }
 
   public void loopLEDs() {
       leds.setRaw(ledcolor);
       ledcolor ++;
+    }
+    public Command toggleBreak() {
+      return runOnce(() -> {
+        if (!breaking) {
+        Left_Front.setNeutralMode(NeutralMode.Brake);
+        Left_Back.setNeutralMode(NeutralMode.Brake);
+        Right_Front.setNeutralMode(NeutralMode.Brake);
+        Right_Back.setNeutralMode(NeutralMode.Brake);
+        } else {
+        Left_Front.setNeutralMode(NeutralMode.Coast);
+        Left_Back.setNeutralMode(NeutralMode.Coast);
+        Right_Front.setNeutralMode(NeutralMode.Coast);
+        Right_Back.setNeutralMode(NeutralMode.Coast);
+        }
+      });
     }
 
   public boolean getGear() {
@@ -208,6 +227,10 @@ public class Drive extends SubsystemBase implements Loggable {
       diffDrive.arcadeDrive(throttle.getAsDouble(), -turn.getAsDouble(), true);
     });
   }
+  /**Centers the robot on the charge station*/
+  public Command centerDrive() {
+    return ArcadeDrive(()-> calcBangBang(), () -> 0).until(()-> chargeStationController.atSetpoint() == true);
+  }
 
   /**
    * @return
@@ -223,6 +246,12 @@ public class Drive extends SubsystemBase implements Loggable {
         isHighGear = true;
        }
     });
+  }
+  public double calcBangBang() {
+   return chargeStationController.calculate(gyro.getPitch(), 0);
+  }
+  public Command centerOnChargeStation() {
+    return run(null);
   }
 
   /**

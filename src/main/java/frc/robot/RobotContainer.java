@@ -38,22 +38,31 @@ public class RobotContainer implements Loggable {
     driveSub = new Drive(visionSub);
     cowCatcher = new CowCatcher();
     arm = new Arm();
+    arm.setDefaultCommand(arm.homeArmX());
 
     Logger.configureLoggingAndConfig(this, false);
     configureBindings();
   }
 
   private void configureBindings() {
-    //moves cowcatcher
-    //shifts gears
-
+    //toggle cowcatcher
     driveController.b().onTrue(cowCatcher.toggle_Half_Command());
     driveController.a().onTrue(cowCatcher.toggle_Full_Command());
-//TODO: add brake toggle to drivetrain
-driveController.rightBumper().onTrue(driveSub.Shift());
-    //TODO:make the CHarge Station balancer
-    operatorController.a().onTrue(arm.homeArmY());
-//TODO: make 4 different intake speeds
+    //toggle breaks
+    driveController.x().onTrue(driveSub.toggleBreak());
+    //shift
+    driveController.rightBumper().onTrue(driveSub.Shift());
+    //arm Commands
+    operatorController.a().onTrue(arm.DeployArm());
+    operatorController.b().onTrue(arm.RetractArm());
+    //center robot
+    operatorController.rightStick().onTrue(driveSub.centerDrive());
+    //intake commands
+    operatorController.rightBumper().onTrue(arm.stopIntake());
+    operatorController.povUp().onTrue(arm.setIntakeSpeed1());
+    operatorController.povRight().onTrue(arm.setIntakeSpeed2());
+    operatorController.povDown().onTrue(arm.setIntakeSpeed3());
+    operatorController.povLeft().onTrue(arm.setIntakeSpeed4());
 
     // sets weather to use keyboard or controller
     if (Robot.isReal() || !isKeyboard) {

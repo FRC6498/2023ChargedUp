@@ -84,6 +84,22 @@ public class Arm extends SubsystemBase {
   public Command moveY(double percent) {
     return run(()-> yAxisMotor.set(ControlMode.PercentOutput, percent));
   }
+  /** 10% forward power*/
+  public Command setIntakeSpeed1() {
+    return run(()-> intake.set(0.1));
+  }
+  /**25% forward power */
+  public Command setIntakeSpeed2() {
+    return run(() -> intake.set(0.25));
+  }
+  /**-10% reverse power */
+  public Command setIntakeSpeed3() {
+    return run(() -> intake.set(-0.1));
+  }
+  /**-25% reverse power */
+  public Command setIntakeSpeed4() {
+    return run(() -> intake.set(-0.25));
+  }
 
 
   public void moveToTransform(Transform2d transfrom) {
@@ -95,13 +111,13 @@ public class Arm extends SubsystemBase {
   public Command runIntake() {
     return runOnce(() -> ToggleIntakeRunning());
   }
-
+  public Command stopIntake() {
+    return run(() -> intake.set(0));
+  }
+ 
   /** Centering Command */
   public Command centerOnTarget(Transform2d robotToTarget) {
     return run(() -> moveToTransform(robotToTarget));
-  }
-  public Command percentCommand(double percent) {
-    return run( ()-> xAxisMotor.set(ControlMode.PercentOutput, percent));
   }
 
   @Override
@@ -129,18 +145,20 @@ public class Arm extends SubsystemBase {
     );   
   }
 
-  public Command homeArmY() {
+  public Command DeployArm() {
     return run(() -> yAxisMotor.set(ControlMode.PercentOutput, -0.2)).until(()->currentLimit.getAsBoolean() == true)
     .andThen(Commands.print("HIT CURRENT LIMIT"),
      run(() -> yAxisMotor.set(ControlMode.PercentOutput,0)));
         // arm has hit highest point
          // y axis homing is completef
   }
+  public Command RetractArm() {
+    return run(() -> yAxisMotor.set(ControlMode.PercentOutput, 0.2)).until(()-> currentLimit.getAsBoolean() ==true)
+    .andThen(
+      run(() -> yAxisMotor.set(ControlMode.PercentOutput, 0))
+    );
 
-  public Command homeArm() {
-    return run(this::homeArmX).andThen(this::homeArmY);
   }
-
   // #endregion
   // #region getters for limit switches
   public void ToggleIntakeRunning() {
