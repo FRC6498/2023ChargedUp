@@ -8,7 +8,6 @@ import java.util.function.BooleanSupplier;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
-import com.ctre.phoenix.motorcontrol.StatorCurrentLimitConfiguration;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
@@ -24,145 +23,123 @@ import frc.robot.Utility.Conversions;
 public class Arm extends SubsystemBase {
   // ArmFeedforward armFeedforward = new ArmFeedforward(0, 0, 0);
   CANSparkMax intake;
-  TalonFX xAxisMotor, yAxisMotor;
-  /** Trigger for limit switch on the arm */
-  Trigger xAxisforwardLimitSwitch, xAxisreverseLimitSwitch, yAxisTopLimitSwitch, yAxisBottomLimitSwitch;
-
+  TalonFX slideMotor, armExtensionMotor;
+  Trigger slideMotorLeftLimit, slideMotorRightLimit, armExtensionTopLimit, armExtensionBottomLimit;
   boolean intakeRunning;
-  /** Max distance the arm motors can travel */
-  double xAxisMotorMax, yAxisMotorMax;
+  double slideMotorMaxDistance, extensionMotorMaxDistance;
 
-  boolean xHomingComplete, yHomingComplete;
-  double xAxisAbsolutePos = 0;
   /** Current-based limit switch for intake motors */
-  BooleanSupplier currentLimit = new BooleanSupplier() {
-    public boolean getAsBoolean() {
-      if (ArmConstants.pdh.getCurrent(ArmConstants.ArmPDHPortID) > 5){
-        return true;
-      }else { 
-        return false;
-      }
-    };
+  BooleanSupplier extensionCurrentLimit = () -> {
+    if (ArmConstants.pdh.getCurrent(ArmConstants.ArmPDHPortID) > 5) {
+      return true;
+    } else {
+      return false;
+    }
   };
 
   public Arm() {
-    SmartDashboard.putNumber("xAxisAbsolutePos", xAxisAbsolutePos);
-    yAxisMotor = new TalonFX(ArmConstants.yAxisMotorID);
-    xAxisMotor = new TalonFX(ArmConstants.xAxisMotorID);
+    armExtensionMotor = new TalonFX(ArmConstants.yAxisMotorID);
+    slideMotor = new TalonFX(ArmConstants.xAxisMotorID);
     intake = new CANSparkMax(ArmConstants.IntakeSpark_ID, MotorType.kBrushless);
-
-    xAxisforwardLimitSwitch = new Trigger(this::getForwardLimitX);
-    xAxisreverseLimitSwitch = new Trigger(this::getReverseLimitX);
-    yAxisTopLimitSwitch = new Trigger(this::getForwardLimitY);
-    yAxisBottomLimitSwitch = new Trigger(this::getReverseLimitY);
-    xAxisMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor);
     intakeRunning = false;
-    
-    xAxisMotor.config_kP(0, 0.2);
-    xAxisMotor.config_kD(0, 0.1);
 
-    yAxisMotor.setNeutralMode(NeutralMode.Brake);
-    StatorCurrentLimitConfiguration config  = new StatorCurrentLimitConfiguration();
-    config.currentLimit = 36;
-    config.enable = true;
-    yAxisMotor.configStatorCurrentLimit(config);
-    intake.setSmartCurrentLimit(2);
-    
+    slideMotorLeftLimit = new Trigger(this::getSlideLeftLimit);
+    slideMotorRightLimit = new Trigger(this::getSlideRightLimit);
+    armExtensionTopLimit = new Trigger(this::getExtensionForwardLimit);
+    armExtensionBottomLimit = new Trigger(this::getExtensionReverseLimit);
+    slideMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor);
+
+
+    slideMotor.config_kP(0, 0.2);
+    slideMotor.config_kD(0, 0.1);
+
+    armExtensionMotor.setNeutralMode(NeutralMode.Brake);
   }
 
   public void moveXAxis(double position) {
-    xAxisMotor.set(ControlMode.Position, position);
+    slideMotor.set(ControlMode.Position, position);
   }
 
   public void moveYAxis(double position) {
-    xAxisMotor.set(ControlMode.Position, position);
-  }
-  public Command Stop() {
-    return run(() -> yAxisMotor.set(ControlMode.PercentOutput, 0));
-  }
-  public Command moveY(double percent) {
-    return run(()-> yAxisMotor.set(ControlMode.PercentOutput, percent));
-  }
-  /** 10% forward power*/
-  public Command setIntakeSpeed1() {
-    return run(()-> intake.set(0.1));
-  }
-  /**25% forward power */
-  public Command setIntakeSpeed2() {
-    return run(() -> intake.set(0.25));
-  }
-  /**-10% reverse power */
-  public Command setIntakeSpeed3() {
-    return run(() -> intake.set(-0.1));
-  }
-  /**-25% reverse power */
-  public Command setIntakeSpeed4() {
-    return run(() -> intake.set(-0.25));
+    slideMotor.set(ControlMode.Position, position);
   }
 
+  public Command Stop() {
+    return run(() -> armExtensionMotor.set(ControlMode.PercentOutput, 0));
+  }
+
+  public Command moveY(double percent) {
+    return run(() -> armExtensionMotor.set(ControlMode.PercentOutput, percent));
+  }
 
   public void moveToTransform(Transform2d transfrom) {
-    xAxisMotor.set(ControlMode.Position, Conversions.distanceToNativeUnits(transfrom.getX()));
-    yAxisMotor.set(ControlMode.Position, Conversions.distanceToNativeUnits(transfrom.getY()));
+    slideMotor.set(ControlMode.Position, Conversions.distanceToNativeUnits(transfrom.getX()));
+    armExtensionMotor.set(ControlMode.Position,
+        Conversions.distanceToNativeUnits(transfrom.getY()));
   }
 
-  /** Runs the intake on the arm */
   public Command runIntake() {
-    return runOnce(() -> ToggleIntakeRunning());
+    return runOnce(() -> {
+      if (intakeRunning == true) {
+        intake.set(0);
+        intakeRunning = false;
+      } else {
+        intake.set(-0.5);
+        intakeRunning = true;
+      }
+    });
   }
+
   public Command stopIntake() {
     return run(() -> intake.set(0));
   }
- 
-  /** Centering Command */
+
+  public Command setIntakeSpeedForward25() {
+    return run(() -> intake.set(0.25));
+  }
+
+  public Command setIntakeSpeedForward75() {
+    return run(() -> intake.set(0.75));
+  }
+
+  public Command setIntakeSpeedReverse25() {
+    return run(() -> intake.set(-0.25));
+  }
+
+  public Command setIntakeSpeedReverse75() {
+    return run(() -> intake.set(-0.75));
+  }
+
+  public Command homeArmX() {
+    return run(() -> slideMotor.set(ControlMode.PercentOutput, 0.5))
+        .until(() -> slideMotorLeftLimit.getAsBoolean() == true)
+        .andThen(runOnce(
+            () -> SmartDashboard.putNumber("X axis pos", slideMotor.getSelectedSensorPosition())),
+            runOnce(() -> slideMotor.setSelectedSensorPosition(0)),
+            run(() -> slideMotor.set(ControlMode.PercentOutput, -0.5))
+                .until(() -> slideMotorRightLimit.getAsBoolean() == true),
+            // x has hit right limit
+            runOnce(() -> slideMotorMaxDistance = slideMotor.getSelectedSensorPosition()),
+            runOnce(() -> SmartDashboard.putNumber("X Axis Max", slideMotorMaxDistance)),
+            run(() -> moveXAxis(slideMotorMaxDistance / 2)));
+  }
+
   public Command centerOnTarget(Transform2d robotToTarget) {
     return run(() -> moveToTransform(robotToTarget));
   }
 
-  // #region arm Commands
-  // arm x = left -> right
-  // arm y = up -> down
-  public Command homeArmX() {
-    return run(
-    () -> xAxisMotor.set(ControlMode.PercentOutput, 0.5))
-    .until(() -> xAxisforwardLimitSwitch.getAsBoolean() == true) // x has hit left limit
-      .andThen(
-        runOnce(()-> SmartDashboard.putNumber("X axis pos", xAxisMotor.getSelectedSensorPosition())),
-        runOnce(()->xAxisMotor.setSelectedSensorPosition(0)), // zero motor on left side
-        run(() -> xAxisMotor.set(ControlMode.PercentOutput, -0.5))
-        .until(() -> xAxisreverseLimitSwitch.getAsBoolean() == true),
-        // x has hit right limit
-        runOnce(() -> xAxisMotorMax = xAxisMotor.getSelectedSensorPosition()), // get max value on the right side
-        runOnce(()->SmartDashboard.putNumber("X Axis Max", xAxisMotorMax)),
-        run(() -> moveXAxis(xAxisMotorMax / 2)),
-        runOnce(() -> xAxisAbsolutePos = xAxisMotorMax /2)
-    );   
-  }
-
   public Command DeployArm() {
-    return run(() -> yAxisMotor.set(ControlMode.PercentOutput, -0.2)).until(()->currentLimit.getAsBoolean() == true)
-    .andThen(Commands.print("HIT CURRENT LIMIT"),
-     run(() -> yAxisMotor.set(ControlMode.PercentOutput,0)));
-        // arm has hit highest point
-         // y axis homing is completef
+    return run(() -> armExtensionMotor.set(ControlMode.PercentOutput, -0.2))
+        .until(() -> extensionCurrentLimit.getAsBoolean() == true)
+        .andThen(Commands.print("HIT CURRENT LIMIT"),
+            run(() -> armExtensionMotor.set(ControlMode.PercentOutput, 0)));
   }
-  public Command RetractArm() {
-    return run(() -> yAxisMotor.set(ControlMode.PercentOutput, 0.2)).until(()-> currentLimit.getAsBoolean() ==true)
-    .andThen(
-      run(() -> yAxisMotor.set(ControlMode.PercentOutput, 0))
-    );
 
-  }
-  // #endregion
-  
-  public void ToggleIntakeRunning() {
-    if (intakeRunning == true) {
-      intake.set(0);
-      intakeRunning = false;
-    } else {
-      intake.set(-0.5);
-      intakeRunning = true;
-    }
+  public Command RetractArm() {
+    return run(() -> armExtensionMotor.set(ControlMode.PercentOutput, 0.2))
+        .until(() -> extensionCurrentLimit.getAsBoolean() == true)
+        .andThen(run(() -> armExtensionMotor.set(ControlMode.PercentOutput, 0)));
+
   }
 
   @Override
@@ -170,35 +147,34 @@ public class Arm extends SubsystemBase {
     // This method will be called once per scheduler run
   }
 
-  
-// #region getters for limit switches
-  public boolean getForwardLimitX() {
-    if (xAxisMotor.isFwdLimitSwitchClosed() == 1) {
+  // #region getters for limit switches
+  public boolean getSlideLeftLimit() {
+    if (slideMotor.isFwdLimitSwitchClosed() == 1) {
       return true;
     } else {
       return false;
     }
   }
 
-  public boolean getReverseLimitX() {
-    if (xAxisMotor.isRevLimitSwitchClosed() == 1) {
+  public boolean getSlideRightLimit() {
+    if (slideMotor.isRevLimitSwitchClosed() == 1) {
       return true;
-    } else if (xAxisMotor.isRevLimitSwitchClosed() == 0) {
+    } else if (slideMotor.isRevLimitSwitchClosed() == 0) {
       return false;
     }
     return false;
   }
 
-  public boolean getForwardLimitY() {
-    if (yAxisMotor.isFwdLimitSwitchClosed() == 1) {
+  public boolean getExtensionForwardLimit() {
+    if (armExtensionMotor.isFwdLimitSwitchClosed() == 1) {
       return true;
     } else {
       return false;
     }
   }
 
-  public boolean getReverseLimitY() {
-    if (yAxisMotor.isRevLimitSwitchClosed() == 1) {
+  public boolean getExtensionReverseLimit() {
+    if (armExtensionMotor.isRevLimitSwitchClosed() == 1) {
       return true;
     } else {
       return false;

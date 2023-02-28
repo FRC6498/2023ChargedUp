@@ -24,11 +24,13 @@ import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 
 public class Constants {
     public static final class DriveConstants {
-
-        public static final int Left_Front_ID = 1;
-        public static final int Right_Front_ID = 3;
-        public static final int Left_Back_ID = 2;
-        public static final int Right_Back_ID = 4;
+        public static final int right_Front_ID = 3;
+        public static final int right_Middle_ID = 10;
+        public static final int right_Back_ID = 4;
+        
+        public static final int left_Front_ID = 1;
+        public static final int left_Middle_ID = 9;
+        public static final int left_Back_ID = 2;
 
         public static final int TalonFXCountsPerRev = 2048;
 

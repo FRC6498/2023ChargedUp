@@ -17,12 +17,14 @@ import frc.robot.Constants.DriveConstants;
 /** Add your docs here. */
 public class GeneratorUtil {
     // assumes blue alliance
-    public static Trajectory generateTrajectory(Pose2d startPose, List<Translation2d> waypoints, Rotation2d endHeading) {
+    public static Trajectory generateTrajectory(Pose2d startPose, List<Translation2d> waypoints,
+            Rotation2d endHeading) {
         Pose2d poseChain = startPose;
         for (Translation2d tr : waypoints) {
             poseChain.transformBy(new Transform2d(tr, new Rotation2d()));
         }
         Pose2d endPose = new Pose2d(poseChain.getTranslation(), endHeading);
-        return TrajectoryGenerator.generateTrajectory(startPose, waypoints, endPose, DriveConstants.trajectoryConfig);
+        return TrajectoryGenerator.generateTrajectory(startPose, waypoints, endPose,
+                DriveConstants.trajectoryConfig);
     }
 }
