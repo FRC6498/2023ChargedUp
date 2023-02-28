@@ -60,7 +60,7 @@ public class Drive extends SubsystemBase implements Loggable {
   Conversions conversions = new Conversions(this::getGearRatio);
 
   // basic drive
-  WPI_TalonFX left_Front, right_Front, left_Back, right_Back;
+  WPI_TalonFX left_Front, right_Front, left_Back, right_Back, left_Middle, right_Middle;
 
   MotorControllerGroup leftMotorControllerGroup, rightMotorControllerGroup;
   DifferentialDrive differentialDrive;
@@ -104,15 +104,15 @@ public class Drive extends SubsystemBase implements Loggable {
     this.visionSub = vision;
     // Left_Middle = new WPI_TalonFX();
     left_Front = new WPI_TalonFX(DriveConstants.left_Front_ID);
-
+    left_Middle = new WPI_TalonFX(DriveConstants.left_Middle_ID);
     left_Back = new WPI_TalonFX(DriveConstants.left_Back_ID);
 
     right_Front = new WPI_TalonFX(DriveConstants.right_Front_ID);
-
+    right_Middle = new WPI_TalonFX(DriveConstants.right_Middle_ID);
     right_Back = new WPI_TalonFX(DriveConstants.right_Back_ID);
 
-    leftMotorControllerGroup = new MotorControllerGroup(left_Front, left_Back);
-    rightMotorControllerGroup = new MotorControllerGroup(right_Front, right_Back);
+    leftMotorControllerGroup = new MotorControllerGroup(left_Front, left_Back, left_Middle);
+    rightMotorControllerGroup = new MotorControllerGroup(right_Front, right_Back, right_Middle);
 
     differentialDrive = new DifferentialDrive(leftMotorControllerGroup, rightMotorControllerGroup);
     wheelVolts = new DifferentialDriveWheelVoltages();
@@ -164,7 +164,7 @@ public class Drive extends SubsystemBase implements Loggable {
                 Units.degreesToRadians(0.5), 0.1, 0.1),
             // inputs = left volts, right volts
             VecBuilder.fill(12.0, 12.0), 0.02);
-    drivetrainSim = new DifferentialDrivetrainSim(DriveConstants.plant, DCMotor.getFalcon500(2),
+    drivetrainSim = new DifferentialDrivetrainSim(DriveConstants.plant, DCMotor.getFalcon500(3),
         DriveConstants.gearRatioLow, DriveConstants.trackwidthMeters,
         DriveConstants.wheelDiameterMeters / 2.0, null);
     chargeStationController = new BangBangController(5);
