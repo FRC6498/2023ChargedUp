@@ -23,8 +23,8 @@ public class RobotContainer implements Loggable {
 
   Vision visionSub;
   Drive driveSub;
-  Arm arm;
-  CowCatcher cowCatcher;
+  Arm armSub;
+  CowCatcher cowCatcherSub;
 
   private boolean isKeyboard = false;
 
@@ -36,34 +36,47 @@ public class RobotContainer implements Loggable {
     operatorController = new CommandXboxController(OperatorConstants.Operator_Controller_ID);
     visionSub = new Vision();
     driveSub = new Drive(visionSub);
-    cowCatcher = new CowCatcher();
-    arm = new Arm();
+    cowCatcherSub = new CowCatcher();
+    armSub = new Arm();
+    // arm.setDefaultCommand(arm.homeArmX());
 
     Logger.configureLoggingAndConfig(this, false);
     configureBindings();
   }
 
   private void configureBindings() {
-    //moves cowcatcher
-    //shifts gears
-
-    driveController.b().onTrue(cowCatcher.toggle_Half_Command());
-    driveController.a().onTrue(cowCatcher.toggle_Full_Command());
-//TODO: add brake toggle to drivetrain
-driveController.rightBumper().onTrue(driveSub.Shift());
-    //TODO:make the CHarge Station balancer
-    operatorController.a().onTrue(arm.homeArmY());
-//TODO: make 4 different intake speeds
+    // toggle cowcatcher
+    driveController.b().onTrue(cowCatcherSub.toggle_Half_Command());
+    driveController.a().onTrue(cowCatcherSub.toggle_Full_Command());
+    // toggle breaks
+    driveController.leftBumper().onTrue(driveSub.toggleBreak());
+    // shift
+    driveController.rightBumper().onTrue(driveSub.Shift());
+    // center robot
+    driveController.rightStick().onTrue(driveSub.centerOnChargeStation());
+    // arm Commands
+    operatorController.a().onTrue(armSub.DeployArm());
+    operatorController.b().onTrue(armSub.RetractArm());
+    // intake commands
+    operatorController.rightBumper().onTrue(armSub.stopIntake());
+    operatorController.povUp().onTrue(armSub.setIntakeSpeedForward25()).onFalse(armSub.stopIntake());
+    operatorController.povRight().onTrue(armSub.setIntakeSpeedForward75()).onFalse(armSub.stopIntake());
+    operatorController.povDown().onTrue(armSub.setIntakeSpeedReverse25()).onFalse(armSub.stopIntake());
+    operatorController.povLeft().onTrue(armSub.setIntakeSpeedReverse75()).onFalse(armSub.stopIntake());
 
     // sets weather to use keyboard or controller
     if (Robot.isReal() || !isKeyboard) {
-      driveSub.setDefaultCommand(driveSub.ArcadeDrive(() -> driveController.getRightTriggerAxis() - driveController.getLeftTriggerAxis(), driveController::getLeftX));
+      driveSub.setDefaultCommand(driveSub.ArcadeDrive(
+          () -> driveController.getRightTriggerAxis() - driveController.getLeftTriggerAxis(),
+          driveController::getLeftX));
     } else if (isKeyboard) {
-      driveSub.setDefaultCommand(driveSub.ArcadeDrive(driveController::getLeftY, driveController::getLeftX));
-     }
+      driveSub.setDefaultCommand(
+          driveSub.ArcadeDrive(driveController::getLeftY, driveController::getLeftX));
+    }
   }
 
   public Command getAutonomousCommand() {
     return Autos.DevPath(driveSub, "TestPath");
   }
+
 }

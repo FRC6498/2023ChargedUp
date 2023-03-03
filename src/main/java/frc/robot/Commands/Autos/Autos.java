@@ -15,18 +15,20 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.DriveConstants;
+import frc.robot.Subsystems.Arm;
 import frc.robot.Subsystems.Drive;
 
 /** Add your docs here. */
 public class Autos {
 
-    public static Command Forward3Meters(Drive drive) {
-        return drive.followTrajectory(
+    public static Command Forward3Meters(Drive drive, Arm arm) {
+        return  arm.DeployArm().andThen(
+        drive.followTrajectory(
             PathPlanner.generatePath(DriveConstants.pathConfig, List.of(
                 new PathPoint(drive.getPose2d().getTranslation(), drive.getPose2d().getRotation()),
                 new PathPoint(drive.getPose2d().getTranslation().plus(new Translation2d(3, 0)), Rotation2d.fromDegrees(0))
-            ))
-        );
+            )) 
+        ));
     }
 
     public static Command QuarterTurnRadius2Meters(Drive drive) {

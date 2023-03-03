@@ -24,22 +24,18 @@ public class Vision {
 
   public Vision() {
     camera = new PhotonCamera(VisionConstants.cameraName);
-    poseEstimator = new PhotonPoseEstimator(VisionConstants.tagLayout, PoseStrategy.MULTI_TAG_PNP, camera, VisionConstants.robotToCamera);
+    poseEstimator = new PhotonPoseEstimator(VisionConstants.tagLayout, PoseStrategy.MULTI_TAG_PNP,
+        camera, VisionConstants.robotToCamera);
     currentFieldPose = Optional.empty();
 
-    visionSystem = new SimVisionSystem(
-            VisionConstants.cameraName, 
-            VisionConstants.camDiagFOV, 
-            VisionConstants.robotToCamera, 
-            0,
-            VisionConstants.camResolutionWidth,
-            VisionConstants.camResolutionHeight,
-            VisionConstants.minTargetArea
-        );
+    visionSystem = new SimVisionSystem(VisionConstants.cameraName, VisionConstants.camDiagFOV,
+        VisionConstants.robotToCamera, 0, VisionConstants.camResolutionWidth,
+        VisionConstants.camResolutionHeight, VisionConstants.minTargetArea);
   }
 
   /**
    * Returns the stored pose estimate and timestamp
+   * 
    * @return latest estimated Pose3d and associated timestamp
    */
   public Optional<EstimatedRobotPose> getCurrentPoseEstimate() {
@@ -48,12 +44,13 @@ public class Vision {
 
   /**
    * Sets the reference pose used by the PhotonPoseEstimator
+   * 
    * @param pose drivetrain odometry pose
    */
   public void setReferencePose(Pose2d pose) {
     poseEstimator.setReferencePose(pose);
   }
-  
+
   public void run() {
     Optional<EstimatedRobotPose> poseResult = poseEstimator.update();
     if (poseResult.isPresent()) {
