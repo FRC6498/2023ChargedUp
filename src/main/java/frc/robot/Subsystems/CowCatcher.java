@@ -14,13 +14,16 @@ import frc.robot.Constants.CowCatcherConstants;
 public class CowCatcher extends SubsystemBase {
   /** Creates a new CowCatcher. */
 
-  DoubleSolenoid fullExtendPistion = new DoubleSolenoid(PneumaticsModuleType.REVPH,
-      CowCatcherConstants.pushcatcherFullForwardID, CowCatcherConstants.pushcatcherFullReverseID);
-  DoubleSolenoid halfExtendPistion = new DoubleSolenoid(PneumaticsModuleType.REVPH,
-      CowCatcherConstants.pushcatcherHalfForwardID, CowCatcherConstants.pushcatcherHalfReverseID);
+  DoubleSolenoid fullExtendPistion;
+  DoubleSolenoid halfExtendPistion ;
 
   public CowCatcher() {
-
+  fullExtendPistion  = new DoubleSolenoid(PneumaticsModuleType.CTREPCM,
+    CowCatcherConstants.pushcatcherFullForwardID, CowCatcherConstants.pushcatcherFullReverseID);
+  halfExtendPistion = new DoubleSolenoid(PneumaticsModuleType.CTREPCM,
+  CowCatcherConstants.pushcatcherHalfForwardID, CowCatcherConstants.pushcatcherHalfReverseID);
+  // halfExtendPistion.set(Value.kReverse);
+  // fullExtendPistion.set(Value.kReverse);
   }
 
   public Command moveToHalf() {
@@ -45,12 +48,13 @@ public class CowCatcher extends SubsystemBase {
           halfExtendPistion.set(Value.kOff);
           fullExtendPistion.set(Value.kOff);
       }
+     
     });
 
   }
 
   public Command toggle_Full_Command() {
-    return run(() -> {
+    return runOnce(() -> {
       switch (halfExtendPistion.get()) {
         case kOff:
           halfExtendPistion.set(Value.kReverse);

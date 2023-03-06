@@ -121,14 +121,13 @@ public class Drive extends SubsystemBase implements Loggable {
     leftMotorSim = left_Front.getSimCollection();
     rightMotorSim = right_Front.getSimCollection();
 
-    compressor = new Compressor(PneumaticsModuleType.REVPH);
-    shifter = new DoubleSolenoid(PneumaticsModuleType.REVPH, DriveConstants.Shifter_Forward_Channel,
+    compressor = new Compressor(PneumaticsModuleType.CTREPCM);
+    shifter = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, DriveConstants.Shifter_Forward_Channel,
         DriveConstants.Shifter_Reverse_Channel);
 
     gyro = new AHRS();
     gyroSim = new AHRSSim();
 
-    compressor.enableDigital();
     isHighGear = false;
 
     left_Front.configFactoryDefault();
@@ -169,6 +168,7 @@ public class Drive extends SubsystemBase implements Loggable {
         DriveConstants.wheelDiameterMeters / 2.0, null);
     chargeStationController = new BangBangController(5);
     ledPWM.setRaw(10);
+    compressor.enableDigital();
   }
 
   public void loopLEDs() {

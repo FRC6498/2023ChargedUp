@@ -12,23 +12,32 @@ import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.SimVisionSystem;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 
+import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Robot;
 import frc.robot.Constants.VisionConstants;
+import io.github.oblarg.oblog.annotations.Log;
 
 public class Vision {
   private PhotonCamera camera;
+  @Log
+  private UsbCamera drivCamera;
   private PhotonPoseEstimator poseEstimator;
   private Optional<EstimatedRobotPose> currentFieldPose;
   private SimVisionSystem visionSystem;
+  
 
   public Vision() {
-    camera = new PhotonCamera(VisionConstants.cameraName);
+    drivCamera = new UsbCamera(VisionConstants.driverCameraName, "10.64.98.12:1182/stream.mjpg?1677961005740");
+
+    
+    camera = new PhotonCamera(VisionConstants.mainCameraName);
     poseEstimator = new PhotonPoseEstimator(VisionConstants.tagLayout, PoseStrategy.MULTI_TAG_PNP,
         camera, VisionConstants.robotToCamera);
     currentFieldPose = Optional.empty();
 
-    visionSystem = new SimVisionSystem(VisionConstants.cameraName, VisionConstants.camDiagFOV,
+    visionSystem = new SimVisionSystem(VisionConstants.mainCameraName, VisionConstants.camDiagFOV,
         VisionConstants.robotToCamera, 0, VisionConstants.camResolutionWidth,
         VisionConstants.camResolutionHeight, VisionConstants.minTargetArea);
   }

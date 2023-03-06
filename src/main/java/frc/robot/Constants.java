@@ -20,6 +20,7 @@ import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 
 public class Constants {
@@ -73,7 +74,9 @@ public class Constants {
         public static final int Operator_Controller_ID =1;
     }
     public static final class VisionConstants {
-        public static final String cameraName = "USB_webcam";
+        public static final String mainCameraName = "USB_webcam";
+        public static final String driverCameraName = "DriverCamera";
+        
 
         // TODO: handle alliance switching (mirror trajectories)
 
@@ -113,11 +116,11 @@ public class Constants {
     }
     public static final class ArmConstants{
         public static final int ArmGearRatio = 100;
-        public static final int IntakeSpark_ID = 6;
-        public static final int ArmPDHPortID = 7;
+        public static final int IntakeSpark_ID = 10;
+        public static final int ArmPDHPortID = 6;
         public static final int xAxisMotorID = 5;
         public static final int yAxisMotorID = 6;
-        public static final PowerDistribution pdh = new PowerDistribution(1, ModuleType.kRev);
+        public static final PowerDistribution pdh = new PowerDistribution(9, ModuleType.kRev);
     }
     public static final class CowCatcherConstants{
         public static final int pushcatcherFullForwardID = 1;

@@ -38,9 +38,10 @@ public class RobotContainer implements Loggable {
     driveSub = new Drive(visionSub);
     cowCatcherSub = new CowCatcher();
     armSub = new Arm();
-    // arm.setDefaultCommand(arm.homeArmX());
+    //armSub.setDefaultCommand(armSub.homeArmX());
 
     Logger.configureLoggingAndConfig(this, false);
+    
     configureBindings();
   }
 
@@ -59,10 +60,12 @@ public class RobotContainer implements Loggable {
     operatorController.b().onTrue(armSub.RetractArm());
     // intake commands
     operatorController.rightBumper().onTrue(armSub.stopIntake());
-    operatorController.povUp().onTrue(armSub.setIntakeSpeedForward25()).onFalse(armSub.stopIntake());
-    operatorController.povRight().onTrue(armSub.setIntakeSpeedForward75()).onFalse(armSub.stopIntake());
-    operatorController.povDown().onTrue(armSub.setIntakeSpeedReverse25()).onFalse(armSub.stopIntake());
-    operatorController.povLeft().onTrue(armSub.setIntakeSpeedReverse75()).onFalse(armSub.stopIntake());
+    operatorController.povUp().onTrue(armSub.setIntakeSpeedForward50()).onFalse(armSub.stopIntake());
+    operatorController.povRight().onTrue(armSub.setIntakeSpeedForward100()).onFalse(armSub.stopIntake());
+    operatorController.povDown().onTrue(armSub.setIntakeSpeedReverse50()).onFalse(armSub.stopIntake());
+    operatorController.povLeft().onTrue(armSub.setIntakeSpeedReverse100()).onFalse(armSub.stopIntake());
+    armSub.manualMoveXAxis(operatorController.getRightX());
+    
 
     // sets weather to use keyboard or controller
     if (Robot.isReal() || !isKeyboard) {
