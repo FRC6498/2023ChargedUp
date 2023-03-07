@@ -178,6 +178,7 @@ public class Drive extends SubsystemBase implements Loggable {
 
   public Command toggleBreak() {
     return runOnce(() -> {
+      if(!isHighGear){
       if (!isBreaking) {
         left_Front.setNeutralMode(NeutralMode.Brake);
         left_Back.setNeutralMode(NeutralMode.Brake);
@@ -189,6 +190,8 @@ public class Drive extends SubsystemBase implements Loggable {
         right_Front.setNeutralMode(NeutralMode.Coast);
         right_Back.setNeutralMode(NeutralMode.Coast);
       }
+    }
+
     });
   }
 

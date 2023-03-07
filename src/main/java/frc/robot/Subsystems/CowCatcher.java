@@ -60,11 +60,11 @@ public class CowCatcher extends SubsystemBase {
           halfExtendPistion.set(Value.kReverse);
           fullExtendPistion.set(Value.kReverse);
           break;
-        case kForward:
+        case kReverse:
           halfExtendPistion.set(Value.kOff);
           fullExtendPistion.set(Value.kOff);
           break;
-        default:
+          default:
           halfExtendPistion.set(Value.kOff);
           fullExtendPistion.set(Value.kOff);
       }

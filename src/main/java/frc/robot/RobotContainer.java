@@ -12,6 +12,7 @@ import frc.robot.Constants.OperatorConstants;
 import frc.robot.Subsystems.Arm;
 import frc.robot.Subsystems.CowCatcher;
 import frc.robot.Subsystems.Drive;
+import frc.robot.Subsystems.Intake;
 import frc.robot.Subsystems.Vision;
 import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.Logger;
@@ -25,6 +26,7 @@ public class RobotContainer implements Loggable {
   Drive driveSub;
   Arm armSub;
   CowCatcher cowCatcherSub;
+  Intake intake;
 
   private boolean isKeyboard = false;
 
@@ -38,7 +40,8 @@ public class RobotContainer implements Loggable {
     driveSub = new Drive(visionSub);
     cowCatcherSub = new CowCatcher();
     armSub = new Arm();
-    //armSub.setDefaultCommand(armSub.homeArmX());
+    intake = new Intake();
+    armSub.setDefaultCommand(armSub.InitialArm(()->operatorController.getLeftTriggerAxis(), ()->operatorController.getRightTriggerAxis()));
 
     Logger.configureLoggingAndConfig(this, false);
     
@@ -59,12 +62,17 @@ public class RobotContainer implements Loggable {
     operatorController.a().onTrue(armSub.DeployArm());
     operatorController.b().onTrue(armSub.RetractArm());
     // intake commands
-    operatorController.rightBumper().onTrue(armSub.stopIntake());
-    operatorController.povUp().onTrue(armSub.setIntakeSpeedForward50()).onFalse(armSub.stopIntake());
-    operatorController.povRight().onTrue(armSub.setIntakeSpeedForward100()).onFalse(armSub.stopIntake());
-    operatorController.povDown().onTrue(armSub.setIntakeSpeedReverse50()).onFalse(armSub.stopIntake());
-    operatorController.povLeft().onTrue(armSub.setIntakeSpeedReverse100()).onFalse(armSub.stopIntake());
-    armSub.manualMoveXAxis(operatorController.getRightX());
+    operatorController.rightBumper().onTrue(intake.stopIntake());
+    operatorController.povUp().onTrue(intake.setIntakeSpeedForward50()).onFalse(intake.stopIntake());
+    operatorController.povRight().onTrue(intake.setIntakeSpeedForward100()).onFalse(intake.stopIntake());
+    operatorController.povDown().onTrue(intake.setIntakeSpeedReverse50()).onFalse(intake.stopIntake());
+    operatorController.povLeft().onTrue(intake.setIntakeSpeedReverse100()).onFalse(intake.stopIntake());
+    //home arm
+    driveController.povUp().onTrue(armSub.homeArmY());
+    
+    
+    operatorController.x().onTrue(armSub.moveYAxis(()->armSub.extensionMotorMaxDistance/1.6));
+    operatorController.y().onTrue(armSub.moveYAxis(()->armSub.extensionMotorMaxDistance));
     
 
     // sets weather to use keyboard or controller
@@ -72,10 +80,12 @@ public class RobotContainer implements Loggable {
       driveSub.setDefaultCommand(driveSub.ArcadeDrive(
           () -> driveController.getRightTriggerAxis() - driveController.getLeftTriggerAxis(),
           driveController::getLeftX));
+      
     } else if (isKeyboard) {
       driveSub.setDefaultCommand(
           driveSub.ArcadeDrive(driveController::getLeftY, driveController::getLeftX));
     }
+    
   }
 
   public Command getAutonomousCommand() {
