@@ -5,8 +5,8 @@
 package frc.robot.Subsystems;
 
 import edu.wpi.first.wpilibj.DoubleSolenoid;
-import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
+import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.CowCatcherConstants;
@@ -15,15 +15,13 @@ public class CowCatcher extends SubsystemBase {
   /** Creates a new CowCatcher. */
 
   DoubleSolenoid fullExtendPistion;
-  DoubleSolenoid halfExtendPistion ;
+  DoubleSolenoid halfExtendPistion;
 
   public CowCatcher() {
-  fullExtendPistion  = new DoubleSolenoid(PneumaticsModuleType.CTREPCM,
-    CowCatcherConstants.pushcatcherFullForwardID, CowCatcherConstants.pushcatcherFullReverseID);
-  halfExtendPistion = new DoubleSolenoid(PneumaticsModuleType.CTREPCM,
-  CowCatcherConstants.pushcatcherHalfForwardID, CowCatcherConstants.pushcatcherHalfReverseID);
-  // halfExtendPistion.set(Value.kReverse);
-  // fullExtendPistion.set(Value.kReverse);
+    fullExtendPistion = new DoubleSolenoid(PneumaticsModuleType.CTREPCM,
+        CowCatcherConstants.pushcatcherFullForwardID, CowCatcherConstants.pushcatcherFullReverseID);
+    halfExtendPistion = new DoubleSolenoid(PneumaticsModuleType.CTREPCM,
+        CowCatcherConstants.pushcatcherHalfForwardID, CowCatcherConstants.pushcatcherHalfReverseID);
   }
 
   public Command moveToHalf() {
@@ -48,7 +46,7 @@ public class CowCatcher extends SubsystemBase {
           halfExtendPistion.set(Value.kOff);
           fullExtendPistion.set(Value.kOff);
       }
-     
+
     });
 
   }
@@ -64,7 +62,7 @@ public class CowCatcher extends SubsystemBase {
           halfExtendPistion.set(Value.kOff);
           fullExtendPistion.set(Value.kOff);
           break;
-          default:
+        default:
           halfExtendPistion.set(Value.kOff);
           fullExtendPistion.set(Value.kOff);
       }

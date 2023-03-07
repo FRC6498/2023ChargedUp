@@ -41,51 +41,46 @@ public class RobotContainer implements Loggable {
     cowCatcherSub = new CowCatcher();
     armSub = new Arm();
     intake = new Intake();
-    armSub.setDefaultCommand(armSub.InitialArm(()->operatorController.getLeftTriggerAxis(), ()->operatorController.getRightTriggerAxis()));
-
-    Logger.configureLoggingAndConfig(this, false);
     
+    //Default Commands ---------------------------------------------------------------------------------------------------------------------------
+    armSub.setDefaultCommand(armSub.InitialArmCommand(()->operatorController.getLeftTriggerAxis(), ()->operatorController.getRightTriggerAxis()));
+    // sets weather to use keyboard or controller (for simulation) 
+    if (Robot.isReal() || !isKeyboard) {
+      driveSub.setDefaultCommand(driveSub.ArcadeDrive(
+      () -> driveController.getRightTriggerAxis() - driveController.getLeftTriggerAxis(),
+      driveController::getLeftX));
+    } else if (isKeyboard) {
+      driveSub.setDefaultCommand(
+      driveSub.ArcadeDrive(driveController::getLeftY, driveController::getLeftX));
+    }
+    //Logger config -------------------------------------------------------------------------------------------------------------
+    Logger.configureLoggingAndConfig(this, false); 
     configureBindings();
   }
 
   private void configureBindings() {
-    // toggle cowcatcher
+    // cowcatcher commands ---------------------------------------------------------------------------------
     driveController.b().onTrue(cowCatcherSub.toggle_Half_Command());
     driveController.a().onTrue(cowCatcherSub.toggle_Full_Command());
-    // toggle breaks
+    // drive Controlls ----------------------------------------------------------------------------------
     driveController.leftBumper().onTrue(driveSub.toggleBreak());
-    // shift
     driveController.rightBumper().onTrue(driveSub.Shift());
-    // center robot
+    // center robot on charge station ----------------------------------------------------------------------------
     driveController.rightStick().onTrue(driveSub.centerOnChargeStation());
-    // arm Commands
-    operatorController.a().onTrue(armSub.DeployArm());
-    operatorController.b().onTrue(armSub.RetractArm());
-    // intake commands
+    // arm Commands -----------------------------------------------------------------------------------------
+    operatorController.a().onTrue(armSub.extendArm());
+    operatorController.b().onTrue(armSub.retractArm());
+    // intake speed Commands ---------------------------------------------------------------------------------
     operatorController.rightBumper().onTrue(intake.stopIntake());
     operatorController.povUp().onTrue(intake.setIntakeSpeedForward50()).onFalse(intake.stopIntake());
     operatorController.povRight().onTrue(intake.setIntakeSpeedForward100()).onFalse(intake.stopIntake());
     operatorController.povDown().onTrue(intake.setIntakeSpeedReverse50()).onFalse(intake.stopIntake());
     operatorController.povLeft().onTrue(intake.setIntakeSpeedReverse100()).onFalse(intake.stopIntake());
-    //home arm
-    driveController.povUp().onTrue(armSub.homeArmY());
-    
-    
-    operatorController.x().onTrue(armSub.moveYAxis(()->armSub.extensionMotorMaxDistance/1.6));
-    operatorController.y().onTrue(armSub.moveYAxis(()->armSub.extensionMotorMaxDistance));
-    
-
-    // sets weather to use keyboard or controller
-    if (Robot.isReal() || !isKeyboard) {
-      driveSub.setDefaultCommand(driveSub.ArcadeDrive(
-          () -> driveController.getRightTriggerAxis() - driveController.getLeftTriggerAxis(),
-          driveController::getLeftX));
-      
-    } else if (isKeyboard) {
-      driveSub.setDefaultCommand(
-          driveSub.ArcadeDrive(driveController::getLeftY, driveController::getLeftX));
-    }
-    
+    //home arm ---------------------------------------------------------------------------------------------------------
+    driveController.povUp().onTrue(armSub.homeArm());
+    //move arm to high and mid positions --------------------------------------------------------------------------
+    operatorController.x().onTrue(armSub.moveArm(()->armSub.extensionMotorMaxDistance/1.6));
+    operatorController.y().onTrue(armSub.moveArm(()->armSub.extensionMotorMaxDistance));
   }
 
   public Command getAutonomousCommand() {

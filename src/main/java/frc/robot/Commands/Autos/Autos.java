@@ -22,7 +22,7 @@ import frc.robot.Subsystems.Drive;
 public class Autos {
 
     public static Command Forward3Meters(Drive drive, Arm arm) {
-        return  arm.DeployArm().andThen(
+        return  arm.extendArm().andThen(
         drive.followTrajectory(
             PathPlanner.generatePath(DriveConstants.pathConfig, List.of(
                 new PathPoint(drive.getPose2d().getTranslation(), drive.getPose2d().getRotation()),

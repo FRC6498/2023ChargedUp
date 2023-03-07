@@ -5,18 +5,15 @@
 package frc.robot.Subsystems;
 
 import java.util.Optional;
-
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
-import org.photonvision.SimVisionSystem;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
-
+import org.photonvision.SimVisionSystem;
 import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.Robot;
 import frc.robot.Constants.VisionConstants;
+import frc.robot.Robot;
 import io.github.oblarg.oblog.annotations.Log;
 
 public class Vision {
