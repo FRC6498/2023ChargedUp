@@ -163,9 +163,10 @@ public class Drive extends SubsystemBase implements Loggable {
     drivetrainSim = new DifferentialDrivetrainSim(DriveConstants.plant, DCMotor.getFalcon500(3),
         DriveConstants.gearRatioLow, DriveConstants.trackwidthMeters,
         DriveConstants.wheelDiameterMeters / 2.0, null);
-    chargeStationController = new BangBangController(5);
+    chargeStationController = new BangBangController(2);
     ledPWM.setRaw(10);
     compressor.enableDigital();
+    
   }
 
   public void loopLEDs() {
@@ -215,13 +216,16 @@ public class Drive extends SubsystemBase implements Loggable {
       differentialDrive.arcadeDrive(throttle.getAsDouble(), -turn.getAsDouble(), true);
     });
   }
+  public Command centerOnChargeStation() {
+   return run(()->this.setDefaultCommand(centerOnChargeStation()));
+  }
+  
 
   /** Centers the robot on the charge station */
-  public Command centerOnChargeStation() {
-    return ArcadeDrive(() -> calcBangBang(), () -> 0)
-        .until(() -> chargeStationController.atSetpoint() == true);
+  public Command centerOnChargeStationCommand() {
+    return run(()->differentialDrive.arcadeDrive(0.2, 0));
   }
-
+  
   /**
    * @return command that shifts the gears on the robot
    */
@@ -236,10 +240,13 @@ public class Drive extends SubsystemBase implements Loggable {
       }
     });
   }
-
+@Log
   public double calcBangBang() {
-    return chargeStationController.calculate(gyro.getPitch(), 0);
-  }
+    return 0.2;
+    //return -(0.2 * chargeStationController.calculate(get1Pitch(), 0));
+   }
+    
+  
 
   /**
    * gets the distance that the right side of the robot traveled in meters
@@ -341,9 +348,26 @@ public class Drive extends SubsystemBase implements Loggable {
   public double getGyroAngle() {
     return getRotation2d().getDegrees();
   }
+  @Log
+  public boolean isNegative(int num) {
+    if (Integer.signum(num) == -1) {
+        return true;
+    }else if(Integer.signum(num) == 0) {
+        return false;
+    }else if(Integer.signum(num) ==1){
+        return false;
+    }else {
+        return false;
+    }
+    
+  }
 
   public Rotation2d getRotation2d() {
     return Rotation2d.fromDegrees(-gyro.getAngle());
+  }
+  @Log
+  public double get1Pitch() {
+    return gyro.getRoll();
   }
 
   @Log
@@ -370,6 +394,7 @@ public class Drive extends SubsystemBase implements Loggable {
         poseEstimator.addVisionMeasurement(estPose.estimatedPose.toPose2d(),
             estPose.timestampSeconds);
       }
+     
       loopLEDs();
     }
     posePub.set(new double[] {poseEstimator.getEstimatedPosition().getX(),

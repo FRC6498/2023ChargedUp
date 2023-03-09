@@ -26,9 +26,7 @@ public class Vision {
   
 
   public Vision() {
-    drivCamera = new UsbCamera(VisionConstants.driverCameraName, "10.64.98.12:1182/stream.mjpg?1677961005740");
 
-    
     camera = new PhotonCamera(VisionConstants.mainCameraName);
     poseEstimator = new PhotonPoseEstimator(VisionConstants.tagLayout, PoseStrategy.MULTI_TAG_PNP,
         camera, VisionConstants.robotToCamera);

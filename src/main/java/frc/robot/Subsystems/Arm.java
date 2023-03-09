@@ -25,8 +25,10 @@ public class Arm extends SubsystemBase {
   WPI_TalonFX slideMotor, armExtensionMotor;
   Trigger slideMotorLeftLimit, slideMotorRightLimit, armExtensionTopLimit, armExtensionBottomLimit;
 
-  public double slideMotorMaxDistance, extensionMotorMaxDistance;
-  public boolean homeComplete = false;
+  public double slideMotorMaxDistance;
+  public boolean slideHomeComplete = false;
+  public boolean armHomeComplete = false;
+  public double extensionMotorMaxDistance = -114791.000000;
 
   /** Current-based limit switch for intake motors */
   BooleanSupplier extensionCurrentLimit = () -> {
@@ -46,12 +48,11 @@ public class Arm extends SubsystemBase {
     armExtensionBottomLimit = new Trigger(this::getExtensionReverseLimit);
     slideMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor);
 
-    slideMotor.config_kP(0, 0.3);
+    slideMotor.config_kP(0, 0.1);
     slideMotor.config_kD(0, 0.2);
 
     armExtensionMotor.setNeutralMode(NeutralMode.Brake);
     slideMotor.setNeutralMode(NeutralMode.Brake);
-
   }
 
   public Command moveArm(DoubleSupplier position) {
@@ -65,9 +66,11 @@ public class Arm extends SubsystemBase {
   }
 
   public Command InitialArmCommand(DoubleSupplier leftTrigger, DoubleSupplier rightTrigger) {
-    return homeSlide().until(() -> homeComplete == true)
-        .andThen(runOnce(() -> this.setDefaultCommand(
-            manualMoveSlide(() -> rightTrigger.getAsDouble() - leftTrigger.getAsDouble()))));
+    return homeSlide().until(() -> slideHomeComplete == true)
+        .andThen(
+        homeArm().until(()->armHomeComplete == true),
+        runOnce(() -> this.setDefaultCommand(
+            manualMoveSlide(() -> -(rightTrigger.getAsDouble() - leftTrigger.getAsDouble())))));
   }
 
 
@@ -93,30 +96,26 @@ public class Arm extends SubsystemBase {
 
 
   public Command homeSlide() {
-    return run(() -> slideMotor.set(ControlMode.PercentOutput, 0.5))
+    return run(() -> slideMotor.set(ControlMode.PercentOutput, 0.8))
         .until(() -> slideMotorLeftLimit.getAsBoolean() == true)
         .andThen(
             runOnce(() -> SmartDashboard.putNumber("X axis pos", slideMotor.getSelectedSensorPosition())),
             runOnce(() -> slideMotor.setSelectedSensorPosition(0)),
-            run(() -> slideMotor.set(ControlMode.PercentOutput, -0.5))
+            run(() -> slideMotor.set(ControlMode.PercentOutput, -0.8))
                 .until(() -> slideMotorRightLimit.getAsBoolean() == true),
             // x has hit right limit
             runOnce(() -> slideMotorMaxDistance = slideMotor.getSelectedSensorPosition()),
             runOnce(() -> SmartDashboard.putNumber("X Axis Max", slideMotorMaxDistance)),
-            runOnce(() -> homeComplete = true));
+            run(() -> slideMotor.set(ControlMode.Position, slideMotorMaxDistance/2)).withTimeout(1),
+            runOnce(() -> slideHomeComplete = true));
 
   }
-
+  //-114791.000000
   public Command homeArm() {
     return run(() -> armExtensionMotor.set(ControlMode.PercentOutput, 0.2))
         .until(() -> armExtensionMotor.isFwdLimitSwitchClosed() == 1)
         .andThen(runOnce(() -> armExtensionMotor.setSelectedSensorPosition(0)),
-            run(() -> armExtensionMotor.set(ControlMode.PercentOutput, -0.2))
-                .until(() -> armExtensionMotor.isRevLimitSwitchClosed() == 1),
-            runOnce(
-                () -> extensionMotorMaxDistance = armExtensionMotor.getSelectedSensorPosition()),
-            run(() -> armExtensionMotor.set(ControlMode.Position, extensionMotorMaxDistance / 1.6))
-
+            runOnce(()-> armHomeComplete = true)
         );
   }
 
@@ -132,9 +131,17 @@ public class Arm extends SubsystemBase {
   public Command retractArm() {
     return run(() -> armExtensionMotor.set(ControlMode.PercentOutput, 0.5))
         .until(() -> armExtensionMotor.isFwdLimitSwitchClosed() == 1)
-        .andThen(() -> slideMotor.set(ControlMode.Position, slideMotorMaxDistance / 2));
+        ;
 
   }
+  public Command extendArmHighPID() {
+    return run(() -> armExtensionMotor.set(ControlMode.Position,extensionMotorMaxDistance))
+    .withTimeout(1);
+  } 
+  public Command extendArmMidPID() {
+    return run(() -> armExtensionMotor.set(ControlMode.Position,extensionMotorMaxDistance/1.6))
+    .withTimeout(1);
+  } 
 
   @Override
   public void periodic() {

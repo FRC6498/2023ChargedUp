@@ -72,7 +72,6 @@ public class Constants {
     }
     public static final class VisionConstants {
         public static final String mainCameraName = "USB_webcam";
-        public static final String driverCameraName = "DriverCamera";
         // TODO: handle alliance switching (mirror trajectories)
 
         static double archeryWallY = Units.inchesToMeters(351);

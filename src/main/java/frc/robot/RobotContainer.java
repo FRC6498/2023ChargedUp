@@ -48,9 +48,9 @@ public class RobotContainer implements Loggable {
     if (Robot.isReal() || !isKeyboard) {
       driveSub.setDefaultCommand(driveSub.ArcadeDrive(
       () -> driveController.getRightTriggerAxis() - driveController.getLeftTriggerAxis(),
-      driveController::getLeftX));
+     driveController::getLeftX));
     } else if (isKeyboard) {
-      driveSub.setDefaultCommand(
+     driveSub.setDefaultCommand(
       driveSub.ArcadeDrive(driveController::getLeftY, driveController::getLeftX));
     }
     //Logger config -------------------------------------------------------------------------------------------------------------
@@ -60,16 +60,18 @@ public class RobotContainer implements Loggable {
 
   private void configureBindings() {
     // cowcatcher commands ---------------------------------------------------------------------------------
-    driveController.b().onTrue(cowCatcherSub.toggle_Half_Command());
-    driveController.a().onTrue(cowCatcherSub.toggle_Full_Command());
+    driveController.b().onTrue(cowCatcherSub.toggle_Full_Command());
+    driveController.a().onTrue(cowCatcherSub.toggle_Half_Command());
+   // driveController.y().onTrue(driveSub.centerOnChargeStation());
     // drive Controlls ----------------------------------------------------------------------------------
     driveController.leftBumper().onTrue(driveSub.toggleBreak());
     driveController.rightBumper().onTrue(driveSub.Shift());
     // center robot on charge station ----------------------------------------------------------------------------
-    driveController.rightStick().onTrue(driveSub.centerOnChargeStation());
+    //driveController.rightStick().onTrue(null);
     // arm Commands -----------------------------------------------------------------------------------------
-    operatorController.a().onTrue(armSub.extendArm());
-    operatorController.b().onTrue(armSub.retractArm());
+    operatorController.a().onTrue(armSub.retractArm());
+    operatorController.b().onTrue(armSub.extendArmMidPID());
+    operatorController.y().onTrue(armSub.extendArmHighPID());
     // intake speed Commands ---------------------------------------------------------------------------------
     operatorController.rightBumper().onTrue(intake.stopIntake());
     operatorController.povUp().onTrue(intake.setIntakeSpeedForward50()).onFalse(intake.stopIntake());
@@ -78,9 +80,9 @@ public class RobotContainer implements Loggable {
     operatorController.povLeft().onTrue(intake.setIntakeSpeedReverse100()).onFalse(intake.stopIntake());
     //home arm ---------------------------------------------------------------------------------------------------------
     driveController.povUp().onTrue(armSub.homeArm());
-    //move arm to high and mid positions --------------------------------------------------------------------------
-    operatorController.x().onTrue(armSub.moveArm(()->armSub.extensionMotorMaxDistance/1.6));
-    operatorController.y().onTrue(armSub.moveArm(()->armSub.extensionMotorMaxDistance));
+    //centering Command--------------------------------------------------------------------------------------------------
+    operatorController.rightStick().onTrue(driveSub.centerOnChargeStation());
+    
   }
 
   public Command getAutonomousCommand() {
