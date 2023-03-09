@@ -5,9 +5,6 @@
         "header": {
           "open": true
         }
-      },
-      "window": {
-        "visible": false
       }
     },
     "RoboRIO": {
@@ -28,12 +25,24 @@
   "NTProvider": {
     "types": {
       "/FMSInfo": "FMSInfo",
+      "/LiveWindow/CowCatcher": "Subsystem",
+      "/LiveWindow/Ungrouped/DifferentialDrive[1]": "DifferentialDrive",
+      "/LiveWindow/Ungrouped/Scheduler": "Scheduler",
+      "/LiveWindow/Ungrouped/Talon FX [5]": "Motor Controller",
+      "/LiveWindow/Ungrouped/Talon FX [6]": "Motor Controller",
+      "/LiveWindow/Ungrouped/navX-Sensor[4]": "Gyro",
       "/Shuffleboard/Drive/field": "Field2d",
       "/SmartDashboard/Field": "Field2d",
+      "/SmartDashboard/USB_webcam Sim Field": "Field2d",
       "/SmartDashboard/aprilCam Sim Field": "Field2d",
       "/SmartDashboard/visionCam Sim Field": "Field2d"
     },
     "windows": {
+      "/Shuffleboard/Drive/field": {
+        "window": {
+          "visible": true
+        }
+      },
       "/SmartDashboard/Field": {
         "AprilTag_7": {
           "arrowColor": [
@@ -127,7 +136,7 @@
     "Plot <0>": {
       "plots": [
         {
-          "height": 326,
+          "height": 0,
           "series": [
             {
               "color": [
@@ -145,7 +154,7 @@
     "Plot <1>": {
       "plots": [
         {
-          "height": 342,
+          "height": 0,
           "series": [
             {
               "color": [
@@ -190,7 +199,7 @@
     "Plot <2>": {
       "plots": [
         {
-          "height": 336,
+          "height": 0,
           "series": [
             {
               "color": [

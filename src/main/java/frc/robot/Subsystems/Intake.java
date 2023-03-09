@@ -32,7 +32,7 @@ public class Intake extends SubsystemBase {
     });
   }
   public Command stopIntake() {
-    return run(() -> intake.set(0));
+    return runOnce(() -> intake.set(0));
   }
 
   public Command setIntakeSpeedForward50() {

@@ -54,6 +54,8 @@ public class Drive extends SubsystemBase implements Loggable {
   // #region declarations
   // Subsystems
   Vision visionSub;
+  Arm arm;
+  Intake intake;
   Conversions conversions = new Conversions(this::getGearRatio);
 
   // basic drive
@@ -97,8 +99,10 @@ public class Drive extends SubsystemBase implements Loggable {
   static int ledcolor = 0;
   PWM ledPWM = new PWM(0);
 
-  public Drive(Vision vision) {
+  public Drive(Vision vision, Arm arm, Intake intake) {
     this.visionSub = vision;
+    this.arm = arm;
+    this.intake = intake;
     // Left_Middle = new WPI_TalonFX();
     left_Front = new WPI_TalonFX(DriveConstants.left_Front_ID);
     left_Middle = new WPI_TalonFX(DriveConstants.left_Middle_ID);
@@ -141,6 +145,13 @@ public class Drive extends SubsystemBase implements Loggable {
     left_Back.setInverted(InvertType.FollowMaster);
     right_Back.setInverted(InvertType.FollowMaster);
 
+    left_Front.setNeutralMode(NeutralMode.Coast);
+    left_Back.setNeutralMode(NeutralMode.Coast);
+    left_Middle.setNeutralMode(NeutralMode.Coast);
+    right_Front.setNeutralMode(NeutralMode.Coast);
+    right_Back.setNeutralMode(NeutralMode.Coast);
+    right_Middle.setNeutralMode(NeutralMode.Coast);
+
     if (Robot.isReal()) {
       leftMotorControllerGroup.setInverted(true);
     }
@@ -160,9 +171,7 @@ public class Drive extends SubsystemBase implements Loggable {
                 Units.degreesToRadians(0.5), 0.1, 0.1),
             // inputs = left volts, right volts
             VecBuilder.fill(12.0, 12.0), 0.02);
-    drivetrainSim = new DifferentialDrivetrainSim(DriveConstants.plant, DCMotor.getFalcon500(3),
-        DriveConstants.gearRatioLow, DriveConstants.trackwidthMeters,
-        DriveConstants.wheelDiameterMeters / 2.0, null);
+    drivetrainSim = new DifferentialDrivetrainSim(DCMotor.getFalcon500(3), DriveConstants.gearRatioLow, 2, 118, DriveConstants.wheelDiameterMeters/2.0, DriveConstants.trackwidthMeters, null);
     chargeStationController = new BangBangController(2);
     ledPWM.setRaw(10);
     compressor.enableDigital();
@@ -441,4 +450,13 @@ public class Drive extends SubsystemBase implements Loggable {
     gyroSim.setYaw(drivetrainSim.getHeading().getDegrees());
   }
   // #endregion
+
+  public Command TimedAuto1() {
+    return run(()-> arm.extendArmHighPID()).withTimeout(0.25)
+    .andThen(
+      intake.setIntakeSpeedForward100().withTimeout(0.5),
+      intake.stopIntake(),
+      run(()->differentialDrive.arcadeDrive(0.5, 0)).withTimeout(0.5)
+    );
+  }
 }

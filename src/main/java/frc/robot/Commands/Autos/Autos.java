@@ -14,12 +14,13 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Subsystems.Arm;
 import frc.robot.Subsystems.Drive;
 
 /** Add your docs here. */
-public class Autos {
+public class Autos extends CommandBase {
 
     public static Command Forward3Meters(Drive drive, Arm arm) {
         return  arm.extendArm().andThen(
@@ -44,6 +45,9 @@ public class Autos {
 
     public static Command DevPath(Drive drive, String pathName) {
         return drive.followTrajectory(PathPlanner.loadPath(pathName, DriveConstants.pathConfig));
+    }
+    public static Command TimeBasedAuto1(Drive drive) {
+        return drive.TimedAuto1();
     }
   
 }

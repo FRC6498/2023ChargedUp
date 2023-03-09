@@ -26,7 +26,7 @@ public class RobotContainer implements Loggable {
   Drive driveSub;
   Arm armSub;
   CowCatcher cowCatcherSub;
-  Intake intake;
+  Intake intakeSub;
 
   private boolean isKeyboard = false;
 
@@ -37,10 +37,11 @@ public class RobotContainer implements Loggable {
     driveController = new CommandXboxController(OperatorConstants.Driver_Controller_ID);
     operatorController = new CommandXboxController(OperatorConstants.Operator_Controller_ID);
     visionSub = new Vision();
-    driveSub = new Drive(visionSub);
-    cowCatcherSub = new CowCatcher();
     armSub = new Arm();
-    intake = new Intake();
+    intakeSub = new Intake();
+    driveSub = new Drive(visionSub, armSub, intakeSub);
+    cowCatcherSub = new CowCatcher();
+    
     
     //Default Commands ---------------------------------------------------------------------------------------------------------------------------
     armSub.setDefaultCommand(armSub.InitialArmCommand(()->operatorController.getLeftTriggerAxis(), ()->operatorController.getRightTriggerAxis()));
@@ -73,11 +74,11 @@ public class RobotContainer implements Loggable {
     operatorController.b().onTrue(armSub.extendArmMidPID());
     operatorController.y().onTrue(armSub.extendArmHighPID());
     // intake speed Commands ---------------------------------------------------------------------------------
-    operatorController.rightBumper().onTrue(intake.stopIntake());
-    operatorController.povUp().onTrue(intake.setIntakeSpeedForward50()).onFalse(intake.stopIntake());
-    operatorController.povRight().onTrue(intake.setIntakeSpeedForward100()).onFalse(intake.stopIntake());
-    operatorController.povDown().onTrue(intake.setIntakeSpeedReverse50()).onFalse(intake.stopIntake());
-    operatorController.povLeft().onTrue(intake.setIntakeSpeedReverse100()).onFalse(intake.stopIntake());
+    operatorController.rightBumper().onTrue(intakeSub.stopIntake());
+    operatorController.povUp().onTrue(intakeSub.setIntakeSpeedForward50()).onFalse(intakeSub.stopIntake());
+    operatorController.povRight().onTrue(intakeSub.setIntakeSpeedForward100()).onFalse(intakeSub.stopIntake());
+    operatorController.povDown().onTrue(intakeSub.setIntakeSpeedReverse50()).onFalse(intakeSub.stopIntake());
+    operatorController.povLeft().onTrue(intakeSub.setIntakeSpeedReverse100()).onFalse(intakeSub.stopIntake());
     //home arm ---------------------------------------------------------------------------------------------------------
     driveController.povUp().onTrue(armSub.homeArm());
     //centering Command--------------------------------------------------------------------------------------------------
@@ -86,7 +87,8 @@ public class RobotContainer implements Loggable {
   }
 
   public Command getAutonomousCommand() {
-    return Autos.DevPath(driveSub, "TestPath");
+   // return Autos.DevPath(driveSub, "TestPath");
+    return Autos.TimeBasedAuto1(driveSub);
   }
 
 }
