@@ -180,13 +180,17 @@ public class Drive extends SubsystemBase implements Loggable {
       if (!isBreaking) {
         left_Front.setNeutralMode(NeutralMode.Brake);
         left_Back.setNeutralMode(NeutralMode.Brake);
+        left_Middle.setNeutralMode(NeutralMode.Brake);
         right_Front.setNeutralMode(NeutralMode.Brake);
         right_Back.setNeutralMode(NeutralMode.Brake);
+        right_Middle.setNeutralMode(NeutralMode.Brake);
       } else {
         left_Front.setNeutralMode(NeutralMode.Coast);
         left_Back.setNeutralMode(NeutralMode.Coast);
+        left_Middle.setNeutralMode(NeutralMode.Coast);
         right_Front.setNeutralMode(NeutralMode.Coast);
         right_Back.setNeutralMode(NeutralMode.Coast);
+        right_Middle.setNeutralMode(NeutralMode.Coast);
       }
     }
 
@@ -237,6 +241,12 @@ public class Drive extends SubsystemBase implements Loggable {
       } else {
         shifter.set(Value.kForward);
         isHighGear = true;
+        left_Front.setNeutralMode(NeutralMode.Coast);
+        left_Back.setNeutralMode(NeutralMode.Coast);
+        left_Middle.setNeutralMode(NeutralMode.Coast);
+        right_Front.setNeutralMode(NeutralMode.Coast);
+        right_Back.setNeutralMode(NeutralMode.Coast);
+        right_Middle.setNeutralMode(NeutralMode.Coast);
       }
     });
   }
