@@ -4,7 +4,10 @@
 
 package frc.robot.Subsystems;
 
+import java.util.Optional;
 import java.util.function.DoubleSupplier;
+import java.util.function.IntSupplier;
+
 import org.photonvision.EstimatedRobotPose;
 // #region imports
 import com.ctre.phoenix.motorcontrol.InvertType;
@@ -42,8 +45,10 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Robot;
+import frc.robot.Commands.CenterOnShelf;
 import frc.robot.Utility.Conversions;
 import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.annotations.Log;
@@ -62,7 +67,7 @@ public class Drive extends SubsystemBase implements Loggable {
   WPI_TalonFX left_Front, right_Front, left_Back, right_Back, left_Middle, right_Middle;
 
   MotorControllerGroup leftMotorControllerGroup, rightMotorControllerGroup;
-  DifferentialDrive differentialDrive;
+ public DifferentialDrive differentialDrive;
   AHRS gyro;
   static boolean isBreaking = false;
 
@@ -85,6 +90,8 @@ public class Drive extends SubsystemBase implements Loggable {
   // loggables
   @Log.BooleanBox
   public boolean isHighGear;
+  @Log.BooleanBox
+  public boolean ledColor;
   @Log.Field2d
   Field2d field;
   @Log(name = "Distance to HP Station (ft.)", tabName = "Driver")
@@ -96,14 +103,18 @@ public class Drive extends SubsystemBase implements Loggable {
   DifferentialDrivetrainSim drivetrainSim;
   AHRSSim gyroSim;
 
-  static int ledcolor = 0;
-  PWM ledPWM = new PWM(0);
+  static int ledcolor = 9;
+  PWM ledPWM;
+
+  CenterOnShelf centerOnChargeStation;
 
   public Drive(Vision vision, Arm arm, Intake intake) {
     this.visionSub = vision;
     this.arm = arm;
     this.intake = intake;
+    centerOnChargeStation = new CenterOnShelf(this);
     // Left_Middle = new WPI_TalonFX();
+    ledPWM = new PWM(9);
     left_Front = new WPI_TalonFX(DriveConstants.left_Front_ID);
     left_Middle = new WPI_TalonFX(DriveConstants.left_Middle_ID);
     left_Back = new WPI_TalonFX(DriveConstants.left_Back_ID);
@@ -172,15 +183,21 @@ public class Drive extends SubsystemBase implements Loggable {
             // inputs = left volts, right volts
             VecBuilder.fill(12.0, 12.0), 0.02);
     drivetrainSim = new DifferentialDrivetrainSim(DCMotor.getFalcon500(3), DriveConstants.gearRatioLow, 2, 118, DriveConstants.wheelDiameterMeters/2.0, DriveConstants.trackwidthMeters, null);
-    chargeStationController = new BangBangController(2);
-    ledPWM.setRaw(10);
+    chargeStationController = new BangBangController(5);
+
     compressor.enableDigital();
-    
+    shifter.set(Value.kOff);
   }
 
-  public void loopLEDs() {
-    ledPWM.setRaw(ledcolor);
-    ledcolor++;
+  public Command setLEDColorCommand(IntSupplier color) {
+   return runOnce(()-> setledColor(0)).andThen(
+   runOnce( ()->setledColor(color.getAsInt())).withTimeout(0.02));
+  }
+  public void setledColor(int color) {
+      ledPWM.setRaw(color);
+      // Thread.sleep(20);
+      // ledPWM.setRaw(0);
+
   }
 
   public Command toggleBreak() {
@@ -204,6 +221,16 @@ public class Drive extends SubsystemBase implements Loggable {
     }
 
     });
+    
+  }
+  public Command setCoast() {
+    return runOnce(()->{ left_Front.setNeutralMode(NeutralMode.Coast);
+    left_Back.setNeutralMode(NeutralMode.Coast);
+    left_Middle.setNeutralMode(NeutralMode.Coast);
+    right_Front.setNeutralMode(NeutralMode.Coast);
+    right_Back.setNeutralMode(NeutralMode.Coast);
+    right_Middle.setNeutralMode(NeutralMode.Coast);}
+    );
   }
 
   public boolean getGear() {
@@ -229,15 +256,11 @@ public class Drive extends SubsystemBase implements Loggable {
       differentialDrive.arcadeDrive(throttle.getAsDouble(), -turn.getAsDouble(), true);
     });
   }
-  public Command centerOnChargeStation() {
-   return run(()->this.setDefaultCommand(centerOnChargeStation()));
-  }
+  
   
 
   /** Centers the robot on the charge station */
-  public Command centerOnChargeStationCommand() {
-    return run(()->differentialDrive.arcadeDrive(0.2, 0));
-  }
+  
   
   /**
    * @return command that shifts the gears on the robot
@@ -345,6 +368,24 @@ public class Drive extends SubsystemBase implements Loggable {
       trajectoryTimer.reset();
     }));
   }
+  public Command driveToDistance(double DistanceInches, boolean isNegative) {
+    
+    double encoderCounts = left_Front.getSelectedSensorPosition() + ((2048 * 26)*(DistanceInches/18.84954)); 
+    return run(()-> {
+      if(isNegative) {
+      if(left_Front.getSelectedSensorPosition()< encoderCounts){
+        
+          differentialDrive.arcadeDrive(-0.7, 0.02);
+      } 
+        
+    }else {
+      if(left_Front.getSelectedSensorPosition() > encoderCounts){
+        differentialDrive.arcadeDrive(0.7, 0);
+      }
+    }
+  
+}).until(()-> left_Front.getSelectedSensorPosition() == encoderCounts).withTimeout(4);
+  }
 
   @Log
   private double getLeftVoltage() {
@@ -414,7 +455,7 @@ public class Drive extends SubsystemBase implements Loggable {
             estPose.timestampSeconds);
       }
      
-      loopLEDs();
+      
     }
     posePub.set(new double[] {poseEstimator.getEstimatedPosition().getX(),
         poseEstimator.getEstimatedPosition().getY(),
@@ -452,11 +493,47 @@ public class Drive extends SubsystemBase implements Loggable {
   // #endregion
 
   public Command TimedAuto1() {
-    return run(()-> arm.extendArmHighPID()).withTimeout(0.25)
+    return arm.homeArm()
     .andThen(
-      intake.setIntakeSpeedForward100().withTimeout(0.5),
+      arm.extendArmHighPID().withTimeout(2),
+      intake.setIntakeSpeedForward100().withTimeout(2),
       intake.stopIntake(),
-      run(()->differentialDrive.arcadeDrive(0.5, 0)).withTimeout(0.5)
+      arm.retractArm(),
+      run(()->differentialDrive.arcadeDrive(-0.5, 0)).withTimeout(7),
+      run(()->differentialDrive.arcadeDrive(0.5, 0)).withTimeout(1)
     );
   }
+  WaitCommand wait = new WaitCommand(0.75);
+  WaitCommand wait1 = new WaitCommand(1);
+  public Command balanceOnChargeStationAuto() {
+    return arm.homeArm()
+    .andThen(
+     arm.extendArmHighPID().withTimeout(3.5),
+     
+      intake.setIntakeSpeedForward100().withTimeout(1),
+      intake.stopIntake().alongWith(arm.retractArm()),
+      setCoast(),
+      driveToDistance(150, true),
+      wait1,
+      driveToDistance(5, false).withTimeout(2.5),
+    //  run(() -> differentialDrive.arcadeDrive(0, 0.5)).withTimeout(1.5),
+      centerOnChargeStation
+      // driveToDistance(5, false)
+    ); 
+ }
+ public Command driveBackAuto() {
+  return arm.homeArm()
+  .andThen(
+    arm.extendArmHighPID().withTimeout(5.5),
+    wait,
+    intake.setIntakeSpeedForward100().withTimeout(1.5),
+    intake.stopIntake().alongWith(arm.retractArm()),
+    setCoast(),
+    driveToDistance(150, true),
+    wait1,
+    run(()-> differentialDrive.arcadeDrive(0, 0.5)).withTimeout(4)
+  );
+ }
+
+
 }

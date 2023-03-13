@@ -28,7 +28,9 @@ public class Arm extends SubsystemBase {
   public double slideMotorMaxDistance;
   public boolean slideHomeComplete = false;
   public boolean armHomeComplete = false;
-  public double extensionMotorMaxDistance = -114791.000000;
+  public double highDropDistance = -117791;
+  public double pickUpDistance = -111000;
+  public double midDropDistance= -75000;
 
   /** Current-based limit switch for intake motors */
   BooleanSupplier extensionCurrentLimit = () -> {
@@ -48,9 +50,10 @@ public class Arm extends SubsystemBase {
     armExtensionBottomLimit = new Trigger(this::getExtensionReverseLimit);
     slideMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor);
 
-    slideMotor.config_kP(0, 0.1);
+    slideMotor.config_kP(0, 0.05);
     slideMotor.config_kD(0, 0.2);
-
+    armExtensionMotor.config_kP(0, 0.1);
+    armExtensionMotor.config_kD(0, 0.2);
     armExtensionMotor.setNeutralMode(NeutralMode.Brake);
     slideMotor.setNeutralMode(NeutralMode.Brake);
   }
@@ -66,11 +69,11 @@ public class Arm extends SubsystemBase {
   }
 
   public Command InitialArmCommand(DoubleSupplier leftTrigger, DoubleSupplier rightTrigger) {
-    return homeSlide().until(() -> slideHomeComplete == true)
-        .andThen(
-        homeArm().until(()->armHomeComplete == true),
-        runOnce(() -> this.setDefaultCommand(
-            manualMoveSlide(() -> -(rightTrigger.getAsDouble() - leftTrigger.getAsDouble())))));
+    return //homeSlide().until(() -> slideHomeComplete == true)
+        //.andThen(
+    homeArm().until(()->armHomeComplete == true).andThen(
+          runOnce(() -> this.setDefaultCommand(
+            manualMoveSlide(() -> -(rightTrigger.getAsDouble() - leftTrigger.getAsDouble())))));//);
   }
 
 
@@ -96,20 +99,34 @@ public class Arm extends SubsystemBase {
 
 
   public Command homeSlide() {
-    return run(() -> slideMotor.set(ControlMode.PercentOutput, 0.8))
+    return run(() -> slideMotor.set(ControlMode.PercentOutput, 0.5))
         .until(() -> slideMotorLeftLimit.getAsBoolean() == true)
         .andThen(
             runOnce(() -> SmartDashboard.putNumber("X axis pos", slideMotor.getSelectedSensorPosition())),
             runOnce(() -> slideMotor.setSelectedSensorPosition(0)),
-            run(() -> slideMotor.set(ControlMode.PercentOutput, -0.8))
+            run(() -> slideMotor.set(ControlMode.PercentOutput, -0.5))
                 .until(() -> slideMotorRightLimit.getAsBoolean() == true),
             // x has hit right limit
             runOnce(() -> slideMotorMaxDistance = slideMotor.getSelectedSensorPosition()),
             runOnce(() -> SmartDashboard.putNumber("X Axis Max", slideMotorMaxDistance)),
-            run(() -> slideMotor.set(ControlMode.Position, slideMotorMaxDistance/2)).withTimeout(1),
+            run(() -> slideMotor.set(ControlMode.Position, slideMotorMaxDistance/2 + 10000)).withTimeout(1),
             runOnce(() -> slideHomeComplete = true));
 
   }
+  public Command improvedHome() {
+      if ((slideMotor.getSelectedSensorPosition() - slideMotorMaxDistance) > slideMotor.getSelectedSensorPosition())
+      {
+       return run(()-> slideMotor.set(ControlMode.PercentOutput, 0.8)).until(()->slideMotorLeftLimit.getAsBoolean() ==true);
+      } else {
+       return  run(()->slideMotor.set(ControlMode.PercentOutput, -0.8)).until(()->slideMotorRightLimit.getAsBoolean()==true)
+       .andThen(
+        runOnce(()-> slideMotor.setSelectedSensorPosition(0)), 
+        run(()-> slideMotor.set(ControlMode.Position, slideMotorMaxDistance/2 ))
+       );
+      }
+  }
+     
+  
   //-114791.000000
   public Command homeArm() {
     return run(() -> armExtensionMotor.set(ControlMode.PercentOutput, 0.2))
@@ -129,19 +146,23 @@ public class Arm extends SubsystemBase {
   }
 
   public Command retractArm() {
-    return run(() -> armExtensionMotor.set(ControlMode.PercentOutput, 0.5))
+    return run(() -> armExtensionMotor.set(ControlMode.PercentOutput, 0.8))
         .until(() -> armExtensionMotor.isFwdLimitSwitchClosed() == 1)
         ;
 
   }
   public Command extendArmHighPID() {
-    return run(() -> armExtensionMotor.set(ControlMode.Position,extensionMotorMaxDistance))
+    return run(() -> armExtensionMotor.set(ControlMode.Position,highDropDistance))
     .withTimeout(1);
   } 
   public Command extendArmMidPID() {
-    return run(() -> armExtensionMotor.set(ControlMode.Position,extensionMotorMaxDistance/1.6))
+    return run(() -> armExtensionMotor.set(ControlMode.Position,midDropDistance))
     .withTimeout(1);
   } 
+  public Command extendToPickup() {
+    return run(()->armExtensionMotor.set(ControlMode.Position, pickUpDistance)).withTimeout(1);
+    
+  }
 
   @Override
   public void periodic() {

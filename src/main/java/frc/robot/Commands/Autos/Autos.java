@@ -46,8 +46,14 @@ public class Autos extends CommandBase {
     public static Command DevPath(Drive drive, String pathName) {
         return drive.followTrajectory(PathPlanner.loadPath(pathName, DriveConstants.pathConfig));
     }
-    public static Command TimeBasedAuto1(Drive drive) {
+    public static Command TimeBasedAuto1(Drive drive , Arm arm) {
         return drive.TimedAuto1();
+    }
+    public static Command balanceOnChargeStationAuto(Drive drive) {
+        return drive.balanceOnChargeStationAuto();
+    }
+    public static Command driveBackAuto(Drive drive) {
+        return drive.driveBackAuto();
     }
   
 }

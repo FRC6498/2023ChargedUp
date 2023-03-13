@@ -5,10 +5,14 @@
 package frc.robot.Commands;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.robot.Subsystems.Drive;
 
 public class CenterOnShelf extends CommandBase {
   /** Creates a new CenterOnShelf. */
-  public CenterOnShelf() {
+  Drive drive;
+  public CenterOnShelf(Drive drive) {
+    addRequirements(drive);
+    this.drive = drive;
     // Use addRequirements() here to declare subsystem dependencies.
   }
 
@@ -18,7 +22,21 @@ public class CenterOnShelf extends CommandBase {
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
-  public void execute() {}
+  public void execute() {
+    double speed = 0;
+    double maxSpeed =0.33;
+    if (!(Math.abs(drive.get1Pitch()) <8)) {
+      speed =maxSpeed ;
+
+    } else{
+      speed = 0;
+    }
+    if (drive.get1Pitch() < 0)
+    {
+      speed = -speed;
+    }
+    drive.differentialDrive.arcadeDrive(speed, 0); 
+  }
 
   // Called once the command ends or is interrupted.
   @Override
