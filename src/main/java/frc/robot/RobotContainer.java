@@ -9,7 +9,7 @@ import com.pathplanner.lib.server.PathPlannerServer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.Commands.CenterOnShelf;
+import frc.robot.Commands.CenterOnChargeStation;
 import frc.robot.Commands.Autos.Autos;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Subsystems.Arm;
@@ -35,7 +35,7 @@ public class RobotContainer implements Loggable {
   String balanceOnChargeStation = "balance on charge station";
   String trajectoryAuto = "follow trajectry (**untested**)";
   private boolean isKeyboard = false;
-  CenterOnShelf centerOnChargeStation;
+  CenterOnChargeStation centerOnChargeStation;
 
   public RobotContainer() {
     PathPlannerServer.startServer(5811);
@@ -52,19 +52,26 @@ public class RobotContainer implements Loggable {
     intakeSub = new Intake();
     driveSub = new Drive(visionSub, armSub, intakeSub);
     cowCatcherSub = new CowCatcher();
-    centerOnChargeStation = new CenterOnShelf(driveSub);
+    centerOnChargeStation = new CenterOnChargeStation(driveSub);
     
     
     //Default Commands ---------------------------------------------------------------------------------------------------------------------------
-   armSub.setDefaultCommand(armSub.InitialArmCommand(()->operatorController.getLeftTriggerAxis(), ()->operatorController.getRightTriggerAxis()));
+    armSub.setDefaultCommand(
+      armSub.InitialArmCommand(
+        ()->operatorController.getLeftTriggerAxis(), ()->operatorController.getRightTriggerAxis()
+      )
+    );
     // sets weather to use keyboard or controller (for simulation) 
     if (Robot.isReal() || !isKeyboard) {
-      driveSub.setDefaultCommand(driveSub.ArcadeDrive(
-      () -> driveController.getRightTriggerAxis() - driveController.getLeftTriggerAxis(),
-     driveController::getLeftX));
+      driveSub.setDefaultCommand(
+        driveSub.ArcadeDriveCmd(
+        () -> driveController.getRightTriggerAxis() - driveController.getLeftTriggerAxis(),
+        driveController::getLeftX)
+      );
     } else if (isKeyboard) {
-     driveSub.setDefaultCommand(
-      driveSub.ArcadeDrive(driveController::getLeftY, driveController::getLeftX));
+      driveSub.setDefaultCommand(
+        driveSub.ArcadeDriveCmd(driveController::getLeftY, driveController::getLeftX)
+      );
     }
     //Logger config -------------------------------------------------------------------------------------------------------------
     Logger.configureLoggingAndConfig(this, false); 
@@ -78,7 +85,7 @@ public class RobotContainer implements Loggable {
    // driveController.y().onTrue(driveSub.centerOnChargeStation());
     // drive Controlls ----------------------------------------------------------------------------------
     driveController.leftBumper().onTrue(driveSub.toggleBreak());
-    driveController.rightBumper().onTrue(driveSub.Shift());
+    driveController.rightBumper().onTrue(driveSub.ShiftCmd());
     // center robot on charge station ----------------------------------------------------------------------------
     //driveController.rightStick().onTrue(null);
     // arm Commands -----------------------------------------------------------------------------------------
@@ -86,11 +93,11 @@ public class RobotContainer implements Loggable {
     operatorController.b().onTrue(armSub.extendArmMidPID());
     operatorController.y().onTrue(armSub.extendArmHighPID());
     // intake speed Commands ---------------------------------------------------------------------------------
-    operatorController.rightBumper().onTrue(intakeSub.stopIntake());
-    operatorController.povUp().onTrue(intakeSub.setIntakeSpeedForward50()).onFalse(intakeSub.stopIntake());
-    operatorController.povRight().onTrue(intakeSub.setIntakeSpeedForward100()).onFalse(intakeSub.stopIntake());
-    operatorController.povDown().onTrue(intakeSub.setIntakeSpeedReverse50()).onFalse(intakeSub.stopIntake());
-    operatorController.povLeft().onTrue(intakeSub.setIntakeSpeedReverse100()).onFalse(intakeSub.stopIntake());
+    operatorController.rightBumper().onTrue(intakeSub.stopIntakeCmd());
+    operatorController.povUp().onTrue(intakeSub.setIntakeSpeedForward50Cmd()).onFalse(intakeSub.stopIntakeCmd());
+    operatorController.povRight().onTrue(intakeSub.setIntakeSpeedForward100Cmd()).onFalse(intakeSub.stopIntakeCmd());
+    operatorController.povDown().onTrue(intakeSub.setIntakeSpeedReverse50Cmd()).onFalse(intakeSub.stopIntakeCmd());
+    operatorController.povLeft().onTrue(intakeSub.setIntakeSpeedReverse100Cmd()).onFalse(intakeSub.stopIntakeCmd());
     //home arm ---------------------------------------------------------------------------------------------------------
     driveController.povUp().onTrue(armSub.homeArm());
     //centering Command--------------------------------------------------------------------------------------------------
@@ -103,20 +110,20 @@ public class RobotContainer implements Loggable {
 
   public Command getAutonomousCommand() {
    // return Autos.DevPath(driveSub, "TestPath");
-     if(chooser.getSelected() == balanceOnChargeStation){
-      return Autos.balanceOnChargeStationAuto(driveSub);  
+    if(chooser.getSelected() == balanceOnChargeStation){
+      return Autos.balanceOnChargeStationAuto(driveSub, armSub, intakeSub, centerOnChargeStation);  
     }else if (chooser.getSelected() == driveBackAuto) {
-      Autos.balanceOnChargeStationAuto(driveSub);
+      Autos.balanceOnChargeStationAuto(driveSub, armSub, intakeSub, centerOnChargeStation);
     } else if (chooser.getSelected() == trajectoryAuto) {
       return Autos.DevPath(driveSub, driveBackAuto);
     }else {
       //return  Autos.balanceOnChargeStationAuto(driveSub);
-      return Autos.balanceOnChargeStationAuto(driveSub);
+      return Autos.balanceOnChargeStationAuto(driveSub, armSub, intakeSub, centerOnChargeStation);
     }
-    return  Autos.balanceOnChargeStationAuto(driveSub);//Autos.TimeBasedAuto1(driveSub, armSub);
+    return  Autos.balanceOnChargeStationAuto(driveSub, armSub, intakeSub, centerOnChargeStation);
   }
   public Command shiftToHigh() {
-    return driveSub.Shift();
+    return driveSub.ShiftCmd();
   }
 
 }

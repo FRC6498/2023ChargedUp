@@ -15,9 +15,11 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.robot.Commands.CenterOnChargeStation;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Subsystems.Arm;
 import frc.robot.Subsystems.Drive;
+import frc.robot.Subsystems.Intake;
 
 /** Add your docs here. */
 public class Autos extends CommandBase {
@@ -46,14 +48,34 @@ public class Autos extends CommandBase {
     public static Command DevPath(Drive drive, String pathName) {
         return drive.followTrajectory(PathPlanner.loadPath(pathName, DriveConstants.pathConfig));
     }
-    public static Command TimeBasedAuto1(Drive drive , Arm arm) {
-        return drive.TimedAuto1();
+    
+    public static Command balanceOnChargeStationAuto(Drive drive, Arm arm, Intake intake, CenterOnChargeStation centerOnChargeStation) {
+        return arm.homeArm()
+            .andThen(
+                    arm.extendArmHighPID().withTimeout(3.5),
+                    intake.setIntakeSpeedForward100Cmd().withTimeout(1),
+                    intake.stopIntakeCmd().alongWith(arm.retractArm()),
+                    drive.setCoast(),
+                    drive.driveToDistance(150, true),
+                    drive.waitCommand(1.75),
+                    drive.driveToDistance(5, false).withTimeout(2.5),
+                    //  run(() -> differentialDrive.arcadeDrive(0, 0.5)).withTimeout(1.5),
+                    centerOnChargeStation
+                    // driveToDistance(5, false)
+            );
     }
-    public static Command balanceOnChargeStationAuto(Drive drive) {
-        return drive.balanceOnChargeStationAuto();
-    }
-    public static Command driveBackAuto(Drive drive) {
-        return drive.driveBackAuto();
+    public static Command driveBackAuto(Drive drive, Arm arm, Intake intake) {
+        return arm.homeArm()
+            .andThen(
+                    arm.extendArmHighPID().withTimeout(5.5),
+                    drive.waitCommand(0.75),
+                    intake.setIntakeSpeedForward100Cmd().withTimeout(1.5),
+                    intake.stopIntakeCmd().alongWith(arm.retractArm()),
+                    drive.setCoast(),
+                    drive.driveToDistance(150, true),
+                    drive.waitCommand(1.75),
+                    drive.ArcadeDriveCmd(()->0.0,()-> 0.5).withTimeout(4)
+                    );
     }
   
 }
