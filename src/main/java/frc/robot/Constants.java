@@ -46,7 +46,7 @@ public class Constants {
                 (Math.PI * wheelDiameterMeters) / (2048 * gearRatioLow);
         public static final double distancePerTickMetersHighGear =
                 (Math.PI * wheelDiameterMeters) / (2048 * gearRatioHigh);
-
+                
         public static final double trackwidthMeters = Units.inchesToMeters(28.5);
         public static final int Shifter_Forward_Channel = 0;
         public static final int Shifter_Reverse_Channel = 0;

@@ -12,8 +12,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.CowCatcherConstants;
 
 public class CowCatcher extends SubsystemBase {
-  /** Creates a new CowCatcher. */
-
   DoubleSolenoid fullExtendPistion;
   DoubleSolenoid halfExtendPistion;
 
@@ -26,51 +24,51 @@ public class CowCatcher extends SubsystemBase {
 
   public Command moveToHalf() {
     return run(() -> {
-      halfExtendPistion.set(Value.kReverse);
-      fullExtendPistion.set(Value.kOff);
-    });
+        halfExtendPistion.set(Value.kReverse);
+        fullExtendPistion.set(Value.kOff);
+      }
+    );
   }
 
   public Command toggle_Half_Command() {
     return runOnce(() -> {
-      switch (halfExtendPistion.get()) {
-        case kOff:
-          halfExtendPistion.set(Value.kReverse);
-          fullExtendPistion.set(Value.kOff);
-          break;
-        case kForward:
-          halfExtendPistion.set(Value.kOff);
-          fullExtendPistion.set(Value.kOff);
-          break;
-        default:
-          halfExtendPistion.set(Value.kOff);
-          fullExtendPistion.set(Value.kOff);
+        switch (halfExtendPistion.get()) {
+          case kOff:
+            halfExtendPistion.set(Value.kReverse);
+            fullExtendPistion.set(Value.kOff);
+            break;
+          case kForward:
+            halfExtendPistion.set(Value.kOff);
+            fullExtendPistion.set(Value.kOff);
+            break;
+          default:
+            halfExtendPistion.set(Value.kOff);
+            fullExtendPistion.set(Value.kOff);
+        }
       }
-
-    });
-
+    );
   }
 
   public Command toggle_Full_Command() {
     return runOnce(() -> {
-      switch (halfExtendPistion.get()) {
-        case kOff:
-          halfExtendPistion.set(Value.kReverse);
-          fullExtendPistion.set(Value.kReverse);
-          break;
-        case kReverse:
-          halfExtendPistion.set(Value.kOff);
-          fullExtendPistion.set(Value.kOff);
-          break;
-        default:
-          halfExtendPistion.set(Value.kOff);
-          fullExtendPistion.set(Value.kOff);
+        switch (halfExtendPistion.get()) {
+          case kOff:
+            halfExtendPistion.set(Value.kReverse);
+            fullExtendPistion.set(Value.kReverse);
+            break;
+          case kReverse:
+            halfExtendPistion.set(Value.kOff);
+            fullExtendPistion.set(Value.kOff);
+            break;
+          default:
+            halfExtendPistion.set(Value.kOff);
+            fullExtendPistion.set(Value.kOff);
+        }
       }
-    });
+    );
   }
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
   }
 }

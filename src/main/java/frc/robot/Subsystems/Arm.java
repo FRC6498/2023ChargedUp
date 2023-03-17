@@ -4,7 +4,6 @@
 
 package frc.robot.Subsystems;
 
-import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
@@ -28,18 +27,9 @@ public class Arm extends SubsystemBase {
   public double slideMotorMaxDistance;
   public boolean slideHomeComplete = false;
   public boolean armHomeComplete = false;
-  public double highDropDistance = -117791;
+  public double highDropDistance = -121791;
   public double pickUpDistance = -111000;
   public double midDropDistance= -75000;
-
-  /** Current-based limit switch for intake motors */
-  BooleanSupplier extensionCurrentLimit = () -> {
-    if (ArmConstants.pdh.getCurrent(ArmConstants.ArmPDHPortID) > 25) {
-      return true;
-    } else {
-      return false;
-    }
-  };
 
   public Arm() {
     armExtensionMotor = new WPI_TalonFX(ArmConstants.yAxisMotorID);

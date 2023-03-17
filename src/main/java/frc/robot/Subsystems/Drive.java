@@ -359,7 +359,7 @@ public class Drive extends SubsystemBase implements Loggable {
     return run(()-> {
       if(isNegative) {
         if(left_Front.getSelectedSensorPosition()< encoderCounts){
-          differentialDrive.arcadeDrive(-0.7, 0.02);
+          differentialDrive.arcadeDrive(-0.7, 0.02);  
         }   
       }else {
         if(left_Front.getSelectedSensorPosition() > encoderCounts){

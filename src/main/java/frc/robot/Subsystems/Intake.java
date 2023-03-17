@@ -4,19 +4,18 @@
 
 package frc.robot.Subsystems;
 
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
 public class Intake extends SubsystemBase {
-  CANSparkMax intake;
+  WPI_TalonFX intake;
   boolean intakeRunning = false;
   public Intake() {
-    intake = new CANSparkMax(Constants.ArmConstants.IntakeSpark_ID, MotorType.kBrushless);
-    intake.setOpenLoopRampRate(0.25);
+    intake = new WPI_TalonFX(Constants.ArmConstants.IntakeSpark_ID);
+    intake.configOpenloopRamp(0.25);
   }
   public Command runIntake() {
     return runOnce(() -> {
