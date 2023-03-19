@@ -197,8 +197,9 @@ public class Drive extends SubsystemBase implements Loggable {
   }
 
   public Command setLEDColorCommand(IntSupplier color) {
-    return runOnce(()-> setledColor(0)).andThen(
-    runOnce( ()->setledColor(color.getAsInt())).withTimeout(0.02));
+    return runOnce(()-> setledColor(color.getAsInt()));//.andThen(
+    //runOnce( ()->setledColor(color.getAsInt())
+    
   }
   public void setledColor(int color) {
     ledPWM.setRaw(color);
@@ -407,6 +408,35 @@ public class Drive extends SubsystemBase implements Loggable {
 
   public Pose2d getPose2d() {
     return poseEstimator.getEstimatedPosition();
+  }
+
+  public Command turnToAngle(double angleDegrees) {
+    double yaw = gyro.getYaw();
+    double setpointYaw = yaw + angleDegrees;
+    boolean isNegative;
+
+    if (setpointYaw < 0) {
+      isNegative = true;
+    }else {
+      isNegative =false;
+    }
+
+    return run(()-> {
+      if (isNegative){
+        if (yaw < setpointYaw) {
+          ArcadeDriveCmd(()-> 0, ()-> 0.2);
+        }else {
+          ArcadeDriveCmd(()->0, () -> 0);
+        }
+      } else {
+        if(yaw > setpointYaw) {
+          ArcadeDriveCmd(()-> 0, ()-> 0.2);
+        }else {
+          ArcadeDriveCmd(()->0, () -> 0);
+        }
+      }
+    }
+    ).until(() -> setpointYaw == yaw);  
   }
 
   @Override

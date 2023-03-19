@@ -28,7 +28,7 @@ public class CenterOnChargeStation extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    if (!(Math.abs(drive.get1Pitch()) <8)) {
+    if (!(Math.abs(drive.get1Pitch()) < 8)) {
       speed =maxSpeed ;
     } else{
       speed = 0;

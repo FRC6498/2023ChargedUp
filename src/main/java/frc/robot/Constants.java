@@ -123,7 +123,7 @@ public class Constants {
     }
     public static final class ArmConstants {
         public static final int ArmGearRatio = 100;
-        public static final int IntakeSpark_ID = 10;
+        public static final int IntakeTalon_ID = 9;
         public static final int ArmPDHPortID = 6;
         public static final int xAxisMotorID = 5;
         public static final int yAxisMotorID = 6;

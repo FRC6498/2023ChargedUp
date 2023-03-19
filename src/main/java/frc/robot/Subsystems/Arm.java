@@ -27,9 +27,11 @@ public class Arm extends SubsystemBase {
   public double slideMotorMaxDistance;
   public boolean slideHomeComplete = false;
   public boolean armHomeComplete = false;
-  public double highDropDistance = -121791;
-  public double pickUpDistance = -111000;
+  public double highDropDistance = -129910;
+  public double pickUpDistance = -125910;
   public double midDropDistance= -75000;
+  //51 in
+  // 47 from top of arm to top of intake
 
   public Arm() {
     armExtensionMotor = new WPI_TalonFX(ArmConstants.yAxisMotorID);
@@ -42,8 +44,8 @@ public class Arm extends SubsystemBase {
 
     slideMotor.config_kP(0, 0.05);
     slideMotor.config_kD(0, 0.2);
-    armExtensionMotor.config_kP(0, 0.1);
-    armExtensionMotor.config_kD(0, 0.2);
+    armExtensionMotor.config_kP(0, 0.2);
+    armExtensionMotor.config_kD(0, 0.4);
     armExtensionMotor.setNeutralMode(NeutralMode.Brake);
     slideMotor.setNeutralMode(NeutralMode.Brake);
   }
@@ -116,8 +118,6 @@ public class Arm extends SubsystemBase {
       }
   }
      
-  
-  //-114791.000000
   public Command homeArm() {
     return run(() -> armExtensionMotor.set(ControlMode.PercentOutput, 0.2))
         .until(() -> armExtensionMotor.isFwdLimitSwitchClosed() == 1)

@@ -24,24 +24,12 @@ import frc.robot.Subsystems.Intake;
 /** Add your docs here. */
 public class Autos extends CommandBase {
 
-    public static Command Forward3Meters(Drive drive, Arm arm) {
-        return  arm.extendArm().andThen(
-        drive.followTrajectory(
-            PathPlanner.generatePath(DriveConstants.pathConfig, List.of(
-                new PathPoint(drive.getPose2d().getTranslation(), drive.getPose2d().getRotation()),
-                new PathPoint(drive.getPose2d().getTranslation().plus(new Translation2d(3, 0)), Rotation2d.fromDegrees(0))
-            )) 
-        ));
-    }
-
-    public static Command QuarterTurnRadius2Meters(Drive drive) {
-        return drive.followTrajectory(
-            TrajectoryGenerator.generateTrajectory(
-                drive.getPose2d(), 
-                List.of(), 
-                drive.getPose2d().transformBy(new Transform2d(new Translation2d(2, 2), Rotation2d.fromDegrees(90))), 
-                DriveConstants.trajectoryConfig
-            )
+    public static Command auto1(Drive drive, Arm arm, Intake intake) {
+        return arm.extendArmHighPID().withTimeout(3.5)
+        .andThen(
+            intake.setIntakeSpeedForward100Cmd().withTimeout(1),
+            arm.retractArm(),
+            drive.driveToDistance(150, true)
         );
     }
 

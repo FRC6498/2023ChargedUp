@@ -80,8 +80,8 @@ public class RobotContainer implements Loggable {
 
   private void configureBindings() {
     // cowcatcher commands ---------------------------------------------------------------------------------
-    //driveController.b().onTrue(cowCatcherSub.toggle_Full_Command());
-    //driveController.a().onTrue(cowCatcherSub.toggle_Half_Command());
+    driveController.b().onTrue(cowCatcherSub.toggle_Full_Command());
+    driveController.a().onTrue(cowCatcherSub.toggle_Half_Command());
    // driveController.y().onTrue(driveSub.centerOnChargeStation());
     // drive Controlls ----------------------------------------------------------------------------------
     driveController.leftBumper().onTrue(driveSub.toggleBreak());
@@ -94,17 +94,18 @@ public class RobotContainer implements Loggable {
     operatorController.y().onTrue(armSub.extendArmHighPID());
     // intake speed Commands ---------------------------------------------------------------------------------
     operatorController.rightBumper().onTrue(intakeSub.stopIntakeCmd());
-    operatorController.povUp().onTrue(intakeSub.setIntakeSpeedForward50Cmd()).onFalse(intakeSub.stopIntakeCmd());
-    operatorController.povRight().onTrue(intakeSub.setIntakeSpeedForward100Cmd()).onFalse(intakeSub.stopIntakeCmd());
-    operatorController.povDown().onTrue(intakeSub.setIntakeSpeedReverse50Cmd()).onFalse(intakeSub.stopIntakeCmd());
-    operatorController.povLeft().onTrue(intakeSub.setIntakeSpeedReverse100Cmd()).onFalse(intakeSub.stopIntakeCmd());
+    operatorController.povUp().onTrue(intakeSub.setIntakeSpeedForward50Cmd().until(()->intakeSub.getCurrentLimit() == true)).onFalse(intakeSub.HoldIntake());
+    operatorController.povRight().onTrue(intakeSub.setIntakeSpeedForward100Cmd()).onFalse(intakeSub.HoldIntake());
+    operatorController.povDown().onTrue(intakeSub.setIntakeSpeedReverse50Cmd()).onFalse(intakeSub.HoldIntake());
+    operatorController.povLeft().onTrue(intakeSub.setIntakeSpeedReverse100Cmd()).onFalse(intakeSub.HoldIntake());
     //home arm ---------------------------------------------------------------------------------------------------------
     driveController.povUp().onTrue(armSub.homeArm());
     //centering Command--------------------------------------------------------------------------------------------------
     operatorController.rightStick().onTrue(centerOnChargeStation);
     operatorController.x().onTrue(armSub.extendToPickup());
-    operatorController.rightBumper().onTrue(driveSub.setLEDColorCommand(()->1));
+    operatorController.rightBumper().onTrue(driveSub.setLEDColorCommand(()->0));
     operatorController.leftBumper().onTrue(driveSub.setLEDColorCommand(()->255));
+
     
   }
 
