@@ -32,23 +32,11 @@ public class Intake extends SubsystemBase {
       return false;
     }
   }
-  public Command runIntake() {
-    return runOnce(() -> {
-        if (intakeRunning == true) {
-          intake.set(0);
-          intakeRunning = false;
-        } else {
-          intake.set(-0.5);
-          intakeRunning = true;
-        }
-      }
-    );
-  }
-
+  /** creates a wait Command  */
   public WaitCommand waitCommand(double timeSec) {
     return new WaitCommand(timeSec);
   }
-
+  /** holds the intake at its current position (likes to stall the motor though) */
   public Command HoldIntake() {
     return stopIntakeCmd()
     .andThen(
@@ -57,22 +45,23 @@ public class Intake extends SubsystemBase {
       run(()-> intake.set(ControlMode.Position, 0))
     );
   }
+  /** stops the intake */
   public Command stopIntakeCmd() {
     return runOnce(() -> intake.set(0));
   }
-
+  /** runs the intake at 50% forward power */
   public Command setIntakeSpeedForward50Cmd() {
     return run(() -> intake.set(0.40)).until(()-> getCurrentLimit() == true);
   }
-
-  public Command setIntakeSpeedForward100Cmd() {
+  /** runs the intake at 75% forward power */
+  public Command setIntakeSpeedForward75Cmd() {
     return run(() -> intake.set(0.75));
   }
-
+  /** runs the intake at 50% reverse power */
   public Command setIntakeSpeedReverse50Cmd() {
     return run(() -> intake.set(-0.40));
   }
-
+  /** runs the intake at 100% reverse power */
   public Command setIntakeSpeedReverse100Cmd() {
     return run(() -> intake.set(-0.75));
   }

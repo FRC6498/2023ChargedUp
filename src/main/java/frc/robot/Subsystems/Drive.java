@@ -108,7 +108,7 @@ public class Drive extends SubsystemBase implements Loggable {
     this.visionSub = vision;
     this.arm = arm;
     this.intake = intake;
-    centerOnChargeStation = new CenterOnChargeStation(this);
+    centerOnChargeStation = new CenterOnChargeStation(this, 8.0, 0.33);
     
   //#region motors
     left_Front = new WPI_TalonFX(DriveConstants.left_Front_ID);
@@ -201,12 +201,17 @@ public class Drive extends SubsystemBase implements Loggable {
     //runOnce( ()->setledColor(color.getAsInt())
     
   }
+  /**
+   * sets the color on the leds
+   */
   public void setledColor(int color) {
     ledPWM.setRaw(color);
     // Thread.sleep(20);
     // ledPWM.setRaw(0);
   }
-
+  /**
+   * toggles the drivetrain breaks 
+   */
   public Command toggleBreak() {
     return runOnce(() -> {
         if(!isHighGear){
@@ -229,6 +234,9 @@ public class Drive extends SubsystemBase implements Loggable {
       }
     );   
   }
+  /**
+   * sets all the drive motors to coast mode
+   */
   public Command setCoast() {
     return runOnce(()->{ 
         left_Front.setNeutralMode(NeutralMode.Coast);
@@ -240,7 +248,9 @@ public class Drive extends SubsystemBase implements Loggable {
       }
     );
   }
-
+  /**
+   * gets the gear the robot is currently in
+   */
   public boolean getGear() {
     return isHighGear;
   }
@@ -254,6 +264,7 @@ public class Drive extends SubsystemBase implements Loggable {
   }
 
   /** 
+   * command that drives the robot during TeleOp
    * @param throttle - % of total forward motor power
    * @param turn - % of total turning power
    * @return Command to drive the robot
@@ -264,7 +275,9 @@ public class Drive extends SubsystemBase implements Loggable {
       }
     );
   }  
- 
+  /**
+   * command that shifts the drivetrain gearboxes
+   */
   public Command ShiftCmd() {
     return runOnce(() -> {
         if (isHighGear) {
@@ -352,23 +365,40 @@ public class Drive extends SubsystemBase implements Loggable {
       trajectoryTimer.reset();
     }));
   }
-  public Command driveToDistance(double DistanceInches, boolean isNegative) {
-    
-    double encoderCounts = 
-    left_Front.getSelectedSensorPosition() + ((2048 * 26)*(DistanceInches/18.84954));
 
+  /**
+   * drives the robot to a specific distance
+   * @param distanceInches 
+   * Distance you want the robot to travel in inches
+   * @param isNegative 
+   * are you trying to go forward to backward -
+   * true = backward,
+   * false = forward
+   */
+  public Command driveToDistance(double distanceInches, boolean isNegative) {
     return run(()-> {
       if(isNegative) {
-        if(left_Front.getSelectedSensorPosition()< encoderCounts){
+        if(left_Front.getSelectedSensorPosition()< getEncoderCounts(distanceInches, isNegative)){
           differentialDrive.arcadeDrive(-0.7, 0.02);  
         }   
       }else {
-        if(left_Front.getSelectedSensorPosition() > encoderCounts){
+
+        if(left_Front.getSelectedSensorPosition() > getEncoderCounts(distanceInches, isNegative)){
           differentialDrive.arcadeDrive(0.7, 0);
         }
       }
-  
-    }).until(()-> left_Front.getSelectedSensorPosition() == encoderCounts).withTimeout(4);
+    }).until(()-> left_Front.getSelectedSensorPosition() == getEncoderCounts(distanceInches, isNegative)).withTimeout(4);
+  }
+
+  private double getEncoderCounts(double distanceInches, boolean isNegative) {
+    double encoderCounts;
+    if (isNegative) {
+      return encoderCounts = 
+      left_Front.getSelectedSensorPosition() - ((2048 * 26)*(distanceInches/18.84954));
+    }else{
+      return encoderCounts = 
+      left_Front.getSelectedSensorPosition() + ((2048 * 26)*(distanceInches/18.84954));
+    }
   }
 
   @Log
@@ -397,23 +427,29 @@ public class Drive extends SubsystemBase implements Loggable {
     return Rotation2d.fromDegrees(-gyro.getAngle());
   }
   @Log
-  public double get1Pitch() {
-    return gyro.getRoll();
-  }
-
-  @Log
+  /**
+   * gets the pitch of the robot
+   * @return
+   */
   public double getPitch() {
-    return gyro.getPitch();
+    return gyro.getRoll(); //pitch is actually roll because of how the gyro is mounted on the RIO
   }
 
   public Pose2d getPose2d() {
     return poseEstimator.getEstimatedPosition();
   }
-
-  public Command turnToAngle(double angleDegrees) {
+  /**
+   * turns the robot to a specific angle on the gyro
+   * @param angleDegrees
+   * - how many degrees do we want the gyro to turn from its current position
+   * @param tolerance
+   * - how percise do you want the turn to be (to tight tolerance could cause the robot to wiggle back and forth)
+   */
+  public Command turnToAngle(double angleDegrees, double tolerance) {
     double yaw = gyro.getYaw();
-    double setpointYaw = yaw + angleDegrees;
+    double setpointYaw = yaw + angleDegrees; 
     boolean isNegative;
+     //how many degrees of tolerance do we want to have in the turn
 
     if (setpointYaw < 0) {
       isNegative = true;
@@ -430,13 +466,13 @@ public class Drive extends SubsystemBase implements Loggable {
         }
       } else {
         if(yaw > setpointYaw) {
-          ArcadeDriveCmd(()-> 0, ()-> 0.2);
+          ArcadeDriveCmd(()-> 0, ()-> -0.2);
         }else {
           ArcadeDriveCmd(()->0, () -> 0);
         }
       }
     }
-    ).until(() -> setpointYaw == yaw);  
+    ).until(() -> Math.abs(setpointYaw - yaw) < tolerance);  
   }
 
   @Override
@@ -481,7 +517,7 @@ public class Drive extends SubsystemBase implements Loggable {
   /**
    * runs the DrivetrainSimulation
    */
-  public void runSim() {
+  private void runSim() {
     drivetrainSim.setInputs(leftMotorSim.getMotorOutputLeadVoltage(),
         rightMotorSim.getMotorOutputLeadVoltage());
 

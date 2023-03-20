@@ -7,6 +7,7 @@ package frc.robot;
 import com.pathplanner.lib.server.PathPlannerServer;
 
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Commands.CenterOnChargeStation;
@@ -40,22 +41,28 @@ public class RobotContainer implements Loggable {
   public RobotContainer() {
     PathPlannerServer.startServer(5811);
     System.out.println("Robot Start");
+
+    //puts a dropdown on smartdashboard that lets the drive team pick which auto they want to run
     chooser = new SendableChooser<>();
     chooser.addOption("encoder Auto", driveBackAuto);
     chooser.addOption("Timed Auto", balanceOnChargeStation);
     chooser.addOption("Trajectory Auto", trajectoryAuto);
+    SmartDashboard.putData(chooser);
 
     driveController = new CommandXboxController(OperatorConstants.Driver_Controller_ID);
     operatorController = new CommandXboxController(OperatorConstants.Operator_Controller_ID);
+
     visionSub = new Vision();
     armSub = new Arm();
     intakeSub = new Intake();
     driveSub = new Drive(visionSub, armSub, intakeSub);
     cowCatcherSub = new CowCatcher();
-    centerOnChargeStation = new CenterOnChargeStation(driveSub);
+    centerOnChargeStation = new CenterOnChargeStation(driveSub, 8, 0.33);
     
     
     //Default Commands ---------------------------------------------------------------------------------------------------------------------------
+    //sets the command that each subsystem will run if no other commands are given to it
+    //! these commands will stop if the subsystem is given any other command to run
     armSub.setDefaultCommand(
       armSub.InitialArmCommand(
         ()->operatorController.getLeftTriggerAxis(), ()->operatorController.getRightTriggerAxis()
@@ -95,7 +102,7 @@ public class RobotContainer implements Loggable {
     // intake speed Commands ---------------------------------------------------------------------------------
     operatorController.rightBumper().onTrue(intakeSub.stopIntakeCmd());
     operatorController.povUp().onTrue(intakeSub.setIntakeSpeedForward50Cmd().until(()->intakeSub.getCurrentLimit() == true)).onFalse(intakeSub.HoldIntake());
-    operatorController.povRight().onTrue(intakeSub.setIntakeSpeedForward100Cmd()).onFalse(intakeSub.HoldIntake());
+    operatorController.povRight().onTrue(intakeSub.setIntakeSpeedForward75Cmd()).onFalse(intakeSub.HoldIntake());
     operatorController.povDown().onTrue(intakeSub.setIntakeSpeedReverse50Cmd()).onFalse(intakeSub.HoldIntake());
     operatorController.povLeft().onTrue(intakeSub.setIntakeSpeedReverse100Cmd()).onFalse(intakeSub.HoldIntake());
     //home arm ---------------------------------------------------------------------------------------------------------
@@ -110,6 +117,8 @@ public class RobotContainer implements Loggable {
   }
 
   public Command getAutonomousCommand() {
+    //sets which auto command to use based on the input from the dropdown on Smartdashboard
+
    // return Autos.DevPath(driveSub, "TestPath");
     if(chooser.getSelected() == balanceOnChargeStation){
       return Autos.balanceOnChargeStationAuto(driveSub, armSub, intakeSub, centerOnChargeStation);  
@@ -118,11 +127,11 @@ public class RobotContainer implements Loggable {
     } else if (chooser.getSelected() == trajectoryAuto) {
       return Autos.DevPath(driveSub, driveBackAuto);
     }else {
-      //return  Autos.balanceOnChargeStationAuto(driveSub);
       return Autos.balanceOnChargeStationAuto(driveSub, armSub, intakeSub, centerOnChargeStation);
     }
-    return  Autos.balanceOnChargeStationAuto(driveSub, armSub, intakeSub, centerOnChargeStation);
+    return Autos.balanceOnChargeStationAuto(driveSub, armSub, intakeSub, centerOnChargeStation);
   }
+
   public Command shiftToHigh() {
     return driveSub.ShiftCmd();
   }

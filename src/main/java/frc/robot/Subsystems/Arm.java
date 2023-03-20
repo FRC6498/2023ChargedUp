@@ -25,6 +25,8 @@ public class Arm extends SubsystemBase {
   Trigger slideMotorLeftLimit, slideMotorRightLimit, armExtensionTopLimit, armExtensionBottomLimit;
 
   public double slideMotorMaxDistance;
+
+  //numbers that change how far the arm moves (negative moves the arm forward because of how the motor is mounted)
   public boolean slideHomeComplete = false;
   public boolean armHomeComplete = false;
   public double highDropDistance = -129910;
@@ -42,24 +44,45 @@ public class Arm extends SubsystemBase {
     armExtensionBottomLimit = new Trigger(this::getExtensionReverseLimit);
     slideMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor);
 
+    /*PID values for the motors 
+     * P changes how hard the motors will try to get to their setpoint
+     * D changes how much the motors will slow down before they get to the setpoint
+    */
     slideMotor.config_kP(0, 0.05);
     slideMotor.config_kD(0, 0.2);
     armExtensionMotor.config_kP(0, 0.2);
     armExtensionMotor.config_kD(0, 0.4);
+
+    //set both motors to break
     armExtensionMotor.setNeutralMode(NeutralMode.Brake);
     slideMotor.setNeutralMode(NeutralMode.Brake);
   }
-
+  /**
+   * moves the arm to a position
+   * @param position
+   * - position in encoder ticks
+   * @return
+   */
   public Command moveArm(DoubleSupplier position) {
     return run(() -> armExtensionMotor.set(ControlMode.Position, position.getAsDouble()));
   }
-
+  /**
+   * moves the side to side motor
+   * @param percent 
+   * - values from the operator controller triggers
+   */
   public Command manualMoveSlide(DoubleSupplier percent) {
     return run(() -> {
       slideMotor.set(ControlMode.PercentOutput, percent.getAsDouble());
     });
   }
-
+  /**
+   * Command that the arm subsystem will run if no other command is given
+   * @param leftTrigger 
+   * - operator controller left trigger value
+   * @param rightTrigger
+   * - operator controller right trigger value
+   */
   public Command InitialArmCommand(DoubleSupplier leftTrigger, DoubleSupplier rightTrigger) {
     return //homeSlide().until(() -> slideHomeComplete == true)
         //.andThen(
@@ -69,11 +92,17 @@ public class Arm extends SubsystemBase {
   }
 
 
-
+  /**
+   * stops the arm motor
+   */
   public Command stopArm() {
     return run(() -> armExtensionMotor.set(ControlMode.PercentOutput, 0));
   }
-
+  /**
+   * moves the arm motor at a percent of total power
+   * @param percent
+   * - percent of total power
+   */
   public Command moveArmPercent(double percent) {
     return run(() -> armExtensionMotor.set(ControlMode.PercentOutput, percent));
   }
@@ -83,28 +112,36 @@ public class Arm extends SubsystemBase {
     armExtensionMotor.set(ControlMode.Position,
         Conversions.distanceToNativeUnits(transfrom.getY()));
   }
-
+  /**
+   * gives the arm motor a voltage that will make it move (functionally the same as moving the motor at a percent)
+   * @param voltage
+   * - voltage to give to the motor (between -12 and 12)
+   */
   public void setArmVoltage(double voltage) {
     armExtensionMotor.set(ControlMode.Current, voltage);
   }
 
 
-
+  /**
+   * Command the homes the slide motor
+   */
   public Command homeSlide() {
     return run(() -> slideMotor.set(ControlMode.PercentOutput, 0.5))
-        .until(() -> slideMotorLeftLimit.getAsBoolean() == true)
+        .until(() -> slideMotorLeftLimit.getAsBoolean() == true) 
         .andThen(
-            runOnce(() -> SmartDashboard.putNumber("X axis pos", slideMotor.getSelectedSensorPosition())),
+            runOnce(() -> SmartDashboard.putNumber("X axis pos", slideMotor.getSelectedSensorPosition())), //display position for debugging
             runOnce(() -> slideMotor.setSelectedSensorPosition(0)),
             run(() -> slideMotor.set(ControlMode.PercentOutput, -0.5))
                 .until(() -> slideMotorRightLimit.getAsBoolean() == true),
-            // x has hit right limit
             runOnce(() -> slideMotorMaxDistance = slideMotor.getSelectedSensorPosition()),
-            runOnce(() -> SmartDashboard.putNumber("X Axis Max", slideMotorMaxDistance)),
-            run(() -> slideMotor.set(ControlMode.Position, slideMotorMaxDistance/2 + 10000)).withTimeout(1),
-            runOnce(() -> slideHomeComplete = true));
+            runOnce(() -> SmartDashboard.putNumber("X Axis Max", slideMotorMaxDistance)), 
+            run(() -> slideMotor.set(ControlMode.Position, slideMotorMaxDistance/2 + 10000)).withTimeout(1), //move slide to middle
+            runOnce(() -> slideHomeComplete = true)); 
 
   }
+  /**
+   * Command that zeros the slide at the nearest limit switch
+   */
   public Command improvedHome() {
       if ((slideMotor.getSelectedSensorPosition() - slideMotorMaxDistance) > slideMotor.getSelectedSensorPosition())
       {
@@ -117,7 +154,9 @@ public class Arm extends SubsystemBase {
        );
       }
   }
-     
+  /**
+   * moves the arm back untill it hits the rear limit switch and zeros the encoder
+   */
   public Command homeArm() {
     return run(() -> armExtensionMotor.set(ControlMode.PercentOutput, 0.2))
         .until(() -> armExtensionMotor.isFwdLimitSwitchClosed() == 1)
@@ -129,26 +168,39 @@ public class Arm extends SubsystemBase {
   public Command centerOnTarget(Transform2d robotToTarget) {
     return run(() -> moveToTransform(robotToTarget));
   }
-
+  /**
+   * extends the arm untill it hits the forward limit switch
+   */
   public Command extendArm() {
     return run(() -> armExtensionMotor.set(ControlMode.PercentOutput, -0.5))
         .until(() -> armExtensionMotor.isRevLimitSwitchClosed() == 1);
   }
-
+  /**
+   * retracts the arm untill it hits the reverse limit switch
+   */
   public Command retractArm() {
     return run(() -> armExtensionMotor.set(ControlMode.PercentOutput, 0.8))
         .until(() -> armExtensionMotor.isFwdLimitSwitchClosed() == 1)
         ;
 
   }
+  /**
+   * extends the arm to the highDropDistance encoder value
+   */
   public Command extendArmHighPID() {
     return run(() -> armExtensionMotor.set(ControlMode.Position,highDropDistance))
     .withTimeout(1);
   } 
+  /**
+   * extends the arm to the midDropDistance encoder value
+   */
   public Command extendArmMidPID() {
     return run(() -> armExtensionMotor.set(ControlMode.Position,midDropDistance))
     .withTimeout(1);
   } 
+  /**
+   * extends the arm to the pickUpDistance encoder value
+   */
   public Command extendToPickup() {
     return run(()->armExtensionMotor.set(ControlMode.Position, pickUpDistance)).withTimeout(1);
     

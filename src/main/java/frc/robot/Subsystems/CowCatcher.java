@@ -16,8 +16,8 @@ public class CowCatcher extends SubsystemBase {
   DoubleSolenoid halfExtendPistion;
 
   public CowCatcher() {
-    fullExtendPistion = new DoubleSolenoid(PneumaticsModuleType.CTREPCM,
-        CowCatcherConstants.pushcatcherFullForwardID, CowCatcherConstants.pushcatcherFullReverseID);
+    fullExtendPistion = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, // we use the pcm from ctre on the robot
+        CowCatcherConstants.pushcatcherFullForwardID, CowCatcherConstants.pushcatcherFullReverseID); // ports that the solenoids are connected to on the pcm 
     halfExtendPistion = new DoubleSolenoid(PneumaticsModuleType.CTREPCM,
         CowCatcherConstants.pushcatcherHalfForwardID, CowCatcherConstants.pushcatcherHalfReverseID);
   }
@@ -29,7 +29,9 @@ public class CowCatcher extends SubsystemBase {
       }
     );
   }
-
+  /**
+   * toggles the cowcatcher between half-out and fully in
+   */
   public Command toggle_Half_Command() {
     return runOnce(() -> {
         switch (halfExtendPistion.get()) {
@@ -48,7 +50,9 @@ public class CowCatcher extends SubsystemBase {
       }
     );
   }
-
+  /**
+   * toggles the cowcatcher between all the way out and all the way in
+   */
   public Command toggle_Full_Command() {
     return runOnce(() -> {
         switch (halfExtendPistion.get()) {

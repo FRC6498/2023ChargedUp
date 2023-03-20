@@ -11,10 +11,19 @@ public class CenterOnChargeStation extends CommandBase {
   /** Creates a new CenterOnShelf. */
   Drive drive;
   double speed;
-  double maxSpeed;
-  public CenterOnChargeStation(Drive drive) {
+  double maxPercentSpeed;
+  double tolerance;
+   /**
+    * command that centers the robot on the charge station
+    * @param drive - inject the drive subsystem
+    * @param tolerance - tolerance for the command
+    * @param maxPercentSpeed - max speed the motors will be set at during the command
+    */
+  public CenterOnChargeStation(Drive drive, double tolerance, double maxPercentSpeed) {
     addRequirements(drive);
     this.drive = drive;
+    this.tolerance = tolerance;
+    this.maxPercentSpeed = maxPercentSpeed;
     // Use addRequirements() here to declare subsystem dependencies.
   }
 
@@ -22,22 +31,21 @@ public class CenterOnChargeStation extends CommandBase {
   @Override
   public void initialize() {
     speed = 0;
-    maxSpeed = 0.33;
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    if (!(Math.abs(drive.get1Pitch()) < 8)) {
-      speed =maxSpeed ;
+    if (!(Math.abs(drive.getPitch()) < tolerance)) {
+      speed =maxPercentSpeed; // go forward if pitch is not within tolerance and the robot is tipping backward
     } else{
-      speed = 0;
+      speed = 0; // stop if robot pitch is within tolerance
     }
-    if (drive.get1Pitch() < 0)
+    if (drive.getPitch() < 0)
     {
-      speed = -speed;
+      speed = -speed; //reverse if the robot is tipping forward
     }
-    drive.ArcadeDriveCmd(()->speed,()-> 0); 
+    drive.ArcadeDriveCmd(()->speed,()-> 0); // drives the robot at the set speed
   }
 
   // Called once the command ends or is interrupted.
