@@ -5,32 +5,34 @@
 package frc.robot.Subsystems;
 
 import java.util.Optional;
-
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
-import org.photonvision.SimVisionSystem;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
-
+import org.photonvision.SimVisionSystem;
 import edu.wpi.first.math.geometry.Pose2d;
-import frc.robot.Robot;
 import frc.robot.Constants.VisionConstants;
+import frc.robot.Robot;
 
 public class Vision {
   private PhotonCamera camera;
   private PhotonPoseEstimator poseEstimator;
   private Optional<EstimatedRobotPose> currentFieldPose;
   private SimVisionSystem visionSystem;
-
+  
   public Vision() {
-    camera = new PhotonCamera(VisionConstants.cameraName);
-    poseEstimator = new PhotonPoseEstimator(VisionConstants.tagLayout, PoseStrategy.MULTI_TAG_PNP,
-        camera, VisionConstants.robotToCamera);
+    camera = new PhotonCamera(VisionConstants.mainCameraName);
+    poseEstimator = 
+        new PhotonPoseEstimator(VisionConstants.tagLayout, PoseStrategy.MULTI_TAG_PNP,
+        camera, VisionConstants.robotToCamera
+        );
     currentFieldPose = Optional.empty();
 
-    visionSystem = new SimVisionSystem(VisionConstants.cameraName, VisionConstants.camDiagFOV,
+    visionSystem = 
+        new SimVisionSystem(VisionConstants.mainCameraName, VisionConstants.camDiagFOV,
         VisionConstants.robotToCamera, 0, VisionConstants.camResolutionWidth,
-        VisionConstants.camResolutionHeight, VisionConstants.minTargetArea);
+        VisionConstants.camResolutionHeight, VisionConstants.minTargetArea
+        );
   }
 
   /**

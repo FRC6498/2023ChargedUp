@@ -57,9 +57,9 @@ public class Robot extends TimedRobot {
   public void teleopInit() {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
-
     }
-    m_robotContainer.armSub.setDefaultCommand(m_robotContainer.armSub.homeArmX());
+    m_robotContainer.shiftToHigh();
+   // m_robotContainer.armSub.setDefaultCommand(m_robotContainer.armSub.homeArmX());
   }
 
   @Override
