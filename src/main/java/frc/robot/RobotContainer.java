@@ -101,7 +101,7 @@ public class RobotContainer implements Loggable {
     operatorController.y().onTrue(armSub.extendArmHighPID());
     // intake speed Commands ---------------------------------------------------------------------------------
     operatorController.rightBumper().onTrue(intakeSub.stopIntakeCmd());
-    operatorController.povUp().onTrue(intakeSub.setIntakeSpeedForward50Cmd().until(()->intakeSub.getCurrentLimit() == true)).onFalse(intakeSub.HoldIntake());
+    operatorController.povUp().onTrue(intakeSub.setIntakeSpeedForward50Cmd()).onFalse(intakeSub.HoldIntake());
     operatorController.povRight().onTrue(intakeSub.setIntakeSpeedForward75Cmd()).onFalse(intakeSub.HoldIntake());
     operatorController.povDown().onTrue(intakeSub.setIntakeSpeedReverse50Cmd()).onFalse(intakeSub.HoldIntake());
     operatorController.povLeft().onTrue(intakeSub.setIntakeSpeedReverse100Cmd()).onFalse(intakeSub.HoldIntake());
@@ -132,8 +132,6 @@ public class RobotContainer implements Loggable {
     return Autos.balanceOnChargeStationAuto(driveSub, armSub, intakeSub, centerOnChargeStation);
   }
 
-  public Command shiftToHigh() {
-    return driveSub.ShiftCmd();
-  }
+  
 
 }

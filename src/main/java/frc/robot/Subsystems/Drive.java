@@ -296,6 +296,12 @@ public class Drive extends SubsystemBase implements Loggable {
       }
     );
   }
+
+  public Command shiftHigh() {
+    return runOnce(()-> {
+      shifter.set(Value.kReverse);
+    });
+  }
  
   @Log
   private double getLeftDistanceTraveledMeters() {
@@ -375,8 +381,14 @@ public class Drive extends SubsystemBase implements Loggable {
    * true = backward,
    * false = forward
    */
-  public Command driveToDistance(double distanceInches, boolean isNegative) {
+  boolean isNegative = false;
+  public Command driveToDistance(double distanceInches) {
     return run(()-> {
+        isNegative = false;
+        if (distanceInches < 0) {
+          isNegative =true;
+        }
+
       if(isNegative) {
         if(left_Front.getSelectedSensorPosition()< getEncoderCounts(distanceInches, isNegative)){
           differentialDrive.arcadeDrive(-0.7, 0.02);  

@@ -16,15 +16,6 @@ import frc.robot.Subsystems.Intake;
 /** Add your docs here. */
 public class Autos extends CommandBase {
 
-    public static Command auto1(Drive drive, Arm arm, Intake intake) {
-        return arm.extendArmHighPID().withTimeout(3.5)
-        .andThen(
-            intake.setIntakeSpeedForward75Cmd().withTimeout(1),
-            arm.retractArm(),
-            drive.driveToDistance(150)
-        );
-    }
-
     public static Command DevPath(Drive drive, String pathName) {
         return drive.followTrajectory(PathPlanner.loadPath(pathName, DriveConstants.pathConfig));
     }
@@ -39,9 +30,7 @@ public class Autos extends CommandBase {
                     drive.driveToDistance(-150),
                     drive.waitCommand(1.75),
                     drive.driveToDistance(4),
-                    //  run(() -> differentialDrive.arcadeDrive(0, 0.5)).withTimeout(1.5),
                     centerOnChargeStation
-                    // driveToDistance(5, false)
             );
     }
     public static Command driveBackAuto(Drive drive, Arm arm, Intake intake) {
@@ -51,7 +40,7 @@ public class Autos extends CommandBase {
                     intake.setIntakeSpeedForward75Cmd().withTimeout(0.75),
                     intake.stopIntakeCmd().alongWith(arm.retractArm()),
                     drive.setCoast(),
-                    drive.driveToDistance(150),
+                    drive.driveToDistance(-150),
                     drive.waitCommand(1.75),
                     drive.turnToAngle(drive.getGyroAngle() - 180, 5)
                     );

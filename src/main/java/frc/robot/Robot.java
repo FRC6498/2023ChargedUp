@@ -58,7 +58,7 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
-    m_robotContainer.shiftToHigh();
+    m_robotContainer.driveSub.shiftHigh();
    // m_robotContainer.armSub.setDefaultCommand(m_robotContainer.armSub.homeArmX());
   }
 
