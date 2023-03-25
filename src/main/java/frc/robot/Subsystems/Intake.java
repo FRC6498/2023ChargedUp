@@ -5,6 +5,7 @@
 package frc.robot.Subsystems;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
@@ -19,10 +20,11 @@ public class Intake extends SubsystemBase {
   
   public Intake() {
     intake = new WPI_TalonFX(Constants.ArmConstants.IntakeTalon_ID);
+    intake.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor);
     intake.setNeutralMode(NeutralMode.Brake);
     intake.configOpenloopRamp(0.25);
-    intake.config_kP(0,0.15);
-    intake.config_kD(0, 0.4);
+    //intake.config_kP(0,0.015);
+    //intake.config_kD(0, 0.1);
   }
 
   public boolean getCurrentLimit() {
@@ -42,7 +44,7 @@ public class Intake extends SubsystemBase {
     .andThen(
       waitCommand(1),
       runOnce(()->intake.setSelectedSensorPosition(0)),
-      run(()-> intake.set(ControlMode.Position, 0))
+      run(()-> intake.set(ControlMode.PercentOutput, -0.1))
     );
   }
   /** stops the intake */

@@ -29,7 +29,7 @@ public class Arm extends SubsystemBase {
   //numbers that change how far the arm moves (negative moves the arm forward because of how the motor is mounted)
   public boolean slideHomeComplete = false;
   public boolean armHomeComplete = false;
-  public double highDropDistance = -129910;
+  public double highDropDistance = -129810;
   public double pickUpDistance = -125910;
   public double midDropDistance= -75000;
   //51 in
@@ -179,7 +179,7 @@ public class Arm extends SubsystemBase {
    * retracts the arm untill it hits the reverse limit switch
    */
   public Command retractArm() {
-    return run(() -> armExtensionMotor.set(ControlMode.PercentOutput, 0.8))
+    return run(() -> armExtensionMotor.set(ControlMode.PercentOutput, 0.6))
         .until(() -> armExtensionMotor.isFwdLimitSwitchClosed() == 1)
         ;
 

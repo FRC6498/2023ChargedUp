@@ -21,7 +21,7 @@ public class Autos extends CommandBase {
         .andThen(
             intake.setIntakeSpeedForward75Cmd().withTimeout(1),
             arm.retractArm(),
-            drive.driveToDistance(150, true)
+            drive.driveToDistance(150)
         );
     }
 
@@ -33,12 +33,12 @@ public class Autos extends CommandBase {
         return arm.homeArm()
             .andThen(
                     arm.extendArmHighPID().withTimeout(3.5), 
-                    intake.setIntakeSpeedForward75Cmd().withTimeout(1),
+                    intake.setIntakeSpeedForward75Cmd().withTimeout(0.75),
                     intake.stopIntakeCmd().alongWith(arm.retractArm()),
                     drive.setCoast(),
-                    drive.driveToDistance(150, true),
+                    drive.driveToDistance(-150),
                     drive.waitCommand(1.75),
-                    drive.driveToDistance(5, false).withTimeout(2.5),
+                    drive.driveToDistance(4),
                     //  run(() -> differentialDrive.arcadeDrive(0, 0.5)).withTimeout(1.5),
                     centerOnChargeStation
                     // driveToDistance(5, false)
@@ -47,14 +47,13 @@ public class Autos extends CommandBase {
     public static Command driveBackAuto(Drive drive, Arm arm, Intake intake) {
         return arm.homeArm()
             .andThen(
-                    arm.extendArmHighPID().withTimeout(5.5),
-                    drive.waitCommand(0.75),
-                    intake.setIntakeSpeedForward75Cmd().withTimeout(1.5),
+                    arm.extendArmHighPID().withTimeout(3.5),
+                    intake.setIntakeSpeedForward75Cmd().withTimeout(0.75),
                     intake.stopIntakeCmd().alongWith(arm.retractArm()),
                     drive.setCoast(),
-                    drive.driveToDistance(150, true),
+                    drive.driveToDistance(150),
                     drive.waitCommand(1.75),
-                    drive.ArcadeDriveCmd(()->0.0,()-> 0.5).withTimeout(4)
+                    drive.turnToAngle(drive.getGyroAngle() - 180, 5)
                     );
     }
   
