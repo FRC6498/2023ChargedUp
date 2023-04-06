@@ -58,6 +58,7 @@ public class RobotContainer implements Loggable {
     centerOnChargeStation = new CenterOnChargeStation(driveSub);
     VisionConstants.driverCamera  = CameraServer.startAutomaticCapture();
     VisionConstants.driverCamera.setResolution(640, 480);
+    VisionConstants.driverCamera.setFPS(30);
     
     
     //Default Commands ---------------------------------------------------------------------------------------------------------------------------
