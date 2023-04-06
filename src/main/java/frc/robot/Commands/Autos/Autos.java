@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Commands.CenterOnChargeStation;
 import frc.robot.Subsystems.Arm;
+import frc.robot.Subsystems.CowCatcher;
 import frc.robot.Subsystems.Drive;
 import frc.robot.Subsystems.Intake;
 
@@ -24,12 +25,11 @@ public class Autos extends CommandBase {
         return arm.homeArm()
             .andThen(
                     arm.extendArmHighPID().withTimeout(3.5), 
-                    intake.setIntakeSpeedForward75Cmd().withTimeout(0.75),
-                    intake.stopIntakeCmd().alongWith(arm.retractArm()),
-                    drive.setCoast(),
-                    drive.driveToDistance(-150),
-                    drive.waitCommand(1.75),
-                    drive.driveToDistance(4),
+                    intake.setIntakeSpeedForward75Cmd().withTimeout(1),
+                    intake.stopIntakeCmd().alongWith(arm.retractArm(), drive.setCoast(),
+                    drive.driveToDistance(-150, 4)),
+                    drive.waitCommand(0.5),
+                    drive.driveToDistance(0.5, 2.3),
                     centerOnChargeStation
             );
     }
@@ -40,10 +40,22 @@ public class Autos extends CommandBase {
                     intake.setIntakeSpeedForward75Cmd().withTimeout(0.75),
                     intake.stopIntakeCmd().alongWith(arm.retractArm()),
                     drive.setCoast(),
-                    drive.driveToDistance(-150),
+                    drive.driveToDistance(-150, 4),
                     drive.waitCommand(1.75),
-                    drive.turnToAngle(drive.getGyroAngle() - 180, 5)
+                    drive.turnToRelativeAngle(drive.getGyroAngle() - 180, 5)
                     );
+    }    
+    public static Command Auto1(Drive drive, CowCatcher cowCatcher, Arm arm, Intake intake) {
+        return arm.homeArm()
+        .andThen(
+            arm.extendArmHighPID().withTimeout(3.5),
+            intake.setIntakeSpeedForward75Cmd().withTimeout(0.75),
+            intake.stopIntakeCmd().alongWith(arm.retractArm()),
+            drive.driveToDistance(-40, 9),
+            cowCatcher.toggle_Full_Command().alongWith(
+            drive.turnToRelativeAngle(3, 1)),
+            drive.driveToDistance(10, 9),
+            drive.turnToRelativeAngle(-3, 1)
+        );
     }
-  
 }

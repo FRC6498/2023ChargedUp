@@ -6,7 +6,6 @@ package frc.robot.Subsystems;
 //#region imports
 import java.util.function.DoubleSupplier;
 import java.util.function.IntSupplier;
-import org.photonvision.EstimatedRobotPose;
 import com.ctre.phoenix.motorcontrol.InvertType;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.TalonFXSimCollection;
@@ -54,7 +53,6 @@ public class Drive extends SubsystemBase implements Loggable {
 
   // #region declarations
   // Subsystems
-  Vision visionSub;
   Arm arm;
   Intake intake;
   Conversions conversions = new Conversions(this::getGearRatio);
@@ -68,7 +66,7 @@ public class Drive extends SubsystemBase implements Loggable {
   DifferentialDriveWheelSpeeds currentDesiredWheelSpeeds;
   DifferentialDrivePoseEstimator poseEstimator;
   LTVDifferentialDriveController ltvController;
-   DifferentialDrive differentialDrive;
+   public DifferentialDrive differentialDrive;
   CenterOnChargeStation centerOnChargeStation;
   
   // TODO: add substation translation
@@ -79,7 +77,7 @@ public class Drive extends SubsystemBase implements Loggable {
   DoubleSolenoid shifter;
   Compressor compressor;
   
-  @Log(name = "Distance to HP Station (ft.)", tabName = "Driver")
+ // @Log(name = "Distance to HP Station (ft.)", tabName = "Driver")
   double distanceToSubstation = -1;
   DoubleArrayPublisher posePub;
   
@@ -104,11 +102,10 @@ public class Drive extends SubsystemBase implements Loggable {
   static boolean isBreaking = false;
 //#endregion  
 
-  public Drive(Vision vision, Arm arm, Intake intake) {
-    this.visionSub = vision;
+  public Drive(Arm arm, Intake intake) {
     this.arm = arm;
     this.intake = intake;
-    centerOnChargeStation = new CenterOnChargeStation(this, 8.0, 0.33);
+    centerOnChargeStation = new CenterOnChargeStation(this);
     
   //#region motors
     left_Front = new WPI_TalonFX(DriveConstants.left_Front_ID);
@@ -382,7 +379,7 @@ public class Drive extends SubsystemBase implements Loggable {
    * false = forward
    */
   boolean isNegative = false;
-  public Command driveToDistance(double distanceInches) {
+  public Command driveToDistance(double distanceInches, double timout) {
     return run(()-> {
         isNegative = false;
         if (distanceInches < 0) {
@@ -395,11 +392,11 @@ public class Drive extends SubsystemBase implements Loggable {
         }   
       }else {
 
-        if(left_Front.getSelectedSensorPosition() > getEncoderCounts(distanceInches, isNegative)){
+        if(left_Front.getSelectedSensorPosition() < getEncoderCounts(distanceInches, isNegative)){
           differentialDrive.arcadeDrive(0.7, 0);
         }
       }
-    }).until(()-> left_Front.getSelectedSensorPosition() == getEncoderCounts(distanceInches, isNegative)).withTimeout(4);
+    }).until(()-> left_Front.getSelectedSensorPosition() == getEncoderCounts(distanceInches, isNegative)).withTimeout(timout);
   }
 
   private double getEncoderCounts(double distanceInches, boolean isNegative) {
@@ -457,7 +454,7 @@ public class Drive extends SubsystemBase implements Loggable {
    * @param tolerance
    * - how percise do you want the turn to be (to tight tolerance could cause the robot to wiggle back and forth)
    */
-  public Command turnToAngle(double angleDegrees, double tolerance) {
+  public Command turnToRelativeAngle(double angleDegrees, double tolerance) {
     double yaw = gyro.getYaw();
     double setpointYaw = yaw + angleDegrees; 
     boolean isNegative;
@@ -497,20 +494,8 @@ public class Drive extends SubsystemBase implements Loggable {
       poseEstimator.getEstimatedPosition().getTranslation().getDistance(hpStation)
       );
    
-    visionSub.setReferencePose(poseEstimator.getEstimatedPosition());
+    
     // if we see targets
-    if (visionSub.getCurrentPoseEstimate().isPresent()) {
-      // if the pose is reasonably close
-      if  (
-        visionSub.getCurrentPoseEstimate().get().estimatedPose.toPose2d().getTranslation()
-        .getDistance(poseEstimator.getEstimatedPosition().getTranslation()) < 1.5
-          ) 
-        {
-          EstimatedRobotPose estimatedPose = visionSub.getCurrentPoseEstimate().get();
-          poseEstimator.addVisionMeasurement(estimatedPose.estimatedPose.toPose2d(),
-          estimatedPose.timestampSeconds);
-        }  
-    }
     posePub.set(
       new double[] {poseEstimator.getEstimatedPosition().getX(),
       poseEstimator.getEstimatedPosition().getY(),

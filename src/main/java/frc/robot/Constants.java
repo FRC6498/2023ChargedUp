@@ -4,6 +4,8 @@ import java.util.List;
 import com.pathplanner.lib.PathConstraints;
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.DifferentialDriveFeedforward;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -73,6 +75,8 @@ public class Constants {
     public static final class VisionConstants {
         public static final String mainCameraName = "USB_webcam";
         // TODO: handle alliance switching (mirror trajectories)
+        public static UsbCamera driverCamera;
+        
 
         static double archeryWallY = Units.inchesToMeters(351);
         static double bleacherY = Units.inchesToMeters(97);
