@@ -53,7 +53,7 @@ public class Intake extends SubsystemBase {
   }
   /** runs the intake at 50% forward power */
   public Command setIntakeSpeedForward50Cmd() {
-    return run(() -> intake.set(0.40)).until(()-> getCurrentLimit() == true);
+    return run(() -> intake.set(0.60)).until(()-> getCurrentLimit() == true);
   }
   /** runs the intake at 75% forward power */
   public Command setIntakeSpeedForward75Cmd() {
@@ -61,7 +61,7 @@ public class Intake extends SubsystemBase {
   }
   /** runs the intake at 50% reverse power */
   public Command setIntakeSpeedReverse50Cmd() {
-    return run(() -> intake.set(-0.40));
+    return run(() -> intake.set(-0.60));
   }
   /** runs the intake at 100% reverse power */
   public Command setIntakeSpeedReverse100Cmd() {

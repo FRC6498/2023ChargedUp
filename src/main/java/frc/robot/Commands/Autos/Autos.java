@@ -17,17 +17,17 @@ import frc.robot.Subsystems.Intake;
 /** Add your docs here. */
 public class Autos extends CommandBase {
 
-    public static Command DevPath(Drive drive, String pathName) {
-        return drive.followTrajectory(PathPlanner.loadPath(pathName, DriveConstants.pathConfig));
-    }
+    // public static Command DevPath(Drive drive, String pathName) {
+    //     return drive.followTrajectory(PathPlanner.loadPath(pathName, DriveConstants.pathConfig));
+    // }
     
     public static Command balanceOnChargeStationAuto(Drive drive, Arm arm, Intake intake, CenterOnChargeStation centerOnChargeStation) {
         return arm.homeArm()
             .andThen(
                     arm.extendArmHighPID().withTimeout(3.5), 
-                    intake.setIntakeSpeedForward75Cmd().withTimeout(1),
-                    intake.stopIntakeCmd().alongWith(arm.retractArm(), drive.setCoast(),
-                    drive.driveToDistance(-150, 4)),
+                    intake.setIntakeSpeedForward75Cmd().withTimeout(0.75),
+                    intake.stopIntakeCmd().alongWith(arm.retractArm()), drive.setCoast(),
+                    drive.driveToDistance(-150, 4),
                     drive.waitCommand(0.5),
                     drive.driveToDistance(0.5, 2.3),
                     centerOnChargeStation
@@ -36,12 +36,12 @@ public class Autos extends CommandBase {
     public static Command driveBackAuto(Drive drive, Arm arm, Intake intake) {
         return arm.homeArm()
             .andThen(
-                    arm.extendArmHighPID().withTimeout(3.5),
-                    intake.setIntakeSpeedForward75Cmd().withTimeout(0.75),
-                    intake.stopIntakeCmd().alongWith(arm.retractArm()),
-                    drive.setCoast(),
-                    drive.driveToDistance(-150, 4),
-                    drive.waitCommand(1.75),
+                   // arm.extendArmHighPID().withTimeout(3.5),
+                    // intake.setIntakeSpeedForward75Cmd().withTimeout(0.75),
+                    // intake.stopIntakeCmd().alongWith(arm.retractArm()),
+                    // drive.setCoast(),
+                    // drive.driveToDistance(-150, 4),
+                    // drive.waitCommand(1.75),
                     drive.turnToRelativeAngle(drive.getGyroAngle() - 180, 5)
                     );
     }    

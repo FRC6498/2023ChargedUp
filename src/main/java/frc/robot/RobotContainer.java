@@ -32,9 +32,9 @@ public class RobotContainer implements Loggable {
   CowCatcher cowCatcherSub;
   Intake intakeSub;
   SendableChooser<String> chooser;
-  String driveBackAuto = "drive back";
-  String balanceOnChargeStation = "balance on charge station";
-  String trajectoryAuto = "follow trajectry (**untested**)";
+  String turnAroundAuto = "turnAroundAuto";
+  String centerOnChargeStationAuto = "center on charge station";
+  String twoPieceAuto = "two piece auto";
   private boolean isKeyboard = false;
   CenterOnChargeStation centerOnChargeStation;
 
@@ -44,9 +44,9 @@ public class RobotContainer implements Loggable {
 
     //puts a dropdown on smartdashboard that lets the drive team pick which auto they want to run
     chooser = new SendableChooser<>();
-    chooser.addOption("turn around auto", driveBackAuto);
-    chooser.addOption("ChargeStation Auto", balanceOnChargeStation);
-    chooser.addOption("Trajectory Auto", trajectoryAuto);
+    chooser.addOption("turn around auto", turnAroundAuto);
+    chooser.addOption("ChargeStation Auto", centerOnChargeStationAuto);
+    chooser.addOption("Trajectory Auto", twoPieceAuto);
     SmartDashboard.putData(chooser);
 
     driveController = new CommandXboxController(OperatorConstants.Driver_Controller_ID);
@@ -116,23 +116,16 @@ public class RobotContainer implements Loggable {
 
     
   }
-
+    
   public Command getAutonomousCommand() {
-    //sets which auto command to use based on the input from the dropdown on Smartdashboard
-
-   // return Autos.DevPath(driveSub, "TestPath");
-    if(chooser.getSelected() == balanceOnChargeStation){
-      return Autos.balanceOnChargeStationAuto(driveSub, armSub, intakeSub, centerOnChargeStation);  
-    }else if (chooser.getSelected() == driveBackAuto) {
-      Autos.balanceOnChargeStationAuto(driveSub, armSub, intakeSub, centerOnChargeStation);
-    } else if (chooser.getSelected() == trajectoryAuto) {
-      return Autos.DevPath(driveSub, driveBackAuto);
-    }else {
+    if (chooser.getSelected() == turnAroundAuto) {
+      return Autos.driveBackAuto(driveSub, armSub, intakeSub);
+    } else if(chooser.getSelected() == centerOnChargeStationAuto) {
+      return Autos.balanceOnChargeStationAuto(driveSub, armSub, intakeSub, centerOnChargeStation);
+    } else if(chooser.getSelected() == twoPieceAuto) {
+      return Autos.Auto1(driveSub, cowCatcherSub, armSub, intakeSub);
+    } else {
       return Autos.balanceOnChargeStationAuto(driveSub, armSub, intakeSub, centerOnChargeStation);
     }
-    return Autos.balanceOnChargeStationAuto(driveSub, armSub, intakeSub, centerOnChargeStation);
   }
-
-  
-
 }

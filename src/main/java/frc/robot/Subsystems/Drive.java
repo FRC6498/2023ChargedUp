@@ -56,6 +56,8 @@ public class Drive extends SubsystemBase implements Loggable {
   Arm arm;
   Intake intake;
   Conversions conversions = new Conversions(this::getGearRatio);
+  @Log
+  double yaw;
 
   // basic drive
   WPI_TalonFX left_Front, right_Front, left_Back, right_Back, left_Middle, right_Middle;
@@ -178,19 +180,20 @@ public class Drive extends SubsystemBase implements Loggable {
         getLeftDistanceTraveledMeters(), getRightDistanceTraveledMeters(),
         new Pose2d(1, 1, Rotation2d.fromDegrees(0))
         );
-    ltvController =
-        new LTVDifferentialDriveController(DriveConstants.plant, DriveConstants.trackwidthMeters,
-        // states = x pos, y pos, angle, left speed, right speed
-        VecBuilder.fill(Units.inchesToMeters(2), Units.inchesToMeters(2),
-        Units.degreesToRadians(0.5), 0.1, 0.1),
-        // inputs = left volts, right volts
-        VecBuilder.fill(12.0, 12.0), 0.02
-        );
+    // ltvController =
+    //     new LTVDifferentialDriveController(DriveConstants.plant, DriveConstants.trackwidthMeters,
+    //     // states = x pos, y pos, angle, left speed, right speed
+    //     VecBuilder.fill(Units.inchesToMeters(2), Units.inchesToMeters(2),
+    //     Units.degreesToRadians(0.5), 0.1, 0.1),
+    //     // inputs = left volts, right volts
+    //     VecBuilder.fill(12.0, 12.0), 0.02
+    //     );
   //#endregion
    
     if (Robot.isReal()) {
       leftMotorControllerGroup.setInverted(true);
     } 
+    yaw = gyro.getYaw();
   }
 
   public Command setLEDColorCommand(IntSupplier color) {
@@ -334,40 +337,40 @@ public class Drive extends SubsystemBase implements Loggable {
     return linearVel * curvature;
   }
 
-  public Command followTrajectory(Trajectory trajectory) {
-    PathPlannerServer.sendActivePath(trajectory.getStates());
-    return runOnce(() -> {
-      poseEstimator.resetPosition(Rotation2d.fromDegrees(-gyro.getAngle()), getLeftDistanceTraveledMeters(),
-          getRightDistanceTraveledMeters(), trajectory.getInitialPose());
-      trajectoryTimer.start();
-    }).andThen(run(() -> {
-      field.getObject("traj").setTrajectory(trajectory);
-      Trajectory.State trajState = trajectory.sample(trajectoryTimer.get());
-      PathPlannerServer.sendPathFollowingData(trajState.poseMeters,
-          poseEstimator.getEstimatedPosition());
-      currentDesiredWheelSpeeds = DriveConstants.kinematics.toWheelSpeeds(
-          new ChassisSpeeds(trajState.velocityMetersPerSecond, 0, getAngularVelocityRadsPerSecond(
-              trajState.velocityMetersPerSecond, trajState.curvatureRadPerMeter)));
-      var nextState = trajectory.sample(trajectoryTimer.get() + 0.02);
-      var nextWheelSpeeds = DriveConstants.kinematics.toWheelSpeeds(
-          new ChassisSpeeds(nextState.velocityMetersPerSecond, 0, getAngularVelocityRadsPerSecond(
-              nextState.velocityMetersPerSecond, nextState.curvatureRadPerMeter)));
-      var ffVolts = DriveConstants.drivetrainFeedforward.calculate(
-          currentDesiredWheelSpeeds.leftMetersPerSecond, nextWheelSpeeds.leftMetersPerSecond,
-          currentDesiredWheelSpeeds.rightMetersPerSecond, nextWheelSpeeds.rightMetersPerSecond,
-          0.02);
-      var ltvVolts = ltvController.calculate(poseEstimator.getEstimatedPosition(),
-          currentDesiredWheelSpeeds.leftMetersPerSecond,
-          currentDesiredWheelSpeeds.rightMetersPerSecond, trajState);
-      setWheelVoltages(ffVolts.left + ltvVolts.left, ffVolts.right + ltvVolts.right);
-      differentialDrive.feed();
-      // setWheelVoltages(ffVolts.left, ffVolts.right);
-    }).until(() -> ltvController.atReference()).finallyDo((boolean end) -> {
-      setWheelVoltages(0, 0);
-      trajectoryTimer.stop();
-      trajectoryTimer.reset();
-    }));
-  }
+  // public Command followTrajectory(Trajectory trajectory) {
+  //   PathPlannerServer.sendActivePath(trajectory.getStates());
+  //   return runOnce(() -> {
+  //     poseEstimator.resetPosition(Rotation2d.fromDegrees(-gyro.getAngle()), getLeftDistanceTraveledMeters(),
+  //         getRightDistanceTraveledMeters(), trajectory.getInitialPose());
+  //     trajectoryTimer.start();
+  //   }).andThen(run(() -> {
+  //     field.getObject("traj").setTrajectory(trajectory);
+  //     Trajectory.State trajState = trajectory.sample(trajectoryTimer.get());
+  //     PathPlannerServer.sendPathFollowingData(trajState.poseMeters,
+  //         poseEstimator.getEstimatedPosition());
+  //     currentDesiredWheelSpeeds = DriveConstants.kinematics.toWheelSpeeds(
+  //         new ChassisSpeeds(trajState.velocityMetersPerSecond, 0, getAngularVelocityRadsPerSecond(
+  //             trajState.velocityMetersPerSecond, trajState.curvatureRadPerMeter)));
+  //     var nextState = trajectory.sample(trajectoryTimer.get() + 0.02);
+  //     var nextWheelSpeeds = DriveConstants.kinematics.toWheelSpeeds(
+  //         new ChassisSpeeds(nextState.velocityMetersPerSecond, 0, getAngularVelocityRadsPerSecond(
+  //             nextState.velocityMetersPerSecond, nextState.curvatureRadPerMeter)));
+  //     var ffVolts = DriveConstants.drivetrainFeedforward.calculate(
+  //         currentDesiredWheelSpeeds.leftMetersPerSecond, nextWheelSpeeds.leftMetersPerSecond,
+  //         currentDesiredWheelSpeeds.rightMetersPerSecond, nextWheelSpeeds.rightMetersPerSecond,
+  //         0.02);
+  //     var ltvVolts = ltvController.calculate(poseEstimator.getEstimatedPosition(),
+  //         currentDesiredWheelSpeeds.leftMetersPerSecond,
+  //         currentDesiredWheelSpeeds.rightMetersPerSecond, trajState);
+  //     setWheelVoltages(ffVolts.left + ltvVolts.left, ffVolts.right + ltvVolts.right);
+  //     differentialDrive.feed();
+  //     // setWheelVoltages(ffVolts.left, ffVolts.right);
+  //   }).until(() -> ltvController.atReference()).finallyDo((boolean end) -> {
+  //     setWheelVoltages(0, 0);
+  //     trajectoryTimer.stop();
+  //     trajectoryTimer.reset();
+  //   }));
+  // }
 
   /**
    * drives the robot to a specific distance
@@ -400,13 +403,10 @@ public class Drive extends SubsystemBase implements Loggable {
   }
 
   private double getEncoderCounts(double distanceInches, boolean isNegative) {
-    double encoderCounts;
     if (isNegative) {
-      return encoderCounts = 
-      left_Front.getSelectedSensorPosition() - ((2048 * 26)*(distanceInches/18.84954));
+      return left_Front.getSelectedSensorPosition() - ((2048 * 26)*(distanceInches/18.84954));
     }else{
-      return encoderCounts = 
-      left_Front.getSelectedSensorPosition() + ((2048 * 26)*(distanceInches/18.84954));
+      return left_Front.getSelectedSensorPosition() + ((2048 * 26)*(distanceInches/18.84954));
     }
   }
 
@@ -454,35 +454,40 @@ public class Drive extends SubsystemBase implements Loggable {
    * @param tolerance
    * - how percise do you want the turn to be (to tight tolerance could cause the robot to wiggle back and forth)
    */
+  @Log
+   double thing;
+  @Log
+    double setpointYaw;
   public Command turnToRelativeAngle(double angleDegrees, double tolerance) {
-    double yaw = gyro.getYaw();
-    double setpointYaw = yaw + angleDegrees; 
+    final double yaw = gyro.getYaw();
+    setpointYaw = yaw + angleDegrees; 
     boolean isNegative;
+    
+     thing = Math.abs(yaw - setpointYaw);
      //how many degrees of tolerance do we want to have in the turn
 
-    if (setpointYaw < 0) {
+    if (setpointYaw < yaw) {
       isNegative = true;
     }else {
       isNegative =false;
     }
-
-    return run(()-> {
       if (isNegative){
-        if (yaw < setpointYaw) {
-          ArcadeDriveCmd(()-> 0, ()-> 0.2);
-        }else {
-          ArcadeDriveCmd(()->0, () -> 0);
+        if (Math.abs(yaw-setpointYaw) > tolerance) {
+          return run(()-> differentialDrive.arcadeDrive(0, -0.4))
+            .until(() -> Math.abs(setpointYaw - gyro.getYaw()) < tolerance);
+        } else {
+          return run(()-> differentialDrive.arcadeDrive(0, 0));
         }
       } else {
-        if(yaw > setpointYaw) {
-          ArcadeDriveCmd(()-> 0, ()-> -0.2);
-        }else {
-          ArcadeDriveCmd(()->0, () -> 0);
+        if (Math.abs(yaw-setpointYaw) >tolerance) {
+          return run(()-> differentialDrive.arcadeDrive(0, 0.4))
+            .until(() -> Math.abs(setpointYaw - yaw) < tolerance);
+        } else {
+          return run(()->differentialDrive.arcadeDrive(0, 0));
         }
       }
     }
-    ).until(() -> Math.abs(setpointYaw - yaw) < tolerance);  
-  }
+     
 
   @Override
   public void periodic() {
