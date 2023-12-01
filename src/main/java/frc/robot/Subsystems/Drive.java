@@ -60,7 +60,7 @@ public class Drive extends SubsystemBase implements Loggable {
   double yaw;
 
   // basic drive
-  WPI_TalonFX left_Front, right_Front, left_Back, right_Back, left_Middle, right_Middle;
+  WPI_TalonFX left_Middle, right_Middle;
   MotorControllerGroup leftMotorControllerGroup, rightMotorControllerGroup;
   
   // Drive Control
@@ -110,53 +110,22 @@ public class Drive extends SubsystemBase implements Loggable {
     centerOnChargeStation = new CenterOnChargeStation(this);
     
   //#region motors
-    left_Front = new WPI_TalonFX(DriveConstants.left_Front_ID);
     left_Middle = new WPI_TalonFX(DriveConstants.left_Middle_ID);
-    left_Back = new WPI_TalonFX(DriveConstants.left_Back_ID);
-    right_Front = new WPI_TalonFX(DriveConstants.right_Front_ID);
     right_Middle = new WPI_TalonFX(DriveConstants.right_Middle_ID);
-    right_Back = new WPI_TalonFX(DriveConstants.right_Back_ID);
     
-    leftMotorControllerGroup = new MotorControllerGroup(left_Front, left_Back, left_Middle);
-    rightMotorControllerGroup = new MotorControllerGroup(right_Front, right_Back, right_Middle);
+  
 
-    differentialDrive = new DifferentialDrive(leftMotorControllerGroup, rightMotorControllerGroup);
+    differentialDrive = new DifferentialDrive(left_Middle, right_Middle);
     wheelVolts = new DifferentialDriveWheelVoltages();
     currentDesiredWheelSpeeds = new DifferentialDriveWheelSpeeds();
 
-    left_Front.configFactoryDefault();
-    right_Front.configFactoryDefault();
-    left_Back.configFactoryDefault();
-    right_Back.configFactoryDefault();
-    left_Front.setSelectedSensorPosition(0);
-    left_Back.setSelectedSensorPosition(0);
-    right_Front.setSelectedSensorPosition(0);
-    right_Back.setSelectedSensorPosition(0);
-
-    left_Back.follow(left_Front);
-    right_Back.follow(right_Front);
-    left_Back.setInverted(InvertType.FollowMaster);
-    right_Back.setInverted(InvertType.FollowMaster);
-
-    left_Front.setNeutralMode(NeutralMode.Coast);
-    left_Back.setNeutralMode(NeutralMode.Coast);
     left_Middle.setNeutralMode(NeutralMode.Coast);
-    right_Front.setNeutralMode(NeutralMode.Coast);
-    right_Back.setNeutralMode(NeutralMode.Coast);
+  
     right_Middle.setNeutralMode(NeutralMode.Coast);
   //#endregion
   
   //#region Simulation
-    leftMotorSim = left_Front.getSimCollection();
-    rightMotorSim = right_Front.getSimCollection();
-    drivetrainSim =
-     new DifferentialDrivetrainSim(DCMotor.getFalcon500(3), DriveConstants.gearRatioLow,
-    2, 118, DriveConstants.wheelDiameterMeters/2.0,
-     DriveConstants.trackwidthMeters, null
-     );
-    gyroSim = new AHRSSim();    
-    field = new Field2d();
-  //#endregion
+   
 
   //#region Misc Components
     compressor = new Compressor(PneumaticsModuleType.CTREPCM);
@@ -191,7 +160,7 @@ public class Drive extends SubsystemBase implements Loggable {
   //#endregion
    
     if (Robot.isReal()) {
-      leftMotorControllerGroup.setInverted(true);
+      left_Middle.setInverted(true);
     } 
     yaw = gyro.getYaw();
   }
@@ -216,18 +185,10 @@ public class Drive extends SubsystemBase implements Loggable {
     return runOnce(() -> {
         if(!isHighGear){
           if (!isBreaking) {
-            left_Front.setNeutralMode(NeutralMode.Brake);
-            left_Back.setNeutralMode(NeutralMode.Brake);
             left_Middle.setNeutralMode(NeutralMode.Brake);
-            right_Front.setNeutralMode(NeutralMode.Brake);
-            right_Back.setNeutralMode(NeutralMode.Brake);
             right_Middle.setNeutralMode(NeutralMode.Brake);
           } else {
-            left_Front.setNeutralMode(NeutralMode.Coast);
-            left_Back.setNeutralMode(NeutralMode.Coast);
             left_Middle.setNeutralMode(NeutralMode.Coast);
-            right_Front.setNeutralMode(NeutralMode.Coast);
-            right_Back.setNeutralMode(NeutralMode.Coast);
             right_Middle.setNeutralMode(NeutralMode.Coast);
           }
         }
@@ -239,11 +200,7 @@ public class Drive extends SubsystemBase implements Loggable {
    */
   public Command setCoast() {
     return runOnce(()->{ 
-        left_Front.setNeutralMode(NeutralMode.Coast);
-        left_Back.setNeutralMode(NeutralMode.Coast);
         left_Middle.setNeutralMode(NeutralMode.Coast);
-        right_Front.setNeutralMode(NeutralMode.Coast);
-        right_Back.setNeutralMode(NeutralMode.Coast);
         right_Middle.setNeutralMode(NeutralMode.Coast);
       }
     );
@@ -286,11 +243,9 @@ public class Drive extends SubsystemBase implements Loggable {
         } else {
           shifter.set(Value.kForward);
           isHighGear = true;
-          left_Front.setNeutralMode(NeutralMode.Coast);
-          left_Back.setNeutralMode(NeutralMode.Coast);
+          
           left_Middle.setNeutralMode(NeutralMode.Coast);
-          right_Front.setNeutralMode(NeutralMode.Coast);
-          right_Back.setNeutralMode(NeutralMode.Coast);
+         
           right_Middle.setNeutralMode(NeutralMode.Coast);
         }
       }
@@ -305,12 +260,12 @@ public class Drive extends SubsystemBase implements Loggable {
  
   @Log
   private double getLeftDistanceTraveledMeters() {
-    return -Conversions.nativeUnitsToDistanceMeters(left_Front.getSelectedSensorPosition());
+    return -Conversions.nativeUnitsToDistanceMeters(left_Middle.getSelectedSensorPosition());
   }
 
   @Log
   private double getRightDistanceTraveledMeters() {
-    return Conversions.nativeUnitsToDistanceMeters(right_Front.getSelectedSensorPosition());
+    return Conversions.nativeUnitsToDistanceMeters(right_Middle.getSelectedSensorPosition());
   }
 
   /*
@@ -324,13 +279,13 @@ public class Drive extends SubsystemBase implements Loggable {
   @Log
   private double getLeftVelocityMetersPerSecond() {
     return -Conversions
-        .nativeUnitsToVelocityMetersPerSecond(left_Front.getSelectedSensorVelocity());
+        .nativeUnitsToVelocityMetersPerSecond(left_Middle.getSelectedSensorVelocity());
   }
 
   @Log
   private double getRightVelocityMetersPerSecond() {
     return Conversions
-        .nativeUnitsToVelocityMetersPerSecond(right_Front.getSelectedSensorVelocity());
+        .nativeUnitsToVelocityMetersPerSecond(right_Middle.getSelectedSensorVelocity());
   }
 
   private double getAngularVelocityRadsPerSecond(double linearVel, double curvature) {
@@ -390,23 +345,23 @@ public class Drive extends SubsystemBase implements Loggable {
         }
 
       if(isNegative) {
-        if(left_Front.getSelectedSensorPosition()< getEncoderCounts(distanceInches, isNegative)){
+        if(left_Middle.getSelectedSensorPosition()< getEncoderCounts(distanceInches, isNegative)){
           differentialDrive.arcadeDrive(-0.7, 0.02);  
         }   
       }else {
 
-        if(left_Front.getSelectedSensorPosition() < getEncoderCounts(distanceInches, isNegative)){
+        if(left_Middle.getSelectedSensorPosition() < getEncoderCounts(distanceInches, isNegative)){
           differentialDrive.arcadeDrive(0.7, 0);
         }
       }
-    }).until(()-> left_Front.getSelectedSensorPosition() == getEncoderCounts(distanceInches, isNegative)).withTimeout(timout);
+    }).until(()-> left_Middle.getSelectedSensorPosition() == getEncoderCounts(distanceInches, isNegative)).withTimeout(timout);
   }
 
   private double getEncoderCounts(double distanceInches, boolean isNegative) {
     if (isNegative) {
-      return left_Front.getSelectedSensorPosition() - ((2048 * 26)*(distanceInches/18.84954));
+      return left_Middle.getSelectedSensorPosition() - ((2048 * 26)*(distanceInches/18.84954));
     }else{
-      return left_Front.getSelectedSensorPosition() + ((2048 * 26)*(distanceInches/18.84954));
+      return left_Middle.getSelectedSensorPosition() + ((2048 * 26)*(distanceInches/18.84954));
     }
   }
 
