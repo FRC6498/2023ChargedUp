@@ -110,8 +110,8 @@ public class Drive extends SubsystemBase implements Loggable {
     centerOnChargeStation = new CenterOnChargeStation(this);
     
   //#region motors
-    left_Middle = new WPI_TalonFX(DriveConstants.left_Middle_ID);
-    right_Middle = new WPI_TalonFX(DriveConstants.right_Middle_ID);
+    left_Middle = new WPI_TalonFX(4);
+    right_Middle = new WPI_TalonFX(1);
     
   
 
